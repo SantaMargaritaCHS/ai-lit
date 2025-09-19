@@ -1,0 +1,183 @@
+1
+00:00:00,615 --> 00:00:05,295
+you're training a puppy. You can't just shout Fetch and expect it to understand
+
+2
+00:00:05,296 --> 00:00:07,335
+perfectly. You need to give clear,
+
+3
+00:00:07,695 --> 00:00:11,155
+specific instructions. Maybe even demonstrate what you want.
+
+4
+00:00:11,535 --> 00:00:14,415
+Prompting AI is similar. Instead of vague requests,
+
+5
+00:00:15,055 --> 00:00:17,215
+you provide detailed instructions, examples,
+
+6
+00:00:17,216 --> 00:00:20,455
+or context to guide the AI towards the desired output.
+
+7
+00:00:20,655 --> 00:00:24,815
+Think of a prompt as a a well-crafted command that tells the AI exactly
+
+8
+00:00:24,816 --> 00:00:27,295
+what you want it to do. The better the prompt,
+
+9
+00:00:27,815 --> 00:00:31,435
+the better the result. For example, instead of saying write a story,
+
+10
+00:00:31,795 --> 00:00:34,415
+which is vague and unclear, you could say,
+
+11
+00:00:34,855 --> 00:00:38,135
+write a short story about a cat who goes on an adventure in space,
+
+12
+00:00:38,755 --> 00:00:41,375
+making sure to include elements of humor and surprise.
+
+13
+00:00:42,195 --> 00:00:44,475
+This gives the AI a much clearer direction.
+
+14
+00:00:45,275 --> 00:00:48,475
+Creating good prompts is just like following a recipe in the kitchen.
+
+15
+00:00:48,476 --> 00:00:51,455
+Every great dish needs the right ingredients,
+
+16
+00:00:52,075 --> 00:00:54,975
+proper measurements, and clear instructions.
+
+17
+00:00:55,275 --> 00:00:58,435
+Our perfect prompt recipe has four essential ingredients,
+
+18
+00:00:58,835 --> 00:01:03,375
+just like baking a cake. Each ingredient serves a specific purpose and must
+
+19
+00:01:03,376 --> 00:01:05,895
+be measured correctly. First,
+
+20
+00:01:06,515 --> 00:01:08,795
+clearly define your goal. In cooking,
+
+21
+00:01:09,175 --> 00:01:12,055
+you decide what dish you want to make before gathering ingredients.
+
+22
+00:01:12,755 --> 00:01:16,555
+With AI prompts, you must know exactly what you want the AI to create.
+
+23
+00:01:17,175 --> 00:01:22,015
+Next, provide context. A chef considers available ingredients before cooking.
+
+24
+00:01:22,535 --> 00:01:26,995
+Similarly, give the AI background information and relevant details to work with.
+
+25
+00:01:27,995 --> 00:01:32,075
+Then specify the format. Just as you choose how to serve a meal in
+
+26
+00:01:32,076 --> 00:01:36,075
+a bowl, on a plate, or in a glass, tell the AI exactly how
+
+27
+00:01:36,076 --> 00:01:38,555
+you want your answer presented. Finally,
+
+28
+00:01:38,955 --> 00:01:43,115
+use keywords. Secret spices transform a good dish into a great one.
+
+29
+00:01:43,116 --> 00:01:47,295
+Similarly, specific keywords help the AI understand exactly what you want.
+
+30
+00:01:48,115 --> 00:01:51,535
+Here's our recipe in action. This prompt has a clear goal,
+
+31
+00:01:52,015 --> 00:01:54,655
+summarize an article. It specifies the format,
+
+32
+00:01:54,995 --> 00:01:59,535
+three bullet points, and it uses keywords like focusing on main events and impact
+
+33
+00:01:59,536 --> 00:02:02,075
+to guide the AI. Remember,
+
+34
+00:02:02,555 --> 00:02:06,735
+experimentation is key. Just like a chef tweaking a recipe to perfection,
+
+35
+00:02:07,215 --> 00:02:10,215
+try different prompts and see what works best. with practice,
+
+36
+00:02:10,615 --> 00:02:12,795
+you'll master the art of prompt crafting.
+
+37
+00:02:13,395 --> 00:02:16,595
+The world of prompt engineering is rapidly evolving,
+
+38
+00:02:16,895 --> 00:02:21,395
+with exciting developments on the horizon that will change how we interact with AI
+
+39
+00:02:21,396 --> 00:02:24,635
+systems. AI is getting smarter every day,
+
+40
+00:02:25,115 --> 00:02:29,935
+and new techniques are constantly emerging to make our interactions more effective and
+
+41
+00:02:29,936 --> 00:02:34,495
+intuitive. Another major advancement is multimodal prompting where
+
+42
+00:02:34,496 --> 00:02:39,095
+you can combine text, images, audio and video in your prompts for richer
+
+43
+00:02:39,096 --> 00:02:41,735
+and more comprehensive AI interactions.
+
+44
+00:02:42,495 --> 00:02:47,295
+While some experts believe specialized prompt engineering roles might fade as AI becomes
+
+45
+00:02:47,296 --> 00:02:52,035
+more intuitive, mastering the art of prompting will remain a valuable skill for
+
+46
+00:02:52,036 --> 00:02:55,155
+anyone using AI in their daily work and life.

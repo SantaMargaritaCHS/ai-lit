@@ -1,0 +1,267 @@
+1
+00:00:00,047 --> 00:00:02,447
+Large language models, or LLMs,
+
+2
+00:00:02,687 --> 00:00:07,087
+are advanced AI systems trained on vast amounts of text data to understand and
+
+3
+00:00:07,088 --> 00:00:11,967
+generate human-like language. Popular examples
+
+4
+00:00:11,968 --> 00:00:15,527
+of large language models include GPT-4 from OpenAI,
+
+5
+00:00:16,287 --> 00:00:18,907
+Lama from Metta, and Claude from Anthropic.
+
+6
+00:00:19,627 --> 00:00:23,247
+Each of these models has been trained on trillions of words from diverse sources.
+
+7
+00:00:24,547 --> 00:00:27,827
+Large language models can perform a wide range of language tasks.
+
+8
+00:00:28,407 --> 00:00:30,467
+They can write essays and creative content,
+
+9
+00:00:31,127 --> 00:00:34,447
+answer complex questions, translate between languages,
+
+10
+00:00:34,827 --> 00:00:36,847
+and even generate and debug code.
+
+11
+00:00:37,487 --> 00:00:40,407
+For example, given a prompt to write a poem about AI,
+
+12
+00:00:40,887 --> 00:00:45,627
+an LLM might generate creative verse that captures key themes about artificial intelligence.
+
+13
+00:00:46,787 --> 00:00:51,387
+Large language models are are a specific type of AI system within the broader
+
+14
+00:00:51,388 --> 00:00:53,407
+artificial intelligence ecosystem.
+
+15
+00:00:54,047 --> 00:00:57,087
+They're a specialized application of natural language processing,
+
+16
+00:00:57,327 --> 00:01:01,947
+which itself is a branch of AI alongside machine learning and computer vision.
+
+17
+00:01:03,047 --> 00:01:07,027
+LLMs represent some of the most advanced NLP systems available today.
+
+18
+00:01:08,007 --> 00:01:12,247
+At their core, large language models are pattern recognition systems.
+
+19
+00:01:12,707 --> 00:01:17,027
+They predict what text should come next based on patterns they've seen before in
+
+20
+00:01:17,028 --> 00:01:19,867
+their training data. For example, given the prompt,
+
+21
+00:01:20,087 --> 00:01:24,507
+the sky is, an LLM might predict blue as the most likely next word,
+
+22
+00:01:24,807 --> 00:01:28,467
+with other possibilities like cloudy or clear,
+
+23
+00:01:28,907 --> 00:01:32,467
+being less probable based on patterns in the data it was trained on.
+
+24
+00:01:32,727 --> 00:01:37,307
+This pattern recognition happens across billions of parameters in neural networks that
+
+25
+00:01:37,308 --> 00:01:39,347
+have learned to understand language context.
+
+26
+00:01:40,047 --> 00:01:44,907
+The training process for large language models begins with massive data collection.
+
+27
+00:01:44,908 --> 00:01:48,227
+Data is gathered from diverse sources including books,
+
+28
+00:01:48,507 --> 00:01:50,667
+websites, articles, code repositories,
+
+29
+00:01:50,987 --> 00:01:54,247
+and online forums. These data sets are enormous in scale,
+
+30
+00:01:54,647 --> 00:01:58,107
+often hundreds of gigabytes or even terabytes of text.
+
+31
+00:01:58,967 --> 00:02:00,987
+Before this data can be used,
+
+32
+00:02:01,227 --> 00:02:03,767
+it must go through a rigorous cleaning process.
+
+33
+00:02:04,267 --> 00:02:07,907
+First, duplicates are removed and obvious errors are corrected.
+
+34
+00:02:08,467 --> 00:02:11,327
+Next, the data is formatted into a consistent structure.
+
+35
+00:02:11,328 --> 00:02:15,027
+Finally, harmful or inappropriate content is filtered out.
+
+36
+00:02:15,727 --> 00:02:18,287
+Once cleaned, the text is tokenized,
+
+37
+00:02:18,667 --> 00:02:21,527
+broken down into smaller pieces like words or subwords.
+
+38
+00:02:21,987 --> 00:02:25,807
+For example, the word brown might be split into bro and un,
+
+39
+00:02:26,287 --> 00:02:29,647
+allowing the model to recognize parts of words it hasn't seen before.
+
+40
+00:02:30,567 --> 00:02:35,227
+The quality and diversity of training data directly impacts what the model
+
+41
+00:02:35,228 --> 00:02:38,707
+can learn and understand, including diverse topics,
+
+42
+00:02:39,127 --> 00:02:43,887
+writing styles, languages and domains helps the model develop a broader understanding
+
+43
+00:02:43,888 --> 00:02:48,567
+of human language and knowledge. This carefully prepared
+
+44
+00:02:48,568 --> 00:02:53,127
+data forms the foundation on which language models build their understanding of
+
+45
+00:02:53,128 --> 00:02:55,227
+patterns and relationships in language.
+
+46
+00:02:56,047 --> 00:03:00,567
+Neural networks learn language patterns through a specialized architecture called a
+
+47
+00:03:00,568 --> 00:03:05,107
+transformer. A transformer consists of several specialized layers
+
+48
+00:03:05,108 --> 00:03:10,707
+that process language in different ways. During
+
+49
+00:03:10,708 --> 00:03:14,587
+training, the model learns to predict missing or upcoming words in text.
+
+50
+00:03:15,327 --> 00:03:19,967
+The model analyzes the input words and tries to determine what word should fill
+
+51
+00:03:19,968 --> 00:03:23,767
+the blank. It calculates probabilities for each possible word.
+
+52
+00:03:24,127 --> 00:03:27,287
+Here, Matt has the highest probability at .7.
+
+53
+00:03:27,288 --> 00:03:31,627
+The model compares its prediction to the correct answer and calculates the error.
+
+54
+00:03:33,307 --> 00:03:37,607
+Based on the error, the model adjusts the weights of connections between neurons.
+
+55
+00:03:38,127 --> 00:03:42,707
+Connections that help make correct predictions are strengthened while others may be weakened.
+
+56
+00:03:43,767 --> 00:03:48,487
+This learning process repeats billions of times across an enormous data set
+
+57
+00:03:48,488 --> 00:03:50,787
+of text examples. With each iteration,
+
+58
+00:03:51,387 --> 00:03:55,367
+the model gradually improves its understanding of language patterns and relationships.
+
+59
+00:03:55,368 --> 00:04:00,107
+After billions of iterations, the neural network has learned complex language patterns
+
+60
+00:04:00,108 --> 00:04:03,027
+and can make sophisticated predictions about text.
+
+61
+00:04:05,947 --> 00:04:10,627
+To summarize, large language models are AI systems trained on vast amounts
+
+62
+00:04:10,628 --> 00:04:14,167
+of text data. Popular examples include GPT-4,
+
+63
+00:04:14,667 --> 00:04:17,207
+Elama, and Claude. They can write content,
+
+64
+00:04:17,627 --> 00:04:19,647
+answer questions, translate languages,
+
+65
+00:04:19,967 --> 00:04:24,287
+and generate code. LLMs are part of the NLP branch within the AI ecosystem,
+
+66
+00:04:24,288 --> 00:04:29,027
+and fundamentally they're sophisticated pattern recognition systems that predict what
+
+67
+00:04:29,028 --> 00:04:30,207
+text should come next.

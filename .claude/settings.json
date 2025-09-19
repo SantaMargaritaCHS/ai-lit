@@ -1,0 +1,73 @@
+{
+  "description": "AI Literacy Student Platform - Enhanced Claude Configuration",
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(/home/runner/**)",
+      "Write(/home/runner/workspace/**)",
+      "Edit(/home/runner/workspace/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(sudo:*)"
+    ],
+    "ask": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/runner/claude-gemini-bridge/hooks/gemini-bridge.sh",
+            "description": "Delegate large-scale analysis to Gemini"
+          }
+        ]
+      }
+    ]
+  },
+  "projectContext": {
+    "type": "educational-web-app",
+    "language": "TypeScript/React",
+    "modules": 8,
+    "features": [
+      "Interactive Learning Modules",
+      "Video Integration",
+      "Certificate Generation",
+      "Direct Module Linking",
+      "Progress Tracking"
+    ]
+  },
+  "analysisSettings": {
+    "delegateToGemini": {
+      "enabled": true,
+      "thresholds": {
+        "fileCount": 10,
+        "totalLines": 5000,
+        "complexityScore": 0.7
+      }
+    },
+    "excludePatterns": [
+      "node_modules/**",
+      "dist/**",
+      "*.log",
+      "*.env",
+      ".git/**"
+    ]
+  },
+  "workflowEnhancements": {
+    "autoFormat": true,
+    "autoLint": true,
+    "suggestRefactoring": true,
+    "generateTests": false
+  }
+}

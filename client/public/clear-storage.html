@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Module Storage</title>
+</head>
+<body>
+    <h1>Clear Module Session Storage</h1>
+    <button onclick="clearStorage()">Clear Storage</button>
+    <p id="status"></p>
+    
+    <script>
+        function clearStorage() {
+            console.log('Clearing all module session storage...');
+            localStorage.removeItem('moduleSessionData');
+            localStorage.removeItem('moduleSessionDataBackup');
+            sessionStorage.removeItem('moduleSessionBackup');
+            
+            // Clear IndexedDB as well
+            if ('indexedDB' in window) {
+                const deleteRequest = indexedDB.deleteDatabase('AIEducationPlatform');
+                deleteRequest.onsuccess = () => console.log('IndexedDB cleared');
+            }
+            
+            document.getElementById('status').innerHTML = 'Storage cleared! <a href="/">Go back to modules</a>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+/* Global modal reset to prevent inheritance issues */
+.modal-overlay,
+.interactive-pause-overlay,
+[role="dialog"] {
+  /* Reset any transform on parents that break fixed positioning */
+  transform: none !important;
+}
+
+/* Main modal overlay - ensures full screen coverage */
+.reflection-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000 !important;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* Modal content container */
+.reflection-modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 672px; /* max-w-2xl equivalent */
+  max-height: calc(100vh - 40px);
+  margin: auto;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .reflection-modal-content {
+    background-color: #1f2937; /* gray-800 */
+  }
+}
+
+/* Smooth entrance animation */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .reflection-modal-overlay {
+    padding: 10px;
+  }
+  
+  .reflection-modal-content {
+    max-height: calc(100vh - 20px);
+    margin-top: 10px;
+    width: calc(100% - 20px);
+  }
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Ensure video player doesn't interfere */
+.video-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix for nested modals or activities */
+.activity-wrapper {
+  position: relative;
+  z-index: auto;
+}
+
+/* InteractivePauseActivity specific fixes */
+.interactive-pause-container {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 10001 !important;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+/* Ensure proper stacking for video overlays */
+.video-overlay {
+  position: absolute;
+  z-index: 9999;
+}
+
+/* Fix for modals within iframes or embedded content */
+.embedded-modal-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 10002 !important;
+}
+
+/* Accessibility improvements */
+.reflection-modal-overlay:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+/* Scrollbar styling for better UX */
+.reflection-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.reflection-modal-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.reflection-modal-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.reflection-modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Specific fixes for Knowledge Check / Quiz activities */
+.quiz-modal-overlay,
+.knowledge-check-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 10000 !important;
+}
+
+/* Ensure quiz content is properly styled */
+.activity-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.activity-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activity-icon.question {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.activity-icon.reflection {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+.activity-icon.transition {
+  background: #e9d5ff;
+  color: #9333ea;
+}
+
+.activity-content {
+  margin-top: 1rem;
+}
+
+.activity-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.activity-option {
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.activity-option:hover:not(:disabled) {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.activity-option.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.activity-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.activity-feedback {
+  padding: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.continue-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: #3b82f6;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.continue-button:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.continue-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}

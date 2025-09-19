@@ -1,0 +1,87 @@
+/* Premium video container styling for LLM module */
+.premium-video-container {
+  width: 100%;
+}
+
+.premium-video-container video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Ensure proper video aspect ratio */
+.video-wrapper {
+  position: relative;
+  background: #000;
+  aspect-ratio: 16/9;
+}
+
+/* Video phase container styling */
+.video-phase-container {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.video-phase-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.video-phase-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+}
+
+.video-phase-duration {
+  color: rgb(147, 197, 253);
+  margin-top: 0.5rem;
+}
+
+/* Volume slider styling */
+.volume-slider {
+  width: 80px;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Video controls responsiveness */
+@media (max-width: 640px) {
+  .video-phase-container {
+    margin: 0 0.5rem;
+  }
+  
+  .video-phase-header {
+    padding: 1rem;
+  }
+  
+  .volume-slider {
+    width: 60px;
+  }
+}
