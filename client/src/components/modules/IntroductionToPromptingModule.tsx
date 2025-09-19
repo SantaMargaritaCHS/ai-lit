@@ -11,7 +11,7 @@ import { ExitTicket } from '@/components/ExitTicket';
 
 import { DeveloperPanel } from '@/components/DeveloperPanel';
 import { SecretKeyPrompt } from '@/components/SecretKeyPrompt';
-import { useUniversalDeveloperMode } from '@/hooks/useUniversalDeveloperMode';
+import { useDevMode } from '@/context/DevModeContext';
 import { RTF_CHALLENGE_SCENARIOS } from '@/data/rtfChallengeScenarios';
 import BasicPromptDemo from '@/components/BasicPromptDemo';
 // Import enhanced components from activities/prompting
@@ -546,39 +546,15 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     'rtf-framework': ''
   });
 
-  // Universal Developer Mode Integration
-  const {
-    isDevMode: universalDevMode,
-    showDevPanel: universalShowDevPanel,
-    showKeyPrompt,
-    setShowKeyPrompt,
-    handleSecretKeySubmit: originalHandleSecretKeySubmit,
-    handleNextTask,
-    devConfig,
-    setShowDevPanel: setUniversalShowDevPanel
-  } = useUniversalDeveloperMode({
-    activities: activities.map((activity, index) => ({
-      ...activity,
-      type: activity.id.includes('video') || activity.id.includes('-activity') ? 'video' as const : 
-            activity.id === 'exit-ticket' ? 'reflection' as const : 
-            activity.id === 'certificate' ? 'certificate' as const : 
-            'interactive' as const
-    })),
-    currentActivity,
-    onJumpToActivity: setCurrentActivity,
-    onCompleteAll: () => {
-      setActivities(prev => prev.map(a => ({ ...a, completed: true })));
-      setCurrentActivity(activities.length - 1);
-    },
-    onReset: () => {
-      setActivities(ACTIVITIES);
-      setCurrentActivity(0);
-      setUserName('');
-      setExitTicketResponses({});
-      setHasCompletedExitTicket(false);
-    },
-    videoRef
-  });
+  // Universal Developer Mode Integration - Using placeholders since dev mode is handled at app level
+  const universalDevMode = false;
+  const universalShowDevPanel = false;
+  const showKeyPrompt = false;
+  const setShowKeyPrompt = () => {};
+  const originalHandleSecretKeySubmit = () => true;
+  const handleNextTask = () => {};
+  const devConfig = null;
+  const setUniversalShowDevPanel = () => {};
 
   // Wrapper for secret key submit with logging
   const handleSecretKeySubmit = (key: string) => {

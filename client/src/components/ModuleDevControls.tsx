@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ChevronLeft, ChevronRight, FastForward, RotateCcw } from 'lucide-react';
-import { useUniversalDevMode } from '@/hooks/useUniversalDevMode';
+import { useDevMode } from '@/context/DevModeContext';
 
 interface ModuleDevControlsProps {
   currentActivity: number;
@@ -19,7 +19,7 @@ export function ModuleDevControls({
   onReset,
   activityNames = []
 }: ModuleDevControlsProps) {
-  const { isDevModeActive } = useUniversalDevMode();
+  const { isDevModeActive } = useDevMode();
 
   // Debug log when component renders
   useEffect(() => {

@@ -7,8 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, ArrowRight, Clock, Target, Play, BookOpen, MessageCircle, Brain, Calendar, Trophy, Zap, Lightbulb, Smartphone, Home, Globe, Car } from 'lucide-react';
-import { useUniversalDeveloperMode } from '@/hooks/useUniversalDeveloperMode';
+// Developer mode is now handled by the UniversalDevModeProvider
 import { useReflectionNavigation, ReflectionActivity } from '@/hooks/useReflectionNavigation';
+import { useActivityRegistry } from '@/context/ActivityRegistryContext';
+import { useDevMode } from '@/context/DevModeContext';
 import './WhatIsAIModule.css';
 import { getAILiteracyFeedback, getReflectionPrompt } from '@/services/aiLiteracyBot';
 import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
@@ -230,108 +232,17 @@ export default function CompactWhatIsAIModule({
   const [segmentReflections, setSegmentReflections] = useState<Record<string, string>>({});
   const [showAgeGuessActivity, setShowAgeGuessActivity] = useState(false);
   
-  // Universal Developer mode
-  const { 
-    isDevMode, 
-    showDevPanel, 
-    setShowDevPanel,
-    showKeyPrompt, 
-    setShowKeyPrompt, 
-    handleSecretKeySubmit,
-    disableDevMode,
-    handleNextTask,
-    devJumpToActivity: universalJumpToActivity,
-    devCompleteAll: universalCompleteAll,
-    devReset: universalReset
-  } = useUniversalDeveloperMode({
-    activities: activities.map((activity, index) => ({
-      id: activity.id,
-      title: activity.title,
-      type: activity.id.includes('video') ? 'video' : 
-            activity.id.includes('reflection') || activity.id === 'exit-ticket' ? 'reflection' :
-            activity.id.includes('quiz') ? 'quiz' :
-            activity.id === 'certificate' ? 'certificate' : 'interactive',
-      completed: activity.completed || false,
-      hasResponse: false,
-      videoStartTime: 0,
-      videoEndTime: undefined
-    })),
-    currentActivity,
-    onJumpToActivity: (index: number) => {
-      setCurrentActivity(index);
-      // Mark previous activities as complete
-      setActivities(prev => prev.map((act, i) => ({
-        ...act,
-        completed: i < index
-      })));
-    },
-    onCompleteAll: () => {
-      setActivities(activities.map(act => ({ ...act, completed: true })));
-      setCurrentActivity(activities.length - 1);
-    },
-    onReset: () => {
-      setCurrentActivity(0);
-      setActivities(activities.map(act => ({ ...act, completed: false })));
-      setReflectionResponses({});
-      setAiReflectionFeedback({});
-      setQuizAnswers({});
-      setExitTicketResponse('');
-      setExitTicketFeedback('');
-      setSelectedAgeGuess(null);
-      setShowAgeReveal(false);
-      setCurrentQuizQuestion(0);
-      setShowQuizExplanation(false);
-      setQuizScore(0);
-      setCurrentVideoSegment(0);
-      setSegmentReflections({});
-      setShowAgeGuessActivity(false);
-    },
-    videoRef,
-    onReflectionComplete: (response: string) => {
-      setReflectionResponses(prev => ({
-        ...prev,
-        'daily-ai-reflection': response
-      }));
-      // Mark activity complete will be defined later
-      setActivities(prev => prev.map(act => 
-        act.id === activities[currentActivity].id 
-          ? { ...act, completed: true }
-          : act
-      ));
-    },
-    onQuizComplete: (answers: Record<string, any>) => {
-      setQuizAnswers(answers);
-      setQuizScore(5); // We have 5 quiz questions
-      setShowQuizResults(true);
-      // Mark activity complete inline
-      setActivities(prev => prev.map(act => 
-        act.id === 'ai-quiz' 
-          ? { ...act, completed: true }
-          : act
-      ));
-    },
-    onInteractiveComplete: () => {
-      setActivities(prev => prev.map(act => 
-        act.id === activities[currentActivity].id 
-          ? { ...act, completed: true }
-          : act
-      ));
-    },
-    onVideoSegmentComplete: () => {
-      setActivities(prev => prev.map(act => 
-        act.id === activities[currentActivity].id 
-          ? { ...act, completed: true }
-          : act
-      ));
-    },
-    onCertificateGenerate: () => {
-      setActivities(prev => prev.map(act => 
-        act.id === 'certificate' 
-          ? { ...act, completed: true }
-          : act
-      ));
-    }
-  });
+  // Activity Registry for dev mode
+  const {
+    currentActivity: registryCurrentActivity,
+    registerActivity,
+    setCurrentActivity: setRegistryCurrentActivity,
+    markActivityCompleted,
+    clearRegistry
+  } = useActivityRegistry();
+
+  // Dev mode context
+  const { isDevModeActive } = useDevMode();
   
   // Reflection navigation
   const {
@@ -354,18 +265,16 @@ export default function CompactWhatIsAIModule({
   useEffect(() => {
     console.log('🔍 WhatIsAI Module - userName received:', userName);
     console.log('🔍 WhatIsAI Module - userNameState:', userNameState);
-    console.log('🔍 WhatIsAI Module - isDevMode:', isDevMode);
-    console.log('🔍 WhatIsAI Module - showDevPanel:', showDevPanel);
-    console.log('🔍 WhatIsAI Module - showKeyPrompt:', showKeyPrompt);
+    console.log('🔍 WhatIsAI Module - isDevModeActive:', isDevModeActive);
     if (!userName) {
       console.warn('⚠️ WhatIsAI Module - No userName provided! The module page should show name entry.');
     }
-  }, [userName, userNameState, isDevMode, showDevPanel, showKeyPrompt]);
+  }, [userName, userNameState, isDevModeActive]);
 
   const progressPercentage = ((currentActivity + 1) / activities.length) * 100;
 
   // Developer mode configurations for faster testing
-  const waitTime = isDevMode ? 100 : 3000; // Reduced wait times in dev mode
+  const waitTime = isDevModeActive ? 100 : 3000; // Reduced wait times in dev mode
   const devReflectionText = "I used voice assistant for setting alarms, got Netflix recommendations based on viewing history, and used GPS navigation with traffic predictions.";
   const devExitTicketResponse = "AI is like a smart computer system that can learn patterns from data to make predictions or help with tasks, similar to how humans learn from experience but much faster.";
 
@@ -384,7 +293,7 @@ export default function CompactWhatIsAIModule({
   // Load video URLs and initialize analytics - Using direct URLs for fast loading
   useEffect(() => {
     console.log('🚀 Using direct Firebase URLs for instant video loading');
-    
+
     // Use direct URLs instead of slow Firebase API calls
     setVideoUrls(DIRECT_VIDEO_URLS);
 
@@ -392,9 +301,47 @@ export default function CompactWhatIsAIModule({
     initializeRedesignAnalytics();
   }, []);
 
+  // Register activities with the ActivityRegistry for dev mode
+  useEffect(() => {
+    // Clear previous activities when module mounts
+    clearRegistry();
+
+    // Register all activities
+    activities.forEach((activity) => {
+      registerActivity({
+        id: activity.id,
+        type: activity.id === 'certificate' ? 'certificate' :
+              activity.id.includes('video') ? 'video' :
+              activity.id === 'exit-ticket' ? 'reflection' :
+              'interactive',
+        title: activity.title,
+        completed: activity.completed
+      });
+    });
+  }, []); // Only run once on mount
+
+  // Sync with dev mode navigation
+  useEffect(() => {
+    if (isDevModeActive && registryCurrentActivity) {
+      const activityIndex = activities.findIndex(a => a.id === registryCurrentActivity.id);
+      if (activityIndex >= 0 && activityIndex !== currentActivity) {
+        console.log('🔧 DEV: Syncing activity from dev mode:', registryCurrentActivity.id);
+        setCurrentActivity(activityIndex);
+      }
+    }
+  }, [isDevModeActive, registryCurrentActivity, currentActivity, activities]);
+
+  // Update ActivityRegistry when activity changes normally
+  useEffect(() => {
+    if (currentActivity >= 0 && currentActivity < activities.length) {
+      const activity = activities[currentActivity];
+      setRegistryCurrentActivity(activity.id);
+    }
+  }, [currentActivity, activities, setRegistryCurrentActivity]);
+
   // Developer mode auto-fill effects
   useEffect(() => {
-    if (isDevMode) {
+    if (isDevModeActive) {
       // Auto-fill reflection responses based on current activity
       const currentActivityData = activities[currentActivity];
       
@@ -412,7 +359,7 @@ export default function CompactWhatIsAIModule({
         setExitTicketResponse(devExitTicketResponse);
       }
     }
-  }, [currentActivity, isDevMode]);
+  }, [currentActivity, isDevModeActive]);
 
   // Auto-start effect for closing video - moved outside switch case to fix React Hooks rules
   useEffect(() => {
@@ -443,7 +390,7 @@ export default function CompactWhatIsAIModule({
 
   // Developer mode quiz auto-answer function
   const devAutoAnswerQuiz = () => {
-    if (isDevMode && activities[currentActivity]?.id === 'ai-quiz') {
+    if (isDevModeActive && activities[currentActivity]?.id === 'ai-quiz') {
       const currentQ = aiOrNotQuestions[currentQuizQuestion];
       const correctAnswer = currentQ.isAI;
       
@@ -467,11 +414,13 @@ export default function CompactWhatIsAIModule({
 
 
   const markActivityComplete = (activityId: string) => {
-    setActivities(prev => prev.map(activity => 
-      activity.id === activityId 
+    setActivities(prev => prev.map(activity =>
+      activity.id === activityId
         ? { ...activity, completed: true }
         : activity
     ));
+    // Also mark as completed in ActivityRegistry for dev mode
+    markActivityCompleted(activityId);
   };
 
   const handleNextActivity = () => {
@@ -648,7 +597,7 @@ export default function CompactWhatIsAIModule({
                   {!showQuizExplanation ? (
                     <div className="space-y-3">
                       {/* Developer Mode Auto-Answer Button */}
-                      {isDevMode && (
+                      {isDevModeActive && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                           <div className="flex gap-2">
                             <Button 
@@ -773,7 +722,7 @@ export default function CompactWhatIsAIModule({
                     }, 500);
                   }}
                   hideSegmentNavigator={true}
-                  allowSeeking={isDevMode} // Enable seeking in developer mode
+                  allowSeeking={isDevModeActive} // Enable seeking in developer mode
                   videoRef={videoRef}
                   interactivePauses={[
                     {
@@ -870,7 +819,7 @@ export default function CompactWhatIsAIModule({
                     handleNextActivity();
                   }}
                   hideSegmentNavigator={true}
-                  allowSeeking={isDevMode} // Enable seeking in developer mode
+                  allowSeeking={isDevModeActive} // Enable seeking in developer mode
                   videoRef={videoRef}
                 />
               </div>
@@ -934,7 +883,7 @@ export default function CompactWhatIsAIModule({
                         Previous
                       </Button>
                       
-                      {isDevMode && (
+                      {isDevModeActive && (
                         <div className="flex gap-2">
                           {currentActivityData.questions.map((_: string, index: number) => (
                             <Button
@@ -1031,7 +980,7 @@ export default function CompactWhatIsAIModule({
         return (
           <div className="section-content">
             {/* Developer Mode Shortcut */}
-            {isDevMode && (
+            {isDevModeActive && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Activity Shortcuts</h3>
                 <Button 
@@ -1062,7 +1011,7 @@ export default function CompactWhatIsAIModule({
         return (
           <div className="section-content">
             {/* Developer Mode Exit Ticket Shortcut */}
-            {isDevMode && (
+            {isDevModeActive && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Exit Ticket Shortcuts</h3>
                 <div className="flex gap-2 mb-2">
@@ -1221,7 +1170,7 @@ export default function CompactWhatIsAIModule({
                         Previous
                       </Button>
                       
-                      {isDevMode && (
+                      {isDevModeActive && (
                         <div className="flex gap-2">
                           {activity.questions.map((_: string, index: number) => (
                             <Button

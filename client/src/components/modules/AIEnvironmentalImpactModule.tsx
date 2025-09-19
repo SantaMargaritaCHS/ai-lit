@@ -24,7 +24,7 @@ import {
 import { PremiumVideoPlayer } from '@/components/PremiumVideoPlayer';
 import { ExitTicket } from '@/components/ExitTicket';
 import { motion } from 'framer-motion';
-import { useUniversalDeveloperMode } from '@/hooks/useUniversalDeveloperMode';
+// Developer mode is now handled by the UniversalDevModeProvider
 import { UniversalDevPanel } from '@/components/UniversalDevPanel';
 
 // Video configuration
@@ -235,10 +235,13 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
     current: index === currentStep
   }));
 
-  const { isDevMode, showDevPanel } = useUniversalDeveloperMode({
-    activities,
-    currentActivity: currentStep,
-    onJumpToActivity: (index) => {
+  // Dev mode placeholders - will be provided by context
+  const isDevMode = false;
+  const showDevPanel = false;
+
+  // Temporary dev mode handlers (to be replaced by context)
+  const devHandlers = {
+    onJumpToActivity: (index: number) => {
       setCurrentStep(index);
       setSelectedAnswer(null);
       setShowExplanation(false);
@@ -258,22 +261,10 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
       setSelectedAnswer(null);
       setShowExplanation(false);
       setExitTicketComplete(false);
-    },
-    onQuizComplete: () => {
-      if (step.type === 'quiz') {
-        handleAnswer(step.correctAnswer || 0);
-      }
-    },
-    onReflectionComplete: () => {
-      if (step.type === 'reflection') {
-        setReflectionText('I understand that AI has a significant environmental impact.');
-        setReflectionFeedback('Great reflection!');
-      }
-    },
-    onInteractiveComplete: () => {
-      handleNext();
     }
-  });
+  };
+
+  // Dev mode handlers will be connected via context in the future
 
   const step = guidedSteps[currentStep];
   const progress = ((currentStep + 1) / guidedSteps.length) * 100;

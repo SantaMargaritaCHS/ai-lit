@@ -9,8 +9,8 @@ import { PremiumVideoPlayer } from '../PremiumVideoPlayer';
 import { Certificate } from '../Certificate';
 import { ModuleActivityWrapper, VideoActivity, ReflectionActivity, InteractiveActivity } from '../ModuleActivityWrapper';
 import { useActivityRegistry } from '../../context/ActivityRegistryContext';
-import { ModuleDevControls } from '../ModuleDevControls';
-import { useUniversalDevMode } from '@/hooks/useUniversalDevMode';
+// Removed ModuleDevControls - using UniversalDevMode instead
+import { useDevMode } from '@/context/DevModeContext';
 // Enhanced interactive activities - no longer using drag and drop
 // Developer mode props will be passed from activity wrapper
 
@@ -130,7 +130,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     markActivityCompleted,
     clearRegistry
   } = useActivityRegistry();
-  const { isDevModeActive } = useUniversalDevMode();
+  const { isDevModeActive, goToActivity: devGoToActivity } = useDevMode();
 
   // Define phases for navigation
   const phases: Phase[] = [
@@ -175,11 +175,53 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   const isMountedRef = useRef(true);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
 
+  // Register activities with the ActivityRegistry for dev mode
+  useEffect(() => {
+    // Clear previous activities when module mounts
+    clearRegistry();
+
+    // Register all phases as activities
+    phases.forEach((phase) => {
+      registerActivity({
+        id: phase,
+        type: phase === 'certificate' ? 'certificate' :
+              phase.includes('video') ? 'video' :
+              phase.includes('reflection') || phase.includes('exit') ? 'reflection' :
+              'interactive',
+        title: phase.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        completed: false // Will be updated when activities complete
+      });
+    });
+
+    // Set initial activity
+    setCurrentActivity('introduction');
+  }, []); // Only run once on mount
+
+  // Sync FROM dev mode TO module (unidirectional)
+  useEffect(() => {
+    if (isDevModeActive && currentActivity) {
+      const activityPhase = phases.find(p => p === currentActivity.id);
+      if (activityPhase && activityPhase !== phase) {
+        console.log('🔧 DEV: Syncing phase from dev mode:', activityPhase);
+        setPhase(activityPhase as Phase);
+      }
+    }
+  }, [isDevModeActive, currentActivity]); // Removed phase dependency to prevent loops
+
+  // Update registry when phase changes from normal navigation
+  useEffect(() => {
+    const phaseIndex = phases.indexOf(phase);
+    if (phaseIndex >= 0 && !isDevModeActive) {
+      // Only update registry if not being controlled by dev mode
+      setCurrentActivity(phase);
+    }
+  }, [phase, phases, setCurrentActivity, isDevModeActive]);
+
   useEffect(() => {
     // Shuffle items for opening activity
     const shuffled = [...SORTING_ITEMS].sort(() => Math.random() - 0.5);
     setShuffledItems(shuffled);
-    
+
     return () => {
       isMountedRef.current = false;
       if (debounceTimerRef.current) {
@@ -192,7 +234,9 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
   const markPhaseComplete = useCallback((phaseId: Phase) => {
     setCompletedPhases(prev => new Set(prev).add(phaseId));
-  }, []);
+    // Also mark as completed in ActivityRegistry for dev mode
+    markActivityCompleted(phaseId);
+  }, [markActivityCompleted]);
 
   const handlePhaseComplete = useCallback(() => {
     markPhaseComplete(phase);
@@ -783,7 +827,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                   setTimeout(handlePhaseComplete, 1000);
                 }}
                 hideSegmentNavigator={true}
-                allowSeeking={isDevMode}
+                allowSeeking={isDevModeActive}
                 enableSubtitles={true}
 
               />
@@ -1604,41 +1648,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
   return (
     <>
-      <ModuleDevControls
-        currentActivity={currentPhaseIndex}
-        totalActivities={phases.length}
-        onNavigate={(index) => {
-          console.log('🔧 DEV: onNavigate called in module', {
-            index,
-            newPhase: phases[index],
-            currentPhase: phase,
-            currentPhaseIndex
-          });
-          setPhase(phases[index]);
-        }}
-        onCompleteAll={() => {
-          console.log('🔧 DEV: onCompleteAll called - jumping to certificate');
-          setPhase('certificate');
-        }}
-        onReset={() => {
-          console.log('🔧 DEV: onReset called - resetting module');
-          setPhase('introduction');
-          setCompletedPhases(new Set());
-          setReflectionResponse('');
-          setAIFeedback('');
-          setExitResponse('');
-          setExitFeedback('');
-          setSelectedAnswer(null);
-          setQuestionShowFeedback(false);
-          setHasSubmitted(false);
-          setCurrentItemIndex(0);
-          setUserAnswers({});
-          setOpeningShowFeedback(false);
-          setGameCompleted(false);
-          setScore(0);
-        }}
-        activityNames={phases.map(p => p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))}
-      />
+      {/* ModuleDevControls removed - using UniversalDevMode from context */}
 
       <div className="max-w-4xl mx-auto p-6">
         <AnimatePresence mode="wait">

@@ -2,12 +2,15 @@ import React, { ReactNode, useEffect } from 'react';
 import { useUniversalDevMode } from '../hooks/useUniversalDevMode';
 import { UniversalDevPanel } from './UniversalDevPanel';
 import { SecretKeyPrompt } from './SecretKeyPrompt';
+import { DevModeProvider } from '../context/DevModeContext';
 
 interface UniversalDevModeProviderProps {
   children: ReactNode;
 }
 
 export function UniversalDevModeProvider({ children }: UniversalDevModeProviderProps) {
+  console.log('🔧🔧🔧 UniversalDevModeProvider: Rendering!');
+
   const {
     isDevModeActive,
     showSecretKeyPrompt,
@@ -29,15 +32,30 @@ export function UniversalDevModeProvider({ children }: UniversalDevModeProviderP
 
   // Log provider state for debugging
   useEffect(() => {
-    console.log('🔧 UniversalDevModeProvider State:', {
+    console.log('🔧🔧🔧 UniversalDevModeProvider State:', {
       isDevModeActive,
       showSecretKeyPrompt,
-      showDevPanel
+      showDevPanel,
+      activities: activities.length,
+      currentActivityIndex
     });
-  }, [isDevModeActive, showSecretKeyPrompt, showDevPanel]);
+  }, [isDevModeActive, showSecretKeyPrompt, showDevPanel, activities.length, currentActivityIndex]);
+
+  // Create dev mode context value
+  const devModeContext = {
+    isDevModeActive,
+    currentActivityIndex,
+    activities,
+    goToActivity,
+    goToNextActivity: () => goToActivity(Math.min(activities.length - 1, currentActivityIndex + 1)),
+    goToPreviousActivity: () => goToActivity(Math.max(0, currentActivityIndex - 1)),
+    autoCompleteCurrentActivity,
+    skipToEnd,
+    resetProgress,
+  };
 
   return (
-    <>
+    <DevModeProvider value={devModeContext}>
       {children}
 
       {/* Debug indicator - temporary for testing */}
@@ -89,6 +107,6 @@ export function UniversalDevModeProvider({ children }: UniversalDevModeProviderP
           onDeactivate={deactivateDevMode}
         />
       )}
-    </>
+    </DevModeProvider>
   );
 }

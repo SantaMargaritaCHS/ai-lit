@@ -1,10 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useActivityRegistry } from '../context/ActivityRegistryContext';
 
 // Get secret key from environment variable or use fallback
 const SECRET_KEY = import.meta.env.VITE_DEV_MODE_SECRET_KEY || '752465Ledezma';
 
-export function useUniversalDevMode() {
+// Types for module activities
+export interface ModuleActivity {
+  id: string;
+  type: 'video' | 'reflection' | 'quiz' | 'interactive' | 'certificate';
+  title: string;
+  completed?: boolean;
+}
+
+interface UseUniversalDevModeOptions {
+  activities?: ModuleActivity[];
+  currentActivityIndex?: number;
+  onActivityChange?: (index: number) => void;
+  onCompleteAll?: () => void;
+  onReset?: () => void;
+}
+
+export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
+  console.log('🔧🔧🔧 useUniversalDevMode hook called!', { options });
+
   const [isDevModeActive, setIsDevModeActive] = useState(false);
   const [showSecretKeyPrompt, setShowSecretKeyPrompt] = useState(false);
   const [showDevPanel, setShowDevPanel] = useState(false);
@@ -12,25 +30,63 @@ export function useUniversalDevMode() {
 
   // Log initialization
   useEffect(() => {
-    console.log('🔧 Universal Dev Mode Hook Initialized!');
+    console.log('🔧🔧🔧 Universal Dev Mode Hook Initialized!');
     console.log('🔧 Secret Key:', SECRET_KEY);
     console.log('🔧 Press Ctrl+Alt+D (or Cmd+Alt+D on Mac) to activate');
+
+    // Test if event listeners work at all
+    const testHandler = (e: KeyboardEvent) => {
+      console.log('🔧🔧🔧 TEST: Any key pressed:', e.key);
+    };
+    window.addEventListener('keydown', testHandler);
+
+    return () => {
+      window.removeEventListener('keydown', testHandler);
+    };
   }, []);
-  
+
+  // Use activity registry for centralized state, but allow module overrides
+  const registry = useActivityRegistry();
   const {
-    activities,
-    currentActivityIndex,
+    activities: registryActivities,
+    currentActivityIndex: registryCurrentIndex,
     goToNextActivity,
     goToPreviousActivity,
-    goToActivity,
+    goToActivity: registryGoToActivity,
     markActivityCompleted,
     getProgress,
     isFirstActivity,
     isLastActivity,
     clearRegistry
-  } = useActivityRegistry();
+  } = registry;
+
+  // Use module-provided activities if available, otherwise use registry
+  const activities = options.activities || registryActivities;
+  const currentActivityIndex = options.currentActivityIndex ?? registryCurrentIndex;
+  const goToActivity = options.onActivityChange || registryGoToActivity;
 
   // Dev mode should NOT persist - require manual activation each session for security
+
+  // Enhanced auto-complete with contextual responses
+  const getContextualReflectionResponse = useCallback((activity: any): string => {
+    const responses: Record<string, string> = {
+      'default': 'This activity enhanced my understanding of the core concepts.',
+      'ai-intro': 'Learning about AI fundamentals has given me a clearer picture.',
+      'ethics': 'The ethical considerations around AI are crucial.',
+      'prompting': 'Understanding how to communicate effectively with AI is valuable.',
+      'limitations': 'Recognizing AI limitations helps set realistic expectations.'
+    };
+
+    const title = activity.name?.toLowerCase() || '';
+    const id = activity.id?.toLowerCase() || '';
+
+    if (title.includes('ethic') || id.includes('ethic')) return responses['ethics'];
+    if (title.includes('prompt') || id.includes('prompt')) return responses['prompting'];
+    if (title.includes('limitation') || id.includes('limitation')) return responses['limitations'];
+    if (title.includes('ai') || id.includes('ai')) return responses['ai-intro'];
+
+    return responses['default'];
+  }, []);
 
   // Auto-complete current activity
   const autoCompleteCurrentActivity = useCallback(() => {
@@ -150,7 +206,24 @@ export function useUniversalDevMode() {
 
   // Keyboard shortcuts
   useEffect(() => {
+    console.log('🔧🔧🔧 Universal Dev Mode: Setting up keyboard listener!', {
+      isDevModeActive,
+      showDevPanel,
+      showSecretKeyPrompt
+    });
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Log ALL key presses to debug
+      console.log('🔧🔧🔧 Key pressed:', {
+        key: e.key,
+        ctrl: e.ctrlKey,
+        alt: e.altKey,
+        meta: e.metaKey,
+        shift: e.shiftKey,
+        target: e.target,
+        currentTarget: e.currentTarget
+      });
+
       // Only log when Ctrl or Cmd is pressed with other keys
       if ((e.ctrlKey || e.metaKey) && e.altKey) {
         console.log('🔧 Universal Dev Mode: Key combo detected:', {
@@ -216,7 +289,11 @@ export function useUniversalDevMode() {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    console.log('🔧🔧🔧 Keyboard listener attached!');
+    return () => {
+      console.log('🔧🔧🔧 Keyboard listener removed!');
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [
     isDevModeActive,
     goToNextActivity,
@@ -224,7 +301,10 @@ export function useUniversalDevMode() {
     autoCompleteCurrentActivity,
     skipToEnd,
     resetProgress,
-    showDevPanel
+    showDevPanel,
+    setShowSecretKeyPrompt,
+    setShowDevPanel,
+    setIsPanelCollapsed
   ]);
 
   return {
