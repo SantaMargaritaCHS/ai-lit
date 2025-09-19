@@ -13,7 +13,6 @@ import './WhatIsAIModule.css';
 import { getAILiteracyFeedback, getReflectionPrompt } from '@/services/aiLiteracyBot';
 import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
 import { SegmentedVideoPlayer } from '@/components/SegmentedVideoPlayer';
-import { AIAgeGuessActivity } from '@/components/AIAgeGuessActivity';
 import { ExitTicket } from '@/components/ExitTicket';
 import { Certificate } from '@/components/Certificate';
 import { getVideoUrl } from '@/services/videoService';
@@ -26,17 +25,9 @@ import { SimpleGuessAge } from './SimpleGuessAge';
 import WhatAIIsNotActivity from './WhatAIIsNotActivity';
 import { ImmersiveAITimeline } from './ImmersiveAITimeline';
 
-interface DevPanelControls {
-  onJumpToActivity: (index: number) => void;
-  onReset: () => void;
-  onCompleteAll: () => void;
-}
-
 interface CompactWhatIsAIModuleProps {
   onComplete: () => void;
   userName?: string;
-  isDevModeActive?: boolean;
-  devPanelControls?: DevPanelControls;
 }
 
 interface AIAgeGuessActivity {
@@ -178,24 +169,10 @@ const introVideoSegments = [
 
 export default function CompactWhatIsAIModule({ 
   onComplete, 
-  userName = '', 
-  isDevModeActive = false, 
-  devPanelControls 
+  userName = '' 
 }: CompactWhatIsAIModuleProps) {
   // Use passed userName directly
   const [userNameState] = useState(userName);
-  
-  // Debug: Check if userName is being passed
-  useEffect(() => {
-    console.log('🔍 WhatIsAI Module - userName received:', userName);
-    console.log('🔍 WhatIsAI Module - userNameState:', userNameState);
-    console.log('🔍 WhatIsAI Module - isDevMode:', isDevMode);
-    console.log('🔍 WhatIsAI Module - showDevPanel:', showDevPanel);
-    console.log('🔍 WhatIsAI Module - showKeyPrompt:', showKeyPrompt);
-    if (!userName) {
-      console.warn('⚠️ WhatIsAI Module - No userName provided! The module page should show name entry.');
-    }
-  }, [userName, userNameState, isDevMode, showDevPanel, showKeyPrompt]);
   
   // Essential refs and state that need to be defined early
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -373,6 +350,18 @@ export default function CompactWhatIsAIModule({
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
 
+  // Debug: Check if userName is being passed
+  useEffect(() => {
+    console.log('🔍 WhatIsAI Module - userName received:', userName);
+    console.log('🔍 WhatIsAI Module - userNameState:', userNameState);
+    console.log('🔍 WhatIsAI Module - isDevMode:', isDevMode);
+    console.log('🔍 WhatIsAI Module - showDevPanel:', showDevPanel);
+    console.log('🔍 WhatIsAI Module - showKeyPrompt:', showKeyPrompt);
+    if (!userName) {
+      console.warn('⚠️ WhatIsAI Module - No userName provided! The module page should show name entry.');
+    }
+  }, [userName, userNameState, isDevMode, showDevPanel, showKeyPrompt]);
+
   const progressPercentage = ((currentActivity + 1) / activities.length) * 100;
 
   // Developer mode configurations for faster testing
@@ -476,290 +465,6 @@ export default function CompactWhatIsAIModule({
     }
   };
 
-  // Listen for developer panel events with proper dependencies
-  useEffect(() => {
-    console.log('🔧 Developer mode event listeners useEffect triggered. isDevModeActive:', isDevModeActive, 'isDevMode:', isDevMode);
-    if (!isDevModeActive && !isDevMode) {
-      console.log('🔧 Developer mode not active, skipping event listener registration');
-      return;
-    }
-
-    const handleJumpToActivity = (e: CustomEvent) => {
-      console.log('🔧 handleJumpToActivity called with:', e.detail);
-      const { index } = e.detail;
-      if (index >= 0 && index < activities.length) {
-        setCurrentActivity(index);
-        setCurrentQuizQuestion(0);
-        setShowQuizExplanation(false);
-        setShowQuizResults(false);
-        setShowAgeReveal(false);
-        setCurrentVideoSegment(0);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        console.log('🔧 Jumped to activity:', activities[index].title);
-      } else {
-        console.log('🔧 Invalid activity index:', index, 'Total activities:', activities.length);
-      }
-    };
-
-    const handleReset = () => {
-      setCurrentActivity(0);
-      setActivities(prev => prev.map(activity => ({ ...activity, completed: false })));
-      setReflectionResponses({});
-      setAiReflectionFeedback({});
-      setSelectedAgeGuess(null);
-      setShowAgeReveal(false);
-      setExitTicketResponse('');
-      setExitTicketFeedback('');
-      setCurrentQuizQuestion(0);
-      setQuizAnswers({});
-      setShowQuizExplanation(false);
-      setShowQuizResults(false);
-      setQuizScore(0);
-      setCurrentVideoSegment(0);
-      setSegmentReflections({});
-      console.log('🔧 Module reset to beginning');
-    };
-
-    const handleCompleteAll = () => {
-      setActivities(prev => prev.map(activity => ({ ...activity, completed: true })));
-      setCurrentActivity(activities.length - 1);
-      console.log('🔧 All activities marked complete');
-    };
-
-    const handleJumpToHistoryQuestion = (e: CustomEvent) => {
-      console.log('🔧 handleJumpToHistoryQuestion called with event:', e.detail);
-      const { questionIndex } = e.detail;
-      const pausePoints = [95, 150, 220]; // Turing Test, AI Winter, Modern AI
-      const targetTime = pausePoints[questionIndex];
-      
-      console.log(`🔧 Attempting to jump to History Question ${questionIndex + 1} at ${targetTime}s`);
-      console.log('🔧 Current activities array:', activities.map(a => a.id));
-      
-      if (targetTime !== undefined) {
-        // First jump to history video activity
-        const historyActivityIndex = activities.findIndex(a => a.id === 'history-video');
-        console.log('🔧 History activity index:', historyActivityIndex);
-        
-        if (historyActivityIndex >= 0) {
-          console.log('🔧 Setting current activity to history video');
-          setCurrentActivity(historyActivityIndex);
-          
-          // Wait for video to load, then seek to pause point
-          setTimeout(() => {
-            const videoElements = document.querySelectorAll('video') as NodeListOf<HTMLVideoElement>;
-            console.log('🔧 Found', videoElements.length, 'video elements');
-            
-            for (const video of videoElements) {
-              console.log('🔧 Checking video src:', video.src);
-              console.log('🔧 Video currentSrc:', video.currentSrc);
-              console.log('🔧 Video duration:', video.duration);
-              
-              // More flexible video detection for History of AI
-              if (video.src && (
-                video.src.includes('History%20of%20AI') || 
-                video.src.includes('History of AI') ||
-                video.currentSrc.includes('History%20of%20AI') ||
-                video.currentSrc.includes('History of AI') ||
-                (video.duration > 300 && video.duration < 400) // History video is ~340 seconds
-              )) {
-                console.log('🔧 Found History of AI video, jumping to timestamp');
-                video.currentTime = targetTime - 3; // Start 3 seconds before pause
-                if (video.paused) {
-                  video.play();
-                }
-                console.log(`🔧 Jumped to History Question ${questionIndex + 1} at ${targetTime}s`);
-                break;
-              }
-            }
-            
-            // If no video found, try again with a longer timeout
-            if (videoElements.length === 0) {
-              console.log('🔧 No video elements found, trying again in 3 seconds');
-              setTimeout(() => {
-                const retryVideoElements = document.querySelectorAll('video') as NodeListOf<HTMLVideoElement>;
-                console.log('🔧 Retry: Found', retryVideoElements.length, 'video elements');
-                
-                for (const video of retryVideoElements) {
-                  if (video.duration > 300 && video.duration < 400) {
-                    video.currentTime = targetTime - 3;
-                    if (video.paused) {
-                      video.play();
-                    }
-                    console.log(`🔧 Retry successful: Jumped to Question ${questionIndex + 1}`);
-                    break;
-                  }
-                }
-              }, 3000);
-            }
-          }, 2000); // Increased timeout
-        } else {
-          console.log('🔧 Could not find history-video activity');
-        }
-      } else {
-        console.log('🔧 Invalid questionIndex:', questionIndex);
-      }
-    };
-
-    const handleSkipVideo = () => {
-      // Find the currently playing video element
-      const videoElements = document.querySelectorAll('video') as NodeListOf<HTMLVideoElement>;
-      let activeVideo: HTMLVideoElement | null = null;
-      
-      // Find the video that's currently not paused or has been most recently played
-      for (const video of videoElements) {
-        if (!video.paused || video.currentTime > 0) {
-          activeVideo = video;
-          break;
-        }
-      }
-      
-      if (activeVideo) {
-        // Get current segment info based on current activity
-        const currentActivityData = activities[currentActivity];
-        let targetTime = activeVideo.duration - 5; // Default fallback
-        
-        if (currentActivityData?.id === 'video-intro') {
-          // For intro video, skip to end of current segment (82 seconds)
-          targetTime = 77; // 5 seconds before end at 82
-        } else if (currentActivityData?.id === 'history-video') {
-          // For history video, skip to next interactive pause or end
-          const currentTime = activeVideo.currentTime;
-          const pausePoints = [95, 150, 220];
-          
-          // Find next pause point after current time
-          const nextPause = pausePoints.find(timestamp => timestamp > currentTime + 5);
-          if (nextPause) {
-            targetTime = nextPause - 5; // Skip to 5 seconds before next pause
-            console.log('🔧 Skipping to 5s before next question at', nextPause + 's');
-          } else {
-            targetTime = activeVideo.duration - 5; // Skip to end
-            console.log('🔧 Skipping to end of video');
-          }
-        } else if (currentActivityData?.id === 'closing-video') {
-          // For closing video, skip to near end
-          targetTime = activeVideo.duration - 5;
-          console.log(`🔧 Skipping to closing video end -5s: ${targetTime}s`);
-        } else {
-          // For other videos, skip to end of current segment
-          const currentSegment = videoSegments[currentVideoSegment];
-          if (currentSegment) {
-            if (currentSegment.endTime === -1) {
-              // Full video segment
-              targetTime = activeVideo.duration - 5;
-            } else {
-              // Specific segment - skip to 5 seconds before segment end
-              targetTime = Math.max(currentSegment.endTime - 5, currentSegment.startTime);
-            }
-            console.log(`🔧 Skipping to segment end -5s: ${targetTime}s (segment: ${currentSegment.startTime}-${currentSegment.endTime}s)`);
-          }
-        }
-        
-        if (!isNaN(targetTime) && targetTime > 0) {
-          activeVideo.currentTime = targetTime;
-          console.log('🔧 Video skipped to', targetTime, 'seconds');
-        } else {
-          console.log('🔧 Cannot skip - invalid target time or video too short');
-        }
-      } else {
-        console.log('🔧 No active video found to skip');
-      }
-    };
-
-    // Define reflection skip handlers
-    const handleSkipToFirstReflection = () => {
-      if (activities[currentActivity]?.id === 'video-intro') {
-        // Trigger custom event that PremiumVideoPlayer will listen for
-        const event = new CustomEvent('dev-skip-to-reflection', { 
-          detail: { timestamp: 58, reflection: 'first' } 
-        });
-        window.dispatchEvent(event);
-        console.log('🔧 Triggering skip to first reflection at 58s');
-      }
-    };
-
-    const handleSkipToSecondReflection = () => {
-      if (activities[currentActivity]?.id === 'video-intro') {
-        // Trigger custom event that PremiumVideoPlayer will listen for
-        const event = new CustomEvent('dev-skip-to-reflection', { 
-          detail: { timestamp: 81, reflection: 'second' } 
-        });
-        window.dispatchEvent(event);
-        console.log('🔧 Triggering skip to second reflection at 81s');
-      }
-    };
-
-    const handleReplayVideo = () => {
-      const videoElements = document.querySelectorAll('video') as NodeListOf<HTMLVideoElement>;
-      const activeVideo = videoElements[0];
-      if (activeVideo) {
-        const currentActivityData = activities[currentActivity];
-        let startTime = 0; // Default to beginning
-        
-        if (currentActivityData?.id === 'video-intro') {
-          // For intro video, determine which segment we're currently in
-          const currentVideoTime = activeVideo.currentTime;
-          let currentSegment = videoSegments[currentVideoSegment];
-          
-          // If we can't determine from currentVideoSegment, find by current time
-          if (!currentSegment) {
-            const foundSegment = videoSegments.find(segment => 
-              currentVideoTime >= segment.startTime && 
-              (segment.endTime === -1 || currentVideoTime <= segment.endTime)
-            );
-            if (foundSegment) {
-              currentSegment = foundSegment;
-            }
-          }
-          
-          if (currentSegment) {
-            startTime = currentSegment.startTime;
-            console.log(`🔧 Replaying from segment "${currentSegment.id}" start: ${startTime}s`);
-          } else {
-            // If after second reflection (81s), replay from second segment (60s)
-            if (currentVideoTime > 81) {
-              startTime = 60; // Start of second segment
-              console.log(`🔧 Replaying from second segment start: ${startTime}s`);
-            } else if (currentVideoTime > 59) {
-              startTime = 60; // Start of second segment
-              console.log(`🔧 Replaying from second segment start: ${startTime}s`);
-            } else {
-              startTime = 0; // Start of first segment
-              console.log(`🔧 Replaying from first segment start: ${startTime}s`);
-            }
-          }
-        }
-        
-        activeVideo.currentTime = startTime;
-        activeVideo.play();
-        console.log('🔧 Video replaying from', startTime, 'seconds');
-      }
-    };
-
-    // Add event listeners
-    window.addEventListener('dev-jump-to-activity', handleJumpToActivity as EventListener);
-    window.addEventListener('dev-reset-module', handleReset);
-    window.addEventListener('dev-complete-all', handleCompleteAll);
-    window.addEventListener('dev-skip-video', handleSkipVideo);
-    window.addEventListener('dev-skip-to-first-reflection', handleSkipToFirstReflection);
-    window.addEventListener('dev-skip-to-second-reflection', handleSkipToSecondReflection);
-    window.addEventListener('dev-replay-video', handleReplayVideo);
-    window.addEventListener('dev-jump-to-history-question', handleJumpToHistoryQuestion as EventListener);
-
-    console.log('🔧 Developer event listeners registered. Activities count:', activities.length);
-
-    return () => {
-      // Cleanup event listeners
-      window.removeEventListener('dev-jump-to-activity', handleJumpToActivity as EventListener);
-      window.removeEventListener('dev-reset-module', handleReset);
-      window.removeEventListener('dev-complete-all', handleCompleteAll);
-      window.removeEventListener('dev-skip-video', handleSkipVideo);
-      window.removeEventListener('dev-skip-to-first-reflection', handleSkipToFirstReflection);
-      window.removeEventListener('dev-skip-to-second-reflection', handleSkipToSecondReflection);
-      window.removeEventListener('dev-replay-video', handleReplayVideo);
-      window.removeEventListener('dev-jump-to-history-question', handleJumpToHistoryQuestion as EventListener);
-      console.log('🔧 Developer event listeners cleaned up');
-    };
-  }, [isDevMode, isDevModeActive]);
 
   const markActivityComplete = (activityId: string) => {
     setActivities(prev => prev.map(activity => 
@@ -819,31 +524,6 @@ export default function CompactWhatIsAIModule({
     setIsLoadingAI(false);
   };
 
-  // Use universal dev functions
-  const devJumpToActivity = universalJumpToActivity;
-  const devCompleteAll = universalCompleteAll;
-  const devReset = universalReset;
-
-  // Listen for dev shortcuts
-  useEffect(() => {
-    const handleDevSkip = (e: Event) => {
-      if (e.type === 'dev-skip-forward') {
-        const next = Math.min(currentActivity + 1, activities.length - 1);
-        devJumpToActivity(next);
-      } else if (e.type === 'dev-skip-backward') {
-        const prev = Math.max(currentActivity - 1, 0);
-        devJumpToActivity(prev);
-      }
-    };
-    
-    window.addEventListener('dev-skip-forward', handleDevSkip);
-    window.addEventListener('dev-skip-backward', handleDevSkip);
-    
-    return () => {
-      window.removeEventListener('dev-skip-forward', handleDevSkip);
-      window.removeEventListener('dev-skip-backward', handleDevSkip);
-    };
-  }, [currentActivity, isDevMode]);
 
 
 
@@ -1492,7 +1172,7 @@ export default function CompactWhatIsAIModule({
         
       default:
         // Check if this is a standalone reflection activity that wasn't caught above
-        if (activity.isStandaloneReflection && activity.questions) {
+        if ('isStandaloneReflection' in activity && activity.isStandaloneReflection && 'questions' in activity && activity.questions) {
           // Same logic as specific reflection cases
           if (!reflectionState.currentReflectionId) {
             initializeStandaloneReflection(activity.id, activity.questions);
