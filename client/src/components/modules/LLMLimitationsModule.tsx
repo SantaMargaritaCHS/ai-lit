@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { Textarea } from '@/components/ui/textarea';
 import { Certificate } from '@/components/Certificate';
 import { getAIFeedback, generateAIFeedback } from '@/services/geminiService';
-import { useDeveloperMode } from '@/hooks/useDeveloperMode';
+// Developer mode is passed as props, no hook needed
 import LLMLimitationsDeveloperPanel from './LLMLimitationsModule/LLMLimitationsDeveloperPanel';
 import { SecretKeyPrompt } from '@/components/SecretKeyPrompt';
 import SourcesActivity from './LLMLimitationsModule/SourcesActivity';

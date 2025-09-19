@@ -3,7 +3,7 @@ import { Brain, Sparkles, Loader2, RotateCcw, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ReflectionActivity as ReflectionActivityType } from '@/types/video-activities';
-import { useDeveloperMode } from '@/hooks/useDeveloperMode';
+import { useUniversalDevMode } from '@/hooks/useUniversalDevMode';
 
 interface ReflectionActivityProps {
   activity: ReflectionActivityType;
@@ -17,7 +17,7 @@ export function ReflectionActivity({ activity, onComplete, onReplay }: Reflectio
   const [aiFeedback, setAiFeedback] = useState('');
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-  const { isDevMode } = useDeveloperMode();
+  const { isDevModeActive: isDevMode } = useUniversalDevMode();
 
   // Add effect to prevent body scroll when modal is open
   useEffect(() => {

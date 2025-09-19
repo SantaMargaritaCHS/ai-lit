@@ -17,7 +17,7 @@ import { aiEnvironmentalImpactSubtitles } from '@/data/aiEnvironmentalSubtitles'
 import { llmLimitationsSubtitles } from '@/data/llmLimitationsSubtitles';
 import { promptingBasicsSubtitles } from '@/data/promptingBasicsSubtitles';
 import { rtfFrameworkSubtitles } from '@/data/rtfFrameworkSubtitles';
-import { useDeveloperMode } from '@/hooks/useDeveloperMode';
+import { useUniversalDevMode } from '@/hooks/useUniversalDevMode';
 import '@/styles/premium-video-player.css';
 
 interface PremiumVideoPlayerProps {
@@ -86,7 +86,7 @@ export function PremiumVideoPlayer({
   const completedPauses = useRef<Set<string>>(new Set());
   const hasTriedAutoPlay = useRef(false);
   const currentSegment = segments[currentSegmentIndex];
-  const { isDevMode } = useDeveloperMode();
+  const { isDevModeActive: isDevMode } = useUniversalDevMode();
 
   // Initialize subtitles
   useEffect(() => {

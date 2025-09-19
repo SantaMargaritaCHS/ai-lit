@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UniversalActivity, DevModeActions, DevModeConfig } from '@/types/developerMode';
+import { useUniversalDevMode } from './useUniversalDevMode';
 
 interface UniversalDeveloperModeOptions extends DevModeActions {
   activities: UniversalActivity[];
@@ -28,9 +29,26 @@ export function useUniversalDeveloperMode({
   onReadingComplete,
   config
 }: UniversalDeveloperModeOptions) {
-  const [isDevMode, setIsDevMode] = useState(false);
+  // Use the unified universal dev mode hook
+  const {
+    isDevModeActive,
+    showDevPanel: universalShowPanel,
+    showSecretKeyPrompt,
+    setShowSecretKeyPrompt,
+    handleSecretKeySubmit: universalHandleKey,
+    deactivateDevMode
+  } = useUniversalDevMode();
+
+  // Map to local state for compatibility
+  const isDevMode = isDevModeActive;
   const [showDevPanel, setShowDevPanel] = useState(false);
   const [showKeyPrompt, setShowKeyPrompt] = useState(false);
+
+  // Sync with universal dev mode state
+  useEffect(() => {
+    setShowDevPanel(universalShowPanel);
+    setShowKeyPrompt(showSecretKeyPrompt);
+  }, [universalShowPanel, showSecretKeyPrompt]);
   
   // Default configuration
   const devConfig: DevModeConfig = {
@@ -321,21 +339,13 @@ export function useUniversalDeveloperMode({
   };
 
   const handleSecretKeySubmit = (key: string) => {
-    console.log('🔧 Universal Developer Mode: Secret key submitted');
-    if (validateSecretKey(key)) {
-      setIsDevMode(true);
-      setShowDevPanel(true);
-      setShowKeyPrompt(false);
-      console.log('🔧 Universal Developer Mode: Activated successfully');
-    } else {
-      console.warn('🚫 Universal Developer Mode: Invalid secret key');
-    }
+    // Delegate to universal dev mode handler
+    return universalHandleKey(key);
   };
 
   const disableDevMode = () => {
-    setIsDevMode(false);
-    setShowDevPanel(false);
-    console.log('🔧 Universal Developer Mode: Disabled');
+    // Delegate to universal dev mode handler
+    deactivateDevMode();
   };
 
   return {

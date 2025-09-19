@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { useUniversalDevMode } from '../hooks/useUniversalDevMode';
 import { UniversalDevPanel } from './UniversalDevPanel';
 import { SecretKeyPrompt } from './SecretKeyPrompt';
@@ -27,10 +27,37 @@ export function UniversalDevModeProvider({ children }: UniversalDevModeProviderP
     currentActivity
   } = useUniversalDevMode();
 
+  // Log provider state for debugging
+  useEffect(() => {
+    console.log('🔧 UniversalDevModeProvider State:', {
+      isDevModeActive,
+      showSecretKeyPrompt,
+      showDevPanel
+    });
+  }, [isDevModeActive, showSecretKeyPrompt, showDevPanel]);
+
   return (
     <>
       {children}
-      
+
+      {/* Debug indicator - temporary for testing */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '10px',
+          right: '10px',
+          padding: '5px 10px',
+          background: 'rgba(0,0,0,0.7)',
+          color: 'white',
+          fontSize: '10px',
+          zIndex: 99999,
+          borderRadius: '3px',
+          fontFamily: 'monospace'
+        }}
+      >
+        Dev Mode Ready (Ctrl+Alt+D)
+      </div>
+
       {/* Secret Key Prompt */}
       {showSecretKeyPrompt && (
         <SecretKeyPrompt
@@ -45,8 +72,8 @@ export function UniversalDevModeProvider({ children }: UniversalDevModeProviderP
         />
       )}
       
-      {/* Developer Panel */}
-      {isDevModeActive && (
+      {/* Developer Panel - Only show if activities are registered */}
+      {isDevModeActive && activities.length > 0 && (
         <UniversalDevPanel
           isVisible={showDevPanel}
           isCollapsed={isPanelCollapsed}

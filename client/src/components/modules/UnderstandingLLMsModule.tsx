@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Brain } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import PremiumVideoPlayer from '../PremiumVideoPlayer';
-import { useDeveloperMode } from '@/hooks/useDeveloperMode';
+import { useUniversalDevMode } from '@/hooks/useUniversalDevMode';
 import { UnderstandingLLMsDeveloperPanel } from './UnderstandingLLMsDeveloperPanel';
 import { SecretKeyPrompt } from '@/components/SecretKeyPrompt';
 import '../../styles/premium-video-llm.css';
@@ -41,7 +41,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
   const playerName = userName || userProgress?.name || 'Student';
   
   // Developer Mode
-  const { isDevMode, showDevPanel, showKeyPrompt, handleSecretKeySubmit, setShowKeyPrompt } = useDeveloperMode();
+  const { isDevModeActive: isDevMode, showDevPanel, showSecretKeyPrompt: showKeyPrompt, handleSecretKeySubmit, setShowSecretKeyPrompt: setShowKeyPrompt } = useUniversalDevMode();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Define phases - Updated to remove problematic "complete-sentence" activity

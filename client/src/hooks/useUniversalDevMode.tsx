@@ -1,14 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useActivityRegistry } from '../context/ActivityRegistryContext';
 
-const SECRET_KEY = 'dev2025!';
-const DEV_MODE_STORAGE_KEY = 'universal-dev-mode-active';
+// Get secret key from environment variable or use fallback
+const SECRET_KEY = import.meta.env.VITE_DEV_MODE_SECRET_KEY || '752465Ledezma';
 
 export function useUniversalDevMode() {
   const [isDevModeActive, setIsDevModeActive] = useState(false);
   const [showSecretKeyPrompt, setShowSecretKeyPrompt] = useState(false);
   const [showDevPanel, setShowDevPanel] = useState(false);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(true);
+
+  // Log initialization
+  useEffect(() => {
+    console.log('🔧 Universal Dev Mode Hook Initialized!');
+    console.log('🔧 Secret Key:', SECRET_KEY);
+    console.log('🔧 Press Ctrl+Alt+D (or Cmd+Alt+D on Mac) to activate');
+  }, []);
   
   const {
     activities,
@@ -23,19 +30,7 @@ export function useUniversalDevMode() {
     clearRegistry
   } = useActivityRegistry();
 
-  // Initialize from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem(DEV_MODE_STORAGE_KEY);
-    if (stored === 'true') {
-      setIsDevModeActive(true);
-      setShowDevPanel(true);
-    }
-  }, []);
-
-  // Update localStorage when dev mode changes
-  useEffect(() => {
-    localStorage.setItem(DEV_MODE_STORAGE_KEY, isDevModeActive.toString());
-  }, [isDevModeActive]);
+  // Dev mode should NOT persist - require manual activation each session for security
 
   // Auto-complete current activity
   const autoCompleteCurrentActivity = useCallback(() => {
@@ -128,17 +123,20 @@ export function useUniversalDevMode() {
 
   // Handle secret key submission
   const handleSecretKeySubmit = useCallback((key: string) => {
-    console.log('🔧 Universal Dev Mode: Secret key submitted:', key);
-    console.log('🔧 Universal Dev Mode: Expected key:', SECRET_KEY);
+    console.log('🔧 Universal Dev Mode: Checking key...');
+    console.log('🔧 Universal Dev Mode: Provided:', key);
+    console.log('🔧 Universal Dev Mode: Expected:', SECRET_KEY);
+    console.log('🔧 Universal Dev Mode: Match:', key === SECRET_KEY);
+
     if (key === SECRET_KEY) {
-      console.log('🔧 Universal Dev Mode: Key correct! Activating...');
+      console.log('🔧 Universal Dev Mode: ✅ Key correct! Activating dev mode...');
       setIsDevModeActive(true);
       setShowDevPanel(true);
       setShowSecretKeyPrompt(false);
       setIsPanelCollapsed(true); // Start collapsed
       return true;
     } else {
-      console.warn('🔧 Dev Mode: Invalid key');
+      console.error('🔧 Universal Dev Mode: ❌ Invalid key provided');
       return false;
     }
   }, []);
@@ -148,25 +146,36 @@ export function useUniversalDevMode() {
     console.log('🔧 Dev Mode: Deactivated');
     setIsDevModeActive(false);
     setShowDevPanel(false);
-    localStorage.removeItem(DEV_MODE_STORAGE_KEY);
   }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log('🔧 Key pressed:', e.key, 'Ctrl:', e.ctrlKey, 'Alt:', e.altKey, 'Meta:', e.metaKey);
-      
+      // Only log when Ctrl or Cmd is pressed with other keys
+      if ((e.ctrlKey || e.metaKey) && e.altKey) {
+        console.log('🔧 Universal Dev Mode: Key combo detected:', {
+          key: e.key,
+          ctrl: e.ctrlKey,
+          alt: e.altKey,
+          meta: e.metaKey,
+          isActive: isDevModeActive
+        });
+      }
+
       // Activate dev mode: Ctrl+Alt+D or Cmd+Alt+D
       if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'd') {
-        console.log('🔧 Universal Dev Mode: Shortcut detected!');
+        console.log('🔧 Universal Dev Mode: Activation shortcut triggered!');
         e.preventDefault();
+        e.stopPropagation(); // Stop event from bubbling
+
         if (!isDevModeActive) {
-          console.log('🔧 Universal Dev Mode: Showing secret key prompt');
+          console.log('🔧 Universal Dev Mode: Opening secret key prompt...');
           setShowSecretKeyPrompt(true);
         } else {
-          // Toggle panel visibility
+          console.log('🔧 Universal Dev Mode: Toggling panel visibility');
           setShowDevPanel(prev => !prev);
         }
+        return false; // Prevent any other handlers
       }
 
       // Only process other shortcuts if dev mode is active

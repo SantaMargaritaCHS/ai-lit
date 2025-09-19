@@ -9,6 +9,8 @@ import { PremiumVideoPlayer } from '../PremiumVideoPlayer';
 import { Certificate } from '../Certificate';
 import { ModuleActivityWrapper, VideoActivity, ReflectionActivity, InteractiveActivity } from '../ModuleActivityWrapper';
 import { useActivityRegistry } from '../../context/ActivityRegistryContext';
+import { ModuleDevControls } from '../ModuleDevControls';
+import { useUniversalDevMode } from '@/hooks/useUniversalDevMode';
 // Enhanced interactive activities - no longer using drag and drop
 // Developer mode props will be passed from activity wrapper
 
@@ -120,7 +122,23 @@ const COMPREHENSION_QUESTION = {
 export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer" }: IntroToGenAIModuleProps) {
   const [phase, setPhase] = useState<Phase>('introduction');
   const [completedPhases, setCompletedPhases] = useState<Set<Phase>>(new Set());
-  const { currentActivity, goToActivity } = useActivityRegistry();
+  const {
+    currentActivity,
+    goToActivity,
+    registerActivity,
+    setCurrentActivity,
+    markActivityCompleted,
+    clearRegistry
+  } = useActivityRegistry();
+  const { isDevModeActive } = useUniversalDevMode();
+
+  // Define phases for navigation
+  const phases: Phase[] = [
+    'introduction', 'opening-activity', 'video-segment-1', 'reflection-1',
+    'video-segment-2', 'question-1', 'interactive-activity', 'explore-tools',
+    'video-segment-3', 'exit-activity', 'certificate'
+  ];
+  const currentPhaseIndex = phases.indexOf(phase);
   const [sortingGameScore, setSortingGameScore] = useState(0);
   const [reflectionResponse, setReflectionResponse] = useState('');
   const [aiFeedback, setAIFeedback] = useState('');
@@ -1505,8 +1523,123 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     );
   };
 
+  // Register activities with ActivityRegistry on mount
+  useEffect(() => {
+    // Clear any existing activities
+    clearRegistry();
+
+    // Register all phases as activities
+    phases.forEach((p, index) => {
+      const activityType = p.includes('video') ? 'video-segment' :
+                          p.includes('reflection') ? 'reflection' :
+                          p.includes('question') ? 'quiz' :
+                          p.includes('interactive') || p.includes('activity') ? 'interactive' :
+                          p === 'certificate' ? 'certificate' :
+                          p === 'introduction' ? 'intro' : 'interactive';
+
+      registerActivity({
+        id: `intro-gen-ai-${p}`,
+        type: activityType as any,
+        name: p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        moduleId: 'intro-gen-ai',
+        completed: completedPhases.has(p)
+      });
+    });
+
+    return () => {
+      clearRegistry();
+    };
+  }, []);
+
+  // Sync phase with ActivityRegistry (bidirectional)
+  useEffect(() => {
+    if (currentPhaseIndex >= 0) {
+      setCurrentActivity(currentPhaseIndex);
+    }
+  }, [currentPhaseIndex, setCurrentActivity]);
+
+  // Listen for ActivityRegistry navigation
+  useEffect(() => {
+    if (currentActivity >= 0 && currentActivity < phases.length) {
+      const newPhase = phases[currentActivity];
+      if (newPhase && newPhase !== phase) {
+        console.log('🔧 DEV: Syncing from ActivityRegistry', {
+          currentActivity,
+          newPhase
+        });
+        setPhase(newPhase);
+      }
+    }
+  }, [currentActivity]);
+
+  // Debug phase changes
+  useEffect(() => {
+    console.log('🔧 DEV: Phase changed', {
+      phase,
+      currentPhaseIndex,
+      isDevModeActive
+    });
+  }, [phase, currentPhaseIndex, isDevModeActive]);
+
+  // Add keyboard navigation for dev mode
+  useEffect(() => {
+    if (!isDevModeActive) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Navigate with arrow keys
+      if (e.key === 'ArrowLeft' && !e.shiftKey && !e.altKey && !e.ctrlKey) {
+        e.preventDefault();
+        const prevIndex = Math.max(0, currentPhaseIndex - 1);
+        setPhase(phases[prevIndex]);
+      } else if (e.key === 'ArrowRight' && !e.shiftKey && !e.altKey && !e.ctrlKey) {
+        e.preventDefault();
+        const nextIndex = Math.min(phases.length - 1, currentPhaseIndex + 1);
+        setPhase(phases[nextIndex]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDevModeActive, currentPhaseIndex]);
+
   return (
     <>
+      <ModuleDevControls
+        currentActivity={currentPhaseIndex}
+        totalActivities={phases.length}
+        onNavigate={(index) => {
+          console.log('🔧 DEV: onNavigate called in module', {
+            index,
+            newPhase: phases[index],
+            currentPhase: phase,
+            currentPhaseIndex
+          });
+          setPhase(phases[index]);
+        }}
+        onCompleteAll={() => {
+          console.log('🔧 DEV: onCompleteAll called - jumping to certificate');
+          setPhase('certificate');
+        }}
+        onReset={() => {
+          console.log('🔧 DEV: onReset called - resetting module');
+          setPhase('introduction');
+          setCompletedPhases(new Set());
+          setReflectionResponse('');
+          setAIFeedback('');
+          setExitResponse('');
+          setExitFeedback('');
+          setSelectedAnswer(null);
+          setQuestionShowFeedback(false);
+          setHasSubmitted(false);
+          setCurrentItemIndex(0);
+          setUserAnswers({});
+          setOpeningShowFeedback(false);
+          setGameCompleted(false);
+          setScore(0);
+        }}
+        activityNames={phases.map(p => p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))}
+      />
+
       <div className="max-w-4xl mx-auto p-6">
         <AnimatePresence mode="wait">
           {phase === 'introduction' && renderIntroduction()}
@@ -1522,7 +1655,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
           {phase === 'certificate' && renderCertificate()}
         </AnimatePresence>
       </div>
-
     </>
   );
 }
