@@ -90,6 +90,10 @@ export function ActivityRegistryProvider({ children }: { children: ReactNode }) 
   const goToActivity = useCallback((index: number) => {
     if (index >= 0 && index < activities.length) {
       setCurrentActivityIndex(index);
+
+      // Dispatch event for modules to listen to
+      console.log(`🎯 ActivityRegistry: Dispatching goToActivity event for index ${index}`);
+      window.dispatchEvent(new CustomEvent('goToActivity', { detail: index }));
     }
   }, [activities.length]);
 

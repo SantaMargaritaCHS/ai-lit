@@ -8,6 +8,8 @@ import { motion } from 'framer-motion';
 import { Textarea } from '@/components/ui/textarea';
 import { Certificate } from '@/components/Certificate';
 import { getAIFeedback, generateAIFeedback } from '@/services/geminiService';
+import { useDevMode } from '@/context/DevModeContext';
+import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 // Developer mode is passed as props, no hook needed
 import LLMLimitationsDeveloperPanel from './LLMLimitationsModule/LLMLimitationsDeveloperPanel';
 import { SecretKeyPrompt } from '@/components/SecretKeyPrompt';
@@ -106,14 +108,21 @@ const VIDEO_SEGMENTS = [
   }
 ];
 
-export function LLMLimitationsModule({ 
-  userName, 
+export function LLMLimitationsModule({
+  userName,
   onComplete,
-  isDevMode = false,
+  isDevMode: isDevModeProp = false,
   showDevPanel = false,
   setShowDevPanel,
   disableDevMode
 }: LLMLimitationsModuleProps) {
+  // Get isDevMode from context instead of props
+  const { isDevModeActive: isDevModeFromContext } = useDevMode();
+  const isDevMode = isDevModeFromContext || isDevModeProp;
+
+  // ActivityRegistry hooks
+  const { registerActivity, clearRegistry, goToActivity } = useActivityRegistry();
+
   const [currentPhase, setCurrentPhase] = useState<'intro' | 'opening-challenge' | 'video1' | 'discussion1' | 'video2' | 'activity2' | 'video3' | 'discussion3' | 'video4' | 'hallucination-activity' | 'video5' | 'bias-activity' | 'video6' | 'outdated-activity' | 'sources-activity' | 'video7' | 'reflection' | 'complete'>('intro');
   const [reflection, setReflection] = useState('');
   const [currentSegment, setCurrentSegment] = useState(0);
@@ -254,6 +263,49 @@ export function LLMLimitationsModule({
     { id: 'reflection', title: 'Exit Ticket', completed: currentPhase === 'complete' },
     { id: 'complete', title: 'Certificate', completed: false }
   ];
+
+  // Register activities with ActivityRegistry on mount
+  useEffect(() => {
+    console.log('🔧 LLMLimitationsModule: Registering activities...');
+    clearRegistry();
+
+    const phases = ['intro', 'opening-challenge', 'video1', 'discussion1', 'video2', 'activity2', 'video3', 'discussion3', 'video4', 'hallucination-activity', 'video5', 'bias-activity', 'video6', 'outdated-activity', 'sources-activity', 'video7', 'reflection', 'complete'];
+
+    activities.forEach((activity, index) => {
+      const activityRegistration = {
+        id: activity.id,
+        type: activity.id === 'complete' ? 'certificate' as const :
+              activity.id.includes('video') ? 'video' as const :
+              activity.id === 'reflection' ? 'reflection' as const :
+              'interactive' as const,
+        title: activity.title,
+        completed: phases.indexOf(currentPhase) > index
+      };
+      console.log(`📝 Registering activity: ${activityRegistration.id} (${activityRegistration.type})`);
+      registerActivity(activityRegistration);
+    });
+  }, []); // Only register once on mount to avoid loops
+
+  // Listen for dev panel navigation commands
+  useEffect(() => {
+    const handleGoToActivity = (event: CustomEvent) => {
+      const activityIndex = event.detail;
+      console.log(`🎯 LLMLimitationsModule: Received goToActivity command for index ${activityIndex}`);
+
+      const phases = ['intro', 'opening-challenge', 'video1', 'discussion1', 'video2', 'activity2', 'video3', 'discussion3', 'video4', 'hallucination-activity', 'video5', 'bias-activity', 'video6', 'outdated-activity', 'sources-activity', 'video7', 'reflection', 'complete'];
+
+      if (activityIndex >= 0 && activityIndex < phases.length) {
+        setCurrentPhase(phases[activityIndex] as any);
+        console.log(`✅ Jumped to phase ${activityIndex}: ${phases[activityIndex]}`);
+      }
+    };
+
+    window.addEventListener('goToActivity', handleGoToActivity as EventListener);
+
+    return () => {
+      window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
+    };
+  }, []);
 
   // Developer Mode: Auto-fill functionality
   const autoFillReflections = () => {

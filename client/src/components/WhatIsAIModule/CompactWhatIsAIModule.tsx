@@ -8,39 +8,22 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, ArrowRight, Clock, Target, Play, BookOpen, MessageCircle, Brain, Calendar, Trophy, Zap, Lightbulb, Smartphone, Home, Globe, Car } from 'lucide-react';
 // Developer mode is now handled by the UniversalDevModeProvider
-import { useReflectionNavigation, ReflectionActivity } from '@/hooks/useReflectionNavigation';
+import { ReflectionActivity } from '@/hooks/useReflectionNavigation';
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 import { useDevMode } from '@/context/DevModeContext';
 import './WhatIsAIModule.css';
-import { getAILiteracyFeedback, getReflectionPrompt } from '@/services/aiLiteracyBot';
 import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
-import { SegmentedVideoPlayer } from '@/components/SegmentedVideoPlayer';
 import { ExitTicket } from '@/components/ExitTicket';
 import { Certificate } from '@/components/Certificate';
-import { getVideoUrl } from '@/services/videoService';
-import { videoAnalyticsRedesign, initializeRedesignAnalytics, redesignedVideoSegments } from '@/services/videoAnalyticsRedesign';
-import { EnhancedHistoryVideo } from '@/components/WhatIsAIModule/EnhancedHistoryVideo';
-import { GuessAIAge } from '@/components/WhatIsAIModule/GuessAIAge';
-import { AIThenVsNow } from '@/components/WhatIsAIModule/AIThenVsNowFixed';
-import { GenerativeAITransition } from './GenerativeAITransition';
-import { SimpleGuessAge } from './SimpleGuessAge';
+import { initializeRedesignAnalytics } from '@/services/videoAnalyticsRedesign';
 import WhatAIIsNotActivity from './WhatAIIsNotActivity';
-import { ImmersiveAITimeline } from './ImmersiveAITimeline';
+import AIInMyDayActivity from './AIInMyDayActivity';
+import AIPatternSpotterActivity from './AIPatternSpotterActivity';
+import ConnectingTheDotsActivity from './ConnectingTheDotsActivity';
 
 interface CompactWhatIsAIModuleProps {
   onComplete: () => void;
   userName?: string;
-}
-
-interface AIAgeGuessActivity {
-  title: string;
-  description: string;
-  options: Array<{
-    label: string;
-    value: number;
-    feedback: string;
-  }>;
-  revealText: string;
 }
 
 interface ActivityState {
@@ -49,125 +32,11 @@ interface ActivityState {
   completed: boolean;
 }
 
-const aiAgeGuessActivity: AIAgeGuessActivity = {
-  title: "How Long Has AI Been Around?",
-  description: "Before we dive into history, take a guess!",
-  options: [
-    { label: "Less than 10 years", value: 10, feedback: "AI might seem new because of ChatGPT, but it's much older!" },
-    { label: "About 20-30 years", value: 25, feedback: "Getting warmer! But AI goes back even further." },
-    { label: "Around 50 years", value: 50, feedback: "Close! AI research began in the 1950s, over 70 years ago!" },
-    { label: "More than 70 years", value: 70, feedback: "Exactly right! AI research started in the 1950s." }
-  ],
-  revealText: "Surprised? Let's explore AI's fascinating 70+ year journey..."
-};
-
-// Direct Firebase URLs for fast loading (bypassing getDownloadURL API calls)
+// Direct Firebase URL for fast loading (bypassing getDownloadURL API calls)
 const DIRECT_VIDEO_URLS = {
-  'Videos/1 Introduction to Artificial Intelligence.mp4': 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2F1%20Introduction%20to%20Artificial%20Intelligence.mp4?alt=media&token=52c11993-7b1f-4fa5-b2a0-b6fa5b6ba857',
-  'Videos/History of AI.mp4': 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2FHistory%20of%20AI.mp4?alt=media&token=b5e0bc96-2f7f-4850-9cce-b6b2e5d9a6a0'
+  'Videos/1 Introduction to Artificial Intelligence.mp4': 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2F1%20Introduction%20to%20Artificial%20Intelligence.mp4?alt=media&token=52c11993-7b1f-4fa5-b2a0-b6fa5b6ba857'
 };
 
-// Restored video segments with proper interactive pauses
-const videoSegments = [
-  {
-    id: 'intro-segment-1',
-    title: 'Introduction to AI',
-    videoPath: 'Videos/1 Introduction to Artificial Intelligence.mp4',
-    startTime: 0,
-    endTime: 82, // Continue through to "Guess My Age" section
-    pausePoints: [{
-      timestamp: 59,
-      type: 'reflection',
-      question: "Think about your day so far. Can you identify 3 ways you've already interacted with AI today? Share your examples.",
-      promptType: 'daily-ai'
-    }]
-  },
-  {
-    id: 'history-full',
-    title: 'History of AI',
-    videoPath: 'Videos/History of AI.mp4',
-    startTime: 0,
-    endTime: -1, // Full video
-    pausePoints: [
-      {
-        timestamp: 95,
-        type: 'comprehension',
-        question: "What was the Turing Test designed to evaluate?",
-        options: [
-          "A computer's processing speed",
-          "A machine's ability to exhibit intelligent behavior",
-          "The first AI programming language",
-          "Computer memory capacity"
-        ],
-        correctAnswer: 1,
-        explanation: "The Turing Test evaluates whether a machine can exhibit intelligent behavior equivalent to, or indistinguishable from, that of a human."
-      },
-      {
-        timestamp: 150,
-        type: 'comprehension', 
-        question: "What caused the 'AI Winter' periods?",
-        options: [
-          "Lack of funding and overpromised results",
-          "Too much government regulation",
-          "Computers became too expensive",
-          "Scientists lost interest in AI"
-        ],
-        correctAnswer: 0,
-        explanation: "AI Winters occurred when funding dried up due to overpromised results that couldn't be delivered with the technology of the time."
-      },
-      {
-        timestamp: 220,
-        type: 'comprehension',
-        question: "What breakthrough helped launch the modern AI era?",
-        options: [
-          "Faster internet speeds",
-          "Deep learning and neural networks",
-          "Better programming languages", 
-          "Cheaper computer hardware"
-        ],
-        correctAnswer: 1,
-        explanation: "Deep learning and advanced neural networks, combined with big data and computational power, launched the current AI revolution."
-      }
-    ]
-  },
-  {
-    id: 'intro-segment-3',
-    title: 'Closing Concepts',
-    videoPath: 'Videos/1 Introduction to Artificial Intelligence.mp4',
-    startTime: 142,
-    endTime: -1,
-    pausePoints: []
-  }
-];
-
-// Video segment definitions for the redesigned segmented player
-const introVideoSegments = [
-  {
-    id: 'intro-reflection',
-    startTime: 0,
-    endTime: 59,
-    title: 'AI in Your Daily Life',
-    description: 'How AI is already part of your routine',
-    reflection: {
-      question: "Think about your day so far. Can you identify 3 ways you've already interacted with AI today? Share your examples.",
-      aiPrompt: "Analyze the user's AI interaction examples and provide encouraging feedback about their awareness of AI in daily life. Help them recognize AI patterns they might have missed."
-    }
-  },
-  {
-    id: 'what-is-ai',
-    startTime: 60,
-    endTime: 82, // 1:22
-    title: 'What Exactly is AI?',
-    description: 'Brief introduction to the concept'
-  },
-  {
-    id: 'closing-segment',
-    startTime: 142, // 2:22
-    endTime: 164, // End of video
-    title: 'Wrapping Up',
-    description: 'Key takeaways about AI'
-  }
-];
 
 export default function CompactWhatIsAIModule({ 
   onComplete, 
@@ -179,34 +48,19 @@ export default function CompactWhatIsAIModule({
   // Essential refs and state that need to be defined early
   const videoRef = useRef<HTMLVideoElement>(null);
   
-  // Activity flow state - RESTORED to original structure
+  // Activity flow state - REDESIGNED for better pedagogical flow
   const [currentActivity, setCurrentActivity] = useState(0);
   const [activities, setActivities] = useState<(ActivityState & Partial<ReflectionActivity>)[]>([
     { id: 'welcome', title: 'Welcome', completed: false },
-    { id: 'ai-quiz', title: 'AI or Not Quiz', completed: false },
-    { 
-      id: 'video-intro', 
-      title: 'Introduction Video', 
+    { id: 'ai-in-my-day', title: 'AI in My Day', completed: false },
+    {
+      id: 'video-intro',
+      title: 'Introduction Video',
       completed: false,
-      type: 'video-with-reflection',
-      reflectionPoints: [
-        {
-          timestamp: 59,
-          question: "Think about your day so far. Can you identify 3 ways you've already interacted with AI today? Share your examples.",
-          id: 'daily-ai-reflection',
-          aiPrompt: "Analyze the user's AI interaction examples and provide encouraging feedback about their awareness of AI in daily life."
-        }
-      ]
+      type: 'video-with-reflection'
     },
-    { id: 'guess-age', title: "Guess My Age", completed: false },
-    { id: 'history-video', title: 'History of AI Video', completed: false },
-    { 
-      id: 'ai-evolution', 
-      title: 'Journey to Generative AI', 
-      completed: false
-    },
-    { id: 'genai-transition', title: 'Discovering Generative AI', completed: false },
-    { id: 'closing-video', title: 'Closing Video', completed: false },
+    { id: 'connecting-dots', title: 'Connecting the Dots', completed: false },
+    { id: 'pattern-spotter', title: 'AI Pattern Spotter', completed: false },
     {
       id: 'what-ai-is-not',
       title: 'What AI is NOT',
@@ -216,10 +70,7 @@ export default function CompactWhatIsAIModule({
     { id: 'certificate', title: 'Certificate', completed: false }
   ]);
   
-  // Activity-specific states (needed for hook callbacks)
-  const [reflectionResponses, setReflectionResponses] = useState<Record<string, string>>({});
-  const [aiReflectionFeedback, setAiReflectionFeedback] = useState<Record<string, string>>({});
-  const [selectedAgeGuess, setSelectedAgeGuess] = useState<number | null>(null);
+  // Activity-specific states
   const [showAgeReveal, setShowAgeReveal] = useState(false);
   const [exitTicketResponse, setExitTicketResponse] = useState('');
   const [exitTicketFeedback, setExitTicketFeedback] = useState('');
@@ -228,9 +79,6 @@ export default function CompactWhatIsAIModule({
   const [showQuizExplanation, setShowQuizExplanation] = useState(false);
   const [showQuizResults, setShowQuizResults] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
-  const [currentVideoSegment, setCurrentVideoSegment] = useState(0);
-  const [segmentReflections, setSegmentReflections] = useState<Record<string, string>>({});
-  const [showAgeGuessActivity, setShowAgeGuessActivity] = useState(false);
   
   // Activity Registry for dev mode
   const {
@@ -243,22 +91,8 @@ export default function CompactWhatIsAIModule({
 
   // Dev mode context
   const { isDevModeActive } = useDevMode();
-  
-  // Reflection navigation
-  const {
-    reflectionState,
-    handleEmbeddedReflection,
-    initializeStandaloneReflection,
-    answerStandaloneQuestion,
-    nextQuestion,
-    previousQuestion,
-    skipToQuestion,
-    completeStandaloneReflection,
-    getReflectionProgress
-  } = useReflectionNavigation();
-  
-  // Additional states not yet defined
-  const [isLoadingAI, setIsLoadingAI] = useState(false);
+
+  // Video URLs state
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
 
   // Debug: Check if userName is being passed
@@ -278,17 +112,6 @@ export default function CompactWhatIsAIModule({
   const devReflectionText = "I used voice assistant for setting alarms, got Netflix recommendations based on viewing history, and used GPS navigation with traffic predictions.";
   const devExitTicketResponse = "AI is like a smart computer system that can learn patterns from data to make predictions or help with tasks, similar to how humans learn from experience but much faster.";
 
-  // Developer mode quiz auto-answers (correct answers for each question)
-  const devQuizAnswers = {
-    'search-engine': true,    // Google search IS AI
-    'email-spam': true,       // Spam filtering IS AI  
-    'recipe-recommendation': true, // Recipe suggestions ARE AI
-    'smart-thermostat': true, // Smart thermostats ARE AI
-    'calculator': false,      // Basic calculator is NOT AI
-    'word-processor': false,  // Basic word processing is NOT AI
-    'digital-clock': false,   // Digital clock is NOT AI
-    'flashlight-app': false   // Flashlight app is NOT AI
-  };
 
   // Load video URLs and initialize analytics - Using direct URLs for fast loading
   useEffect(() => {
@@ -301,59 +124,65 @@ export default function CompactWhatIsAIModule({
     initializeRedesignAnalytics();
   }, []);
 
-  // Register activities with the ActivityRegistry for dev mode
+  // Register activities with the ActivityRegistry for dev mode - only on mount
   useEffect(() => {
+    console.log('🔧 CompactWhatIsAIModule: Registering activities...');
     // Clear previous activities when module mounts
     clearRegistry();
 
-    // Register all activities
-    activities.forEach((activity) => {
-      registerActivity({
+    // Register all activities with proper structure
+    activities.forEach((activity, index) => {
+      const activityReg = {
         id: activity.id,
-        type: activity.id === 'certificate' ? 'certificate' :
-              activity.id.includes('video') ? 'video' :
-              activity.id === 'exit-ticket' ? 'reflection' :
-              'interactive',
+        type: activity.id === 'certificate' ? 'certificate' as const :
+              activity.id.includes('video') ? 'video' as const :
+              activity.id === 'exit-ticket' ? 'reflection' as const :
+              'interactive' as const,
         title: activity.title,
-        completed: activity.completed
-      });
+        completed: index < currentActivity // Mark as completed if before current
+      };
+      registerActivity(activityReg);
+      console.log(`  ✅ Registered: ${activityReg.title} (completed: ${activityReg.completed})`);
     });
-  }, []); // Only run once on mount
 
-  // Sync with dev mode navigation
+    console.log('🔧 CompactWhatIsAIModule: All activities registered');
+  }, []); // Only register once on mount to avoid loops
+
+  // Listen for dev panel navigation commands via event
   useEffect(() => {
-    if (isDevModeActive && registryCurrentActivity) {
-      const activityIndex = activities.findIndex(a => a.id === registryCurrentActivity.id);
-      if (activityIndex >= 0 && activityIndex !== currentActivity) {
-        console.log('🔧 DEV: Syncing activity from dev mode:', registryCurrentActivity.id);
+    const handleGoToActivity = (event: CustomEvent) => {
+      const activityIndex = event.detail;
+      console.log(`🎯 CompactWhatIsAIModule: Received goToActivity command for index ${activityIndex}`);
+
+      if (activityIndex >= 0 && activityIndex < activities.length) {
         setCurrentActivity(activityIndex);
+        console.log(`✅ Jumped to activity ${activityIndex}: ${activities[activityIndex].title}`);
       }
-    }
-  }, [isDevModeActive, registryCurrentActivity, currentActivity, activities]);
+    };
 
-  // Update ActivityRegistry when activity changes normally
+    window.addEventListener('goToActivity', handleGoToActivity as EventListener);
+    console.log('👂 CompactWhatIsAIModule: Listening for goToActivity events');
+
+    return () => {
+      window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
+    };
+  }, [activities.length]); // Only re-register when activity count changes, not on every update
+
+  // Sync module's currentActivity with ActivityRegistry
   useEffect(() => {
-    if (currentActivity >= 0 && currentActivity < activities.length) {
-      const activity = activities[currentActivity];
-      setRegistryCurrentActivity(activity.id);
+    if (isDevModeActive) {
+      // Update registry's current activity index to match module's
+      setRegistryCurrentActivity(currentActivity);
+      console.log(`🔄 Synced registry currentActivity to ${currentActivity}`);
     }
-  }, [currentActivity, activities, setRegistryCurrentActivity]);
+  }, [currentActivity, isDevModeActive]);
 
   // Developer mode auto-fill effects
   useEffect(() => {
     if (isDevModeActive) {
-      // Auto-fill reflection responses based on current activity
+      // Auto-fill exit ticket based on current activity
       const currentActivityData = activities[currentActivity];
-      
-      if (currentActivityData?.id === 'video-intro') {
-        // Auto-fill video reflection responses
-        setReflectionResponses(prev => ({
-          ...prev,
-          'daily-ai-reflection': devReflectionText,
-          'ai-definition-check': "AI is like a smart computer system that learns from data to recognize patterns and make decisions, similar to how humans learn but much faster and with more data."
-        }));
-      }
-      
+
       if (currentActivityData?.id === 'exit-ticket') {
         // Auto-fill exit ticket response
         setExitTicketResponse(devExitTicketResponse);
@@ -361,47 +190,21 @@ export default function CompactWhatIsAIModule({
     }
   }, [currentActivity, isDevModeActive]);
 
-  // Auto-start effect for closing video - moved outside switch case to fix React Hooks rules
-  useEffect(() => {
-    const currentActivityData = activities[currentActivity];
-    const closingVideoUrl = videoUrls['Videos/1 Introduction to Artificial Intelligence.mp4'];
-    
-    if (currentActivityData?.id === 'closing-video' && closingVideoUrl) {
-      console.log('🎬 Closing video activity started - preparing auto-play');
-      // Small delay to ensure video element is ready
-      const timer = setTimeout(() => {
-        console.log('🎬 Attempting to auto-start closing video');
-        // Try to find and start the video element
-        const videoElements = document.querySelectorAll('video') as NodeListOf<HTMLVideoElement>;
-        if (videoElements.length > 0) {
-          const video = videoElements[0];
-          video.play().then(() => {
-            console.log('🎬 Closing video auto-play successful');
-          }).catch((error) => {
-            console.log('🎬 Auto-play blocked by browser, user interaction required:', error.message);
-          });
-        } else {
-          console.log('🎬 No video elements found yet, video may still be loading');
-        }
-      }, 500); // Increased delay to ensure video is fully loaded
-      return () => clearTimeout(timer);
-    }
-  }, [currentActivity, activities, videoUrls]);
 
   // Developer mode quiz auto-answer function
   const devAutoAnswerQuiz = () => {
-    if (isDevModeActive && activities[currentActivity]?.id === 'ai-quiz') {
-      const currentQ = aiOrNotQuestions[currentQuizQuestion];
+    if (isDevModeActive && activities[currentActivity]?.id === 'ai-spotter-challenge') {
+      const currentQ = aiSpotterQuestions[currentQuizQuestion];
       const correctAnswer = currentQ.isAI;
-      
+
       // Auto-select correct answer
       setQuizAnswers(prev => ({ ...prev, [currentQ.id]: correctAnswer }));
       setShowQuizExplanation(true);
       setQuizScore(prev => prev + 1);
-      
+
       // Auto-advance after reduced time
       setTimeout(() => {
-        if (currentQuizQuestion < aiOrNotQuestions.length - 1) {
+        if (currentQuizQuestion < aiSpotterQuestions.length - 1) {
           setCurrentQuizQuestion(prev => prev + 1);
           setShowQuizExplanation(false);
         } else {
@@ -436,79 +239,32 @@ export default function CompactWhatIsAIModule({
     }
   };
 
-  const handleReflectionSubmit = async (response: string, questionType: string) => {
-    setIsLoadingAI(true);
-    console.log('🤖 Calling Gemini API for reflection feedback:', { questionType, response: response.substring(0, 50) + '...' });
-    
-    try {
-      const apiResponse = await fetch('/api/gemini/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: response,
-          context: "Provide encouraging feedback on the student's reflection about AI concepts and learning."
-        })
-      });
-      
-      console.log('🌐 API Response status:', apiResponse.status);
-      
-      if (apiResponse.ok) {
-        const data = await apiResponse.json();
-        console.log('✅ Received API feedback:', data);
-        const feedback = data.feedback || data.response || "Thank you for your thoughtful response!";
-        setReflectionResponses(prev => ({ ...prev, [questionType]: response }));
-        setAiReflectionFeedback(prev => ({ ...prev, [questionType]: feedback }));
-      } else {
-        const errorData = await apiResponse.text();
-        console.error('❌ API Error:', apiResponse.status, errorData);
-        throw new Error(`Gemini API request failed: ${apiResponse.status}`);
-      }
-    } catch (error) {
-      console.error('🚨 Error getting AI feedback:', error);
-      setAiReflectionFeedback(prev => ({ 
-        ...prev, 
-        [questionType]: 'Thank you for your thoughtful response! AI literacy is an important skill to develop.' 
-      }));
-    }
-    setIsLoadingAI(false);
-  };
 
-
-
-
-
-
-  // AI or Not Quiz questions (simplified for compact design)
-  const aiOrNotQuestions = [
+  // AI Spotter Challenge questions - REVISED with graduated difficulty
+  const aiSpotterQuestions = [
     {
       id: '1',
-      scenario: 'Smartphone Autocorrect - When your phone suggests words as you type',
+      scenario: 'Your phone\'s keyboard suggests the next word as you type',
       isAI: true,
-      explanation: 'This IS AI! It learns from patterns in how people type and predicts what you\'re trying to say.'
+      explanation: 'Yes! It learns from how millions of people write and predicts what you\'ll type next. That\'s pattern recognition!'
     },
     {
-      id: '2', 
-      scenario: 'Calculator App - Basic calculator doing arithmetic (2+2=4)',
+      id: '2',
+      scenario: 'A microwave timer counting down from 3 minutes',
       isAI: false,
-      explanation: 'This is NOT AI. It follows fixed mathematical rules programmed by humans. It doesn\'t learn or adapt.'
+      explanation: 'Correct! This is a simple countdown timer following fixed instructions. No learning or pattern recognition involved.'
     },
     {
       id: '3',
-      scenario: 'Netflix Recommendations - Movies suggested "Because you watched..."',
+      scenario: 'Snapchat filters that add dog ears to your face',
       isAI: true,
-      explanation: 'This IS AI! It analyzes viewing patterns across millions of users to predict what you might enjoy.'
+      explanation: 'Yes! It uses AI to recognize where your face is and track it as you move. That\'s complex pattern recognition!'
     },
     {
       id: '4',
-      scenario: 'Digital Alarm Clock - Wakes you up at a set time each day',
-      isAI: false,
-      explanation: 'This is NOT AI. It\'s a simple timer following pre-programmed instructions.'
-    },
-    {
-      id: '5',
-      scenario: 'Google Translate - Converting text from English to Spanish',
+      scenario: 'TikTok\'s "For You" page showing videos you might like',
       isAI: true,
-      explanation: 'This IS AI! Modern translation uses neural networks trained on millions of text pairs.'
+      explanation: 'Absolutely! This is AI analyzing your viewing patterns, likes, and watch time to predict what you\'ll enjoy. It\'s constantly learning from your behavior!'
     }
   ];
 
@@ -575,22 +331,58 @@ export default function CompactWhatIsAIModule({
           </div>
         );
 
-      case 'ai-quiz':
+      case 'ai-in-my-day':
+        return (
+          <div className="section-content">
+            <AIInMyDayActivity
+              onComplete={() => {
+                markActivityComplete('ai-in-my-day');
+                handleNextActivity();
+              }}
+            />
+          </div>
+        );
+
+      case 'pattern-spotter':
+        return (
+          <div className="section-content">
+            <AIPatternSpotterActivity
+              onComplete={() => {
+                markActivityComplete('pattern-spotter');
+                handleNextActivity();
+              }}
+            />
+          </div>
+        );
+
+      case 'connecting-dots':
+        return (
+          <div className="section-content">
+            <ConnectingTheDotsActivity
+              onComplete={() => {
+                markActivityComplete('connecting-dots');
+                handleNextActivity();
+              }}
+            />
+          </div>
+        );
+
+      case 'ai-spotter-challenge':
         return (
           <div className="section-content">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI or Not Quiz</h2>
-              <p className="text-gray-600">Can you spot AI in these everyday scenarios?</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Spotter Challenge</h2>
+              <p className="text-gray-600">Apply what you've learned - can you identify AI?</p>
             </div>
             
-            {currentQuizQuestion < aiOrNotQuestions.length ? (
+            {currentQuizQuestion < aiSpotterQuestions.length ? (
               <Card className="mb-6">
                 <CardHeader>
                   <CardTitle className="text-lg">
-                    Question {currentQuizQuestion + 1} of {aiOrNotQuestions.length}
+                    Question {currentQuizQuestion + 1} of {aiSpotterQuestions.length}
                   </CardTitle>
                   <CardDescription>
-                    {aiOrNotQuestions[currentQuizQuestion].scenario}
+                    {aiSpotterQuestions[currentQuizQuestion].scenario}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -600,7 +392,7 @@ export default function CompactWhatIsAIModule({
                       {isDevModeActive && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                           <div className="flex gap-2">
-                            <Button 
+                            <Button
                               onClick={devAutoAnswerQuiz}
                               className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
                               size="sm"
@@ -608,17 +400,17 @@ export default function CompactWhatIsAIModule({
                               <Zap className="w-3 h-3 mr-1" />
                               Auto-Answer Correctly
                             </Button>
-                            <Button 
+                            <Button
                               onClick={() => {
                                 // Auto-complete entire quiz
-                                setQuizScore(aiOrNotQuestions.length);
+                                setQuizScore(aiSpotterQuestions.length);
                                 setShowQuizResults(true);
-                                setCurrentQuizQuestion(aiOrNotQuestions.length);
+                                setCurrentQuizQuestion(aiSpotterQuestions.length);
                               }}
                               className="bg-red-700 hover:bg-red-800 text-white text-xs px-3 py-1 h-auto"
                               size="sm"
                             >
-                              Skip Entire Quiz
+                              Skip Entire Challenge
                             </Button>
                           </div>
                           <p className="text-xs text-red-600 mt-1">Developer Mode: Testing shortcuts</p>
@@ -642,22 +434,22 @@ export default function CompactWhatIsAIModule({
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <div className={`p-4 rounded-lg ${quizAnswers[aiOrNotQuestions[currentQuizQuestion].id] === aiOrNotQuestions[currentQuizQuestion].isAI ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                      <div className={`p-4 rounded-lg ${quizAnswers[aiSpotterQuestions[currentQuizQuestion].id] === aiSpotterQuestions[currentQuizQuestion].isAI ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                         <div className="flex items-center gap-2 mb-2">
-                          {quizAnswers[aiOrNotQuestions[currentQuizQuestion].id] === aiOrNotQuestions[currentQuizQuestion].isAI ? (
+                          {quizAnswers[aiSpotterQuestions[currentQuizQuestion].id] === aiSpotterQuestions[currentQuizQuestion].isAI ? (
                             <CheckCircle className="h-5 w-5 text-green-600" />
                           ) : (
                             <XCircle className="h-5 w-5 text-red-600" />
                           )}
                           <span className="font-semibold">
-                            {quizAnswers[aiOrNotQuestions[currentQuizQuestion].id] === aiOrNotQuestions[currentQuizQuestion].isAI ? 'Correct!' : 'Not quite!'}
+                            {quizAnswers[aiSpotterQuestions[currentQuizQuestion].id] === aiSpotterQuestions[currentQuizQuestion].isAI ? 'Correct!' : 'Not quite!'}
                           </span>
                         </div>
-                        <p className="text-sm">{aiOrNotQuestions[currentQuizQuestion].explanation}</p>
+                        <p className="text-sm">{aiSpotterQuestions[currentQuizQuestion].explanation}</p>
                       </div>
-                      
+
                       <Button onClick={handleQuizNext} className="w-full">
-                        {currentQuizQuestion < aiOrNotQuestions.length - 1 ? 'Next Question' : 'See Results'}
+                        {currentQuizQuestion < aiSpotterQuestions.length - 1 ? 'Next Question' : 'See Results'}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
@@ -667,16 +459,17 @@ export default function CompactWhatIsAIModule({
             ) : (
               <div className="text-center">
                 <div className="bg-blue-50 rounded-lg p-6 mb-6">
-                  <h3 className="text-xl font-bold text-blue-900 mb-2">Quiz Complete!</h3>
-                  <p className="text-lg text-blue-800">Score: {quizScore} out of {aiOrNotQuestions.length}</p>
+                  <h3 className="text-xl font-bold text-blue-900 mb-2">Challenge Complete!</h3>
+                  <p className="text-lg text-blue-800">Score: {quizScore} out of {aiSpotterQuestions.length}</p>
                   <p className="text-sm text-blue-600 mt-2">
-                    {quizScore === aiOrNotQuestions.length ? "Perfect! You're already good at spotting AI!" :
-                     quizScore >= aiOrNotQuestions.length * 0.6 ? "Great job! You understand AI basics well." :
-                     "Good try! Let's learn more about AI together."}
+                    {quizScore === aiSpotterQuestions.length ? "Perfect! You're great at identifying AI!" :
+                     quizScore >= aiSpotterQuestions.length * 0.75 ? "Excellent work! You understand pattern recognition well." :
+                     quizScore >= aiSpotterQuestions.length * 0.5 ? "Good job! You're getting the hang of this." :
+                     "Keep learning! AI can be tricky to spot."}
                   </p>
                 </div>
                 <Button onClick={handleNextActivity} className="w-full">
-                  Continue to Video <Play className="ml-2 h-4 w-4" />
+                  Continue Learning <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             )}
@@ -691,7 +484,7 @@ export default function CompactWhatIsAIModule({
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Introduction to AI</h2>
               <p className="text-gray-600">Learn what AI is and how it's part of your daily life</p>
             </div>
-            
+
             {introVideoUrl ? (
               <div className="video-container mb-6">
                 <PremiumVideoPlayer
@@ -702,51 +495,28 @@ export default function CompactWhatIsAIModule({
                       title: 'Introduction Video',
                       source: 'Videos/1 Introduction to Artificial Intelligence.mp4',
                       start: 0,
-                      end: 82, // Continue through "Guess My Age" section
+                      end: 76.5, // Stops at 1:16.5
                       mandatory: true,
-                      description: 'Complete introduction including Guess My Age'
+                      description: 'Core introduction to AI concepts'
                     }
                   ]}
                   videoId="intro-ai-complete"
                   onSegmentComplete={(segmentId: string) => {
                     console.log('🎬 Introduction Video segment completed:', segmentId);
-                    console.log('🎬 Current activity completed status:', activities[currentActivity].completed);
-                    
+
                     // Mark current activity as complete and advance
                     markActivityComplete('video-intro');
-                    
-                    // Auto-advance to "Guess My Age" activity
+
+                    // Auto-advance to next activity
                     setTimeout(() => {
-                      console.log('🎬 Auto-advancing to Guess My Age activity');
+                      console.log('🎬 Auto-advancing to next activity');
                       handleNextActivity();
                     }, 500);
                   }}
                   hideSegmentNavigator={true}
                   allowSeeking={isDevModeActive} // Enable seeking in developer mode
                   videoRef={videoRef}
-                  interactivePauses={[
-                    {
-                      id: 'daily-ai-reflection',
-                      timestamp: 59,
-                      type: 'reflection',
-                      title: 'Daily AI Reflection',
-                      content: "Think about your day so far. Can you identify 3 ways you've already interacted with AI today?",
-                      activity: {
-                        type: 'reflection',
-                        id: 'daily-ai-reflection',
-                        title: 'AI in Your Daily Life',
-                        prompt: "Think about your day so far. Can you identify 3 ways you've already interacted with AI today? Share your examples.",
-                        guidingQuestions: [
-                          "What apps did you use on your phone today?",
-                          "Did you search for anything online?",
-                          "Have you watched any videos or listened to music?",
-                          "Did you use voice commands or get recommendations?"
-                        ],
-                        minResponseLength: 50,
-                        aiGenerated: true
-                      }
-                    }
-                  ]}
+                  interactivePauses={[]} // Removed pauses for better flow
                 />
               </div>
             ) : (
@@ -757,224 +527,17 @@ export default function CompactWhatIsAIModule({
           </div>
         );
 
-      case 'guess-age':
-        return (
-          <div className="section-content">
-            <SimpleGuessAge 
-              onComplete={() => {
-                markActivityComplete('guess-age');
-                handleNextActivity();
-              }}
-            />
-          </div>
-        );
+      // REMOVED: 'video-what-ai-isnt' - content now included in intro video (0:00-1:57)
+      // REMOVED: 'simple-age' activity - history question removed per pedagogical review
+      //case 'simple-age':
+      //   return (
+      //     <div className="section-content">
+      //       ... (activity code commented out)
+      //     </div>
+      //   );
 
-      case 'history-video':
-        const historyVideoUrl = videoUrls['Videos/History of AI.mp4'];
-        const historySegment = videoSegments.find(seg => seg.id === 'history-full');
-        
-        return (
-          <div className="section-content">
-            <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">History of AI</h2>
-              <p className="text-gray-600">Journey through 70+ years of AI development</p>
-            </div>
-            
-            {historyVideoUrl && historySegment ? (
-              <div className="video-container mb-6">
-                <PremiumVideoPlayer
-                  videoUrl={historyVideoUrl}
-                  segments={[{
-                    id: 'segment-1',
-                    title: 'History of AI',
-                    source: 'Videos/History of AI.mp4',
-                    start: 0,
-                    end: -1, // Full video
-                    mandatory: true,
-                    description: 'Complete history of artificial intelligence'
-                  }]}
-                  videoId="history-ai-complete"
-                  interactivePauses={historySegment.pausePoints.map((pause, index) => ({
-                    id: `history-pause-${pause.timestamp}`,
-                    timestamp: pause.timestamp,
-                    type: 'question' as const,
-                    title: pause.question,
-                    content: pause.question,
-                    activity: {
-                      type: 'quiz' as const,
-                      id: `history-quiz-${pause.timestamp}`,
-                      title: pause.question,
-                      question: pause.question,
-                      allowMultiple: false,
-                      options: ((pause as any).options || []).map((optionText: string, optIndex: number) => ({
-                        id: `option-${index}-${optIndex}`,
-                        text: optionText,
-                        isCorrect: optIndex === (pause as any).correctAnswer
-                      })),
-                      explanation: (pause as any).explanation || "Thank you for your answer!"
-                    }
-                  }))}
-                  onSegmentComplete={() => {
-                    markActivityComplete('history-video');
-                    handleNextActivity();
-                  }}
-                  hideSegmentNavigator={true}
-                  allowSeeking={isDevModeActive} // Enable seeking in developer mode
-                  videoRef={videoRef}
-                />
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-500">Loading history video...</p>
-              </div>
-            )}
-          </div>
-        );
 
-      case 'ai-reflection-standalone':
-        const currentActivityData = activities[currentActivity];
-        if ('isStandaloneReflection' in currentActivityData && currentActivityData.isStandaloneReflection && 'questions' in currentActivityData && currentActivityData.questions) {
-          // Initialize standalone reflection if not already done
-          if (!reflectionState.currentReflectionId) {
-            initializeStandaloneReflection(currentActivityData.id, currentActivityData.questions);
-          }
-          
-          const progress = getReflectionProgress();
-          const currentQuestion = currentActivityData.questions[reflectionState.currentQuestionIndex];
-          
-          return (
-            <div className="section-content">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{currentActivityData.title}</h2>
-                <p className="text-gray-600">Reflect on your AI learning journey</p>
-                {progress && (
-                  <div className="mt-4">
-                    <Progress value={progress.progressPercentage} className="w-full max-w-md mx-auto" />
-                    <p className="text-sm text-gray-500 mt-2">
-                      Question {progress.currentQuestion} of {progress.totalQuestions}
-                    </p>
-                  </div>
-                )}
-              </div>
 
-              <div className="max-w-2xl mx-auto">
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">
-                      Question {reflectionState.currentQuestionIndex + 1}
-                    </h3>
-                    <p className="text-gray-700 mb-6">{currentQuestion}</p>
-                    
-                    <textarea
-                      className="w-full p-3 border border-gray-300 rounded-lg resize-none"
-                      rows={4}
-                      placeholder="Share your thoughts..."
-                      value={reflectionState.responses[reflectionState.currentQuestionIndex] || ''}
-                      onChange={(e) => answerStandaloneQuestion(reflectionState.currentQuestionIndex, e.target.value)}
-                    />
-                    
-                    <div className="flex justify-between mt-6">
-                      <Button
-                        variant="outline"
-                        onClick={previousQuestion}
-                        disabled={reflectionState.currentQuestionIndex === 0}
-                      >
-                        Previous
-                      </Button>
-                      
-                      {isDevModeActive && (
-                        <div className="flex gap-2">
-                          {currentActivityData.questions.map((_: string, index: number) => (
-                            <Button
-                              key={index}
-                              variant={index === reflectionState.currentQuestionIndex ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => skipToQuestion(index)}
-                            >
-                              {index + 1}
-                            </Button>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {reflectionState.currentQuestionIndex < currentActivityData.questions.length - 1 ? (
-                        <Button
-                          onClick={nextQuestion}
-                          disabled={!reflectionState.responses[reflectionState.currentQuestionIndex]?.trim()}
-                        >
-                          Next
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => {
-                            completeStandaloneReflection(() => {
-                              markActivityComplete(currentActivityData.id);
-                              handleNextActivity();
-                            });
-                          }}
-                          disabled={!reflectionState.responses[reflectionState.currentQuestionIndex]?.trim()}
-                        >
-                          Complete Reflection
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          );
-        }
-        return null;
-
-      case 'closing-video':
-        const closingVideoUrl = videoUrls['Videos/1 Introduction to Artificial Intelligence.mp4'];
-        
-        // Debug logging for video loading verification
-        console.log('🎬 Closing video URL (direct):', closingVideoUrl);
-        console.log('📊 All video URLs loaded:', Object.keys(videoUrls).length, 'videos');
-        
-
-        
-        return (
-          <div className="section-content">
-            <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Key Takeaways</h2>
-              <p className="text-gray-600">Final thoughts on understanding AI</p>
-            </div>
-            
-            {closingVideoUrl ? (
-              <div className="video-container mb-6">
-                <PremiumVideoPlayer
-                  videoUrl={closingVideoUrl}
-                  segments={[{
-                    id: 'closing-segment',
-                    title: 'Wrapping Up',
-                    source: 'Videos/1 Introduction to Artificial Intelligence.mp4',
-                    start: 121,
-                    end: 216,
-                    mandatory: true,
-                    description: 'Key takeaways about AI'
-                  }]}
-                  videoId="intro-ai-closing"
-                  onSegmentComplete={() => {
-                    markActivityComplete('closing-video');
-                    handleNextActivity();
-                  }}
-                  hideSegmentNavigator={true}
-                  allowSeeking={true} // Always allow seeking for closing video
-                  videoRef={videoRef}
-                />
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-500">Loading closing video...</p>
-                <p className="text-xs text-gray-400 mt-2">If this persists, check console for errors</p>
-              </div>
-            )}
-          </div>
-        );
 
       case 'what-ai-is-not':
         return (
@@ -1095,124 +658,9 @@ export default function CompactWhatIsAIModule({
           </div>
         );
 
-      case 'ai-evolution':
-        return (
-          <div className="section-content">
-            <ImmersiveAITimeline 
-              onComplete={() => {
-                markActivityComplete('ai-evolution');
-                handleNextActivity();
-              }}
-            />
-          </div>
-        );
 
-      case 'genai-transition':
-        return (
-          <div className="section-content">
-            <GenerativeAITransition 
-              onComplete={() => {
-                markActivityComplete('genai-transition');
-                handleNextActivity();
-              }}
-            />
-          </div>
-        );
         
       default:
-        // Check if this is a standalone reflection activity that wasn't caught above
-        if ('isStandaloneReflection' in activity && activity.isStandaloneReflection && 'questions' in activity && activity.questions) {
-          // Same logic as specific reflection cases
-          if (!reflectionState.currentReflectionId) {
-            initializeStandaloneReflection(activity.id, activity.questions);
-          }
-          
-          const progress = getReflectionProgress();
-          const currentQuestion = activity.questions[reflectionState.currentQuestionIndex];
-          
-          return (
-            <div className="section-content">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{activity.title}</h2>
-                <p className="text-gray-600">Reflect on your learning journey</p>
-                {progress && (
-                  <div className="mt-4">
-                    <Progress value={progress.progressPercentage} className="w-full max-w-md mx-auto" />
-                    <p className="text-sm text-gray-500 mt-2">
-                      Question {progress.currentQuestion} of {progress.totalQuestions}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="max-w-2xl mx-auto">
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">
-                      Question {reflectionState.currentQuestionIndex + 1}
-                    </h3>
-                    <p className="text-gray-700 mb-6">{currentQuestion}</p>
-                    
-                    <textarea
-                      className="w-full p-3 border border-gray-300 rounded-lg resize-none"
-                      rows={4}
-                      placeholder="Share your thoughts..."
-                      value={reflectionState.responses[reflectionState.currentQuestionIndex] || ''}
-                      onChange={(e) => answerStandaloneQuestion(reflectionState.currentQuestionIndex, e.target.value)}
-                    />
-                    
-                    <div className="flex justify-between mt-6">
-                      <Button
-                        variant="outline"
-                        onClick={previousQuestion}
-                        disabled={reflectionState.currentQuestionIndex === 0}
-                      >
-                        Previous
-                      </Button>
-                      
-                      {isDevModeActive && (
-                        <div className="flex gap-2">
-                          {activity.questions.map((_: string, index: number) => (
-                            <Button
-                              key={index}
-                              variant={index === reflectionState.currentQuestionIndex ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => skipToQuestion(index)}
-                            >
-                              {index + 1}
-                            </Button>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {reflectionState.currentQuestionIndex < activity.questions.length - 1 ? (
-                        <Button
-                          onClick={nextQuestion}
-                          disabled={!reflectionState.responses[reflectionState.currentQuestionIndex]?.trim()}
-                        >
-                          Next
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => {
-                            completeStandaloneReflection(() => {
-                              markActivityComplete(activity.id);
-                              handleNextActivity();
-                            });
-                          }}
-                          disabled={!reflectionState.responses[reflectionState.currentQuestionIndex]?.trim()}
-                        >
-                          Complete Reflection
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          );
-        }
-        
         return (
           <div className="section-content">
             <div className="text-center py-8">
@@ -1227,22 +675,22 @@ export default function CompactWhatIsAIModule({
   };
 
   const handleQuizAnswer = (answer: boolean) => {
-    const currentQ = aiOrNotQuestions[currentQuizQuestion];
+    const currentQ = aiSpotterQuestions[currentQuizQuestion];
     setQuizAnswers(prev => ({ ...prev, [currentQ.id]: answer }));
     setShowQuizExplanation(true);
-    
+
     if (answer === currentQ.isAI) {
       setQuizScore(prev => prev + 1);
     }
   };
 
   const handleQuizNext = () => {
-    if (currentQuizQuestion < aiOrNotQuestions.length - 1) {
+    if (currentQuizQuestion < aiSpotterQuestions.length - 1) {
       setCurrentQuizQuestion(prev => prev + 1);
       setShowQuizExplanation(false);
     } else {
       // Quiz completed, stay on quiz activity to show results
-      setCurrentQuizQuestion(aiOrNotQuestions.length);
+      setCurrentQuizQuestion(aiSpotterQuestions.length);
     }
   };
 

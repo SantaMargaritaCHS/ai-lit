@@ -12,6 +12,7 @@ import { ExitTicket } from '@/components/ExitTicket';
 import { DeveloperPanel } from '@/components/DeveloperPanel';
 import { SecretKeyPrompt } from '@/components/SecretKeyPrompt';
 import { useDevMode } from '@/context/DevModeContext';
+import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 import { RTF_CHALLENGE_SCENARIOS } from '@/data/rtfChallengeScenarios';
 import BasicPromptDemo from '@/components/BasicPromptDemo';
 // Import enhanced components from activities/prompting
@@ -28,12 +29,12 @@ import RTFPracticeSection from './IntroductionToPromptingModule/RTFPracticeSecti
 import RoleActivity from './IntroductionToPromptingModule/RoleActivity';
 import TaskActivity from './IntroductionToPromptingModule/TaskActivity';
 import FormatActivity from './IntroductionToPromptingModule/FormatActivity';
-import GuessThePromptActivity from './IntroductionToPromptingModule/GuessThePromptActivity';
+import SayWhatYouSeeActivity from './IntroductionToPromptingModule/SayWhatYouSeeActivity';
 
 // Enhanced Module structure with improved educational flow
 const ACTIVITIES = [
   { id: 'welcome', title: 'Welcome', completed: false },
-  { id: 'describe-and-recreate', title: 'Describe and Recreate', completed: false },
+  { id: 'say-what-you-see', title: 'Say What You See', completed: false },
   { id: 'basics-video-part1', title: 'What is a Prompt?', completed: false },
   { id: 'rate-vague-prompts', title: 'Practice: Rate Prompts', completed: false },
   { id: 'basics-video-part2', title: 'Prompting Principles', completed: false },
@@ -524,14 +525,20 @@ interface IntroductionToPromptingModuleProps {
   disableDevMode?: () => void;
 }
 
-const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps> = ({ 
+const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps> = ({
   userName: initialUserName = '',
-  onComplete, 
-  isDevMode = false, 
-  showDevPanel = false, 
-  setShowDevPanel, 
-  disableDevMode 
+  onComplete,
+  isDevMode = false,
+  showDevPanel = false,
+  setShowDevPanel,
+  disableDevMode
 }) => {
+  // Get isDevMode from context
+  const { isDevModeActive: contextIsDevMode } = useDevMode();
+
+  // ActivityRegistry hooks
+  const { registerActivity, clearRegistry, goToActivity } = useActivityRegistry();
+
   const [userName, setUserName] = useState(initialUserName);
   const [currentActivity, setCurrentActivity] = useState(0);
   const [activities, setActivities] = useState(ACTIVITIES);
@@ -545,6 +552,9 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     'basics': '',
     'rtf-framework': ''
   });
+
+  // Use dev mode from context or prop
+  const actualIsDevMode = contextIsDevMode || isDevMode;
 
   // Universal Developer Mode Integration - Using placeholders since dev mode is handled at app level
   const universalDevMode = false;
@@ -562,6 +572,46 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     originalHandleSecretKeySubmit(key);
   };
 
+  // Register activities with ActivityRegistry on mount
+  useEffect(() => {
+    console.log('🔧 [IntroductionToPromptingModule]: Registering activities...');
+    clearRegistry();
+
+    ACTIVITIES.forEach((activity, index) => {
+      const activityRegistration = {
+        id: activity.id,
+        type: activity.id === 'certificate' ? 'certificate' :
+              activity.id.includes('video') ? 'video' :
+              activity.id === 'exit-ticket' ? 'reflection' :
+              'interactive',
+        title: activity.title,
+        completed: index < currentActivity
+      };
+      console.log(`📝 Registering activity: ${activityRegistration.id} (${activityRegistration.type})`);
+      registerActivity(activityRegistration);
+    });
+  }, []); // Only register once on mount to avoid loops
+
+  // Listen for dev panel navigation commands
+  useEffect(() => {
+    const handleGoToActivity = (event: CustomEvent) => {
+      const activityIndex = event.detail;
+      console.log(`🎯 [IntroductionToPromptingModule]: Received goToActivity command for index ${activityIndex}`);
+
+      // Logic to navigate to the specific activity based on index
+      if (activityIndex >= 0 && activityIndex < ACTIVITIES.length) {
+        setCurrentActivity(activityIndex);
+        console.log(`✅ Jumped to activity ${activityIndex}`);
+      }
+    };
+
+    window.addEventListener('goToActivity', handleGoToActivity as EventListener);
+
+    return () => {
+      window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
+    };
+  }, []);
+
   // Update userName when prop changes
   useEffect(() => {
     if (initialUserName) {
@@ -573,13 +623,15 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
   useEffect(() => {
     console.log('IntroductionToPromptingModule Developer Mode Status:', {
       isDevMode,
+      contextIsDevMode,
+      actualIsDevMode,
       universalDevMode,
       showDevPanel,
       universalShowDevPanel,
-      combinedDevMode: universalDevMode || isDevMode,
+      combinedDevMode: universalDevMode || actualIsDevMode,
       combinedShowPanel: showDevPanel || universalShowDevPanel
     });
-  }, [isDevMode, universalDevMode, showDevPanel, universalShowDevPanel]);
+  }, [isDevMode, contextIsDevMode, actualIsDevMode, universalDevMode, showDevPanel, universalShowDevPanel]);
 
   // Load video URLs from Firebase Storage
   useEffect(() => {
@@ -622,7 +674,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
   // Auto-fill and keyboard shortcuts for developer mode
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      const devMode = universalDevMode || isDevMode;
+      const devMode = universalDevMode || actualIsDevMode;
       
       // Auto-fill with Ctrl+Alt+F
       if (devMode && e.ctrlKey && e.altKey && e.key === 'f') {
@@ -649,7 +701,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
       if (e.ctrlKey && e.altKey && (e.key === 'd' || e.key === 'D')) {
         e.preventDefault();
         console.log('Toggle dev panel shortcut pressed in IntroductionToPromptingModule');
-        if (!universalDevMode && !isDevMode) {
+        if (!universalDevMode && !actualIsDevMode) {
           // Show the key prompt if not in dev mode
           setShowKeyPrompt(true);
         } else {
@@ -666,7 +718,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [universalDevMode, isDevMode, currentActivity, activities]);
+  }, [universalDevMode, actualIsDevMode, currentActivity, activities]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -787,15 +839,15 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     onSkipVideo: () => {
       handleNextTask();
     },
-    isDevMode: universalDevMode || isDevMode
+    isDevMode: universalDevMode || actualIsDevMode
   };
 
   // Auto-fill exit ticket in dev mode
   useEffect(() => {
-    if (isDevMode && activities[currentActivity]?.id === 'exit-ticket') {
+    if (actualIsDevMode && activities[currentActivity]?.id === 'exit-ticket') {
       setExitTicketResponses(DEV_RESPONSES.exitTicket);
     }
-  }, [isDevMode, currentActivity]);
+  }, [actualIsDevMode, currentActivity]);
 
   // Handle automatic progression from exit ticket to certificate
   useEffect(() => {
@@ -881,10 +933,10 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      case 'describe-and-recreate':
-        return <GuessThePromptActivity 
-          onComplete={() => handleActivityComplete('describe-and-recreate')}
-          isDevMode={universalDevMode || isDevMode}
+      case 'say-what-you-see':
+        return <SayWhatYouSeeActivity
+          onComplete={() => handleActivityComplete('say-what-you-see')}
+          isDevMode={universalDevMode || actualIsDevMode}
         />;
 
       case 'basics-video-part1':
@@ -929,7 +981,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           <Card className="p-6">
             <PromptQualityActivity 
               onComplete={() => handleActivityComplete('rate-vague-prompts')}
-              isDevMode={universalDevMode || isDevMode}
+              isDevMode={universalDevMode || actualIsDevMode}
             />
           </Card>
         );
@@ -975,13 +1027,13 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
       case 'what-is-framework':
         return <WhatIsPromptingFramework 
           onComplete={() => handleActivityComplete('what-is-framework')}
-          isDevMode={universalDevMode || isDevMode}
+          isDevMode={universalDevMode || actualIsDevMode}
         />;
         
       case 'frameworks':
         return <PromptingFrameworks 
           onComplete={() => handleActivityComplete('frameworks')}
-          isDevMode={universalDevMode || isDevMode}
+          isDevMode={universalDevMode || actualIsDevMode}
         />;
         
       case 'rtf-video':
@@ -1155,14 +1207,14 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
       case 'format-transform':
         return <FormatTransformationActivity 
           onComplete={() => handleActivityComplete('format-transform')}
-          isDevMode={universalDevMode || isDevMode}
+          isDevMode={universalDevMode || actualIsDevMode}
         />;
         
         
       case 'rtf-builder':
         return <RTFOutputBuilder 
           onComplete={() => handleActivityComplete('rtf-builder')}
-          isDevMode={universalDevMode || isDevMode}
+          isDevMode={universalDevMode || actualIsDevMode}
         />;
         
       case 'conclusion-video':
@@ -1204,7 +1256,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
       case 'exit-ticket':
         return <PromptingExitTicket 
           onComplete={() => handleActivityComplete('exit-ticket')}
-          isDevMode={universalDevMode || isDevMode}
+          isDevMode={universalDevMode || actualIsDevMode}
         />;
 
       case 'certificate':

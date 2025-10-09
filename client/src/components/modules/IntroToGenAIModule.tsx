@@ -177,45 +177,48 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
   // Register activities with the ActivityRegistry for dev mode
   useEffect(() => {
+    console.log('🔧 IntroToGenAIModule: Registering activities...');
     // Clear previous activities when module mounts
     clearRegistry();
 
-    // Register all phases as activities
-    phases.forEach((phase) => {
-      registerActivity({
+    // Register all phases as activities with proper structure
+    phases.forEach((phase, index) => {
+      const activity = {
         id: phase,
-        type: phase === 'certificate' ? 'certificate' :
-              phase.includes('video') ? 'video' :
-              phase.includes('reflection') || phase.includes('exit') ? 'reflection' :
-              'interactive',
+        type: phase === 'certificate' ? 'certificate' as const :
+              phase.includes('video') ? 'video' as const :
+              phase.includes('reflection') || phase.includes('exit') ? 'reflection' as const :
+              'interactive' as const,
         title: phase.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        completed: false // Will be updated when activities complete
-      });
+        completed: completedPhases.has(phase)
+      };
+      registerActivity(activity);
+      console.log(`  ✅ Registered: ${activity.title}`);
     });
 
-    // Set initial activity
-    setCurrentActivity('introduction');
-  }, []); // Only run once on mount
+    console.log('🔧 IntroToGenAIModule: All activities registered');
+  }, []); // Only register once on mount to avoid loops
 
-  // Sync FROM dev mode TO module (unidirectional)
+  // Listen for dev panel navigation commands via event
   useEffect(() => {
-    if (isDevModeActive && currentActivity) {
-      const activityPhase = phases.find(p => p === currentActivity.id);
-      if (activityPhase && activityPhase !== phase) {
-        console.log('🔧 DEV: Syncing phase from dev mode:', activityPhase);
-        setPhase(activityPhase as Phase);
+    const handleGoToActivity = (event: CustomEvent) => {
+      const activityIndex = event.detail;
+      console.log(`🎯 IntroToGenAIModule: Received goToActivity command for index ${activityIndex}`);
+
+      if (activityIndex >= 0 && activityIndex < phases.length) {
+        const targetPhase = phases[activityIndex];
+        setPhase(targetPhase as Phase);
+        console.log(`✅ Jumped to phase ${activityIndex}: ${targetPhase}`);
       }
-    }
-  }, [isDevModeActive, currentActivity]); // Removed phase dependency to prevent loops
+    };
 
-  // Update registry when phase changes from normal navigation
-  useEffect(() => {
-    const phaseIndex = phases.indexOf(phase);
-    if (phaseIndex >= 0 && !isDevModeActive) {
-      // Only update registry if not being controlled by dev mode
-      setCurrentActivity(phase);
-    }
-  }, [phase, phases, setCurrentActivity, isDevModeActive]);
+    window.addEventListener('goToActivity', handleGoToActivity as EventListener);
+    console.log('👂 IntroToGenAIModule: Listening for goToActivity events');
+
+    return () => {
+      window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
+    };
+  }, [phases]);
 
   useEffect(() => {
     // Shuffle items for opening activity
@@ -1567,33 +1570,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     );
   };
 
-  // Register activities with ActivityRegistry on mount
-  useEffect(() => {
-    // Clear any existing activities
-    clearRegistry();
-
-    // Register all phases as activities
-    phases.forEach((p, index) => {
-      const activityType = p.includes('video') ? 'video-segment' :
-                          p.includes('reflection') ? 'reflection' :
-                          p.includes('question') ? 'quiz' :
-                          p.includes('interactive') || p.includes('activity') ? 'interactive' :
-                          p === 'certificate' ? 'certificate' :
-                          p === 'introduction' ? 'intro' : 'interactive';
-
-      registerActivity({
-        id: `intro-gen-ai-${p}`,
-        type: activityType as any,
-        name: p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        moduleId: 'intro-gen-ai',
-        completed: completedPhases.has(p)
-      });
-    });
-
-    return () => {
-      clearRegistry();
-    };
-  }, []);
 
   // Sync phase with ActivityRegistry (bidirectional)
   useEffect(() => {

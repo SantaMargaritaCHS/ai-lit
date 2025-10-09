@@ -26,6 +26,8 @@ import { ExitTicket } from '@/components/ExitTicket';
 import { motion } from 'framer-motion';
 // Developer mode is now handled by the UniversalDevModeProvider
 import { UniversalDevPanel } from '@/components/UniversalDevPanel';
+import { useDevMode } from '@/context/DevModeContext';
+import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 
 // Video configuration
 const VIDEO_URL = 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2FHow%20AI%20Is%20Guzzling%20Our%20Water%20Supply.mp4?alt=media&token=cb353217-8baf-4778-bd8c-bb0468685f7f';
@@ -217,6 +219,12 @@ interface AIEnvironmentalImpactModuleProps {
 }
 
 export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI Explorer" }: AIEnvironmentalImpactModuleProps) {
+  // Get isDevMode from context
+  const { isDevModeActive: isDevMode } = useDevMode();
+
+  // ActivityRegistry hooks
+  const { registerActivity, clearRegistry, goToActivity } = useActivityRegistry();
+
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [reflectionText, setReflectionText] = useState('');
@@ -236,7 +244,6 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
   }));
 
   // Dev mode placeholders - will be provided by context
-  const isDevMode = false;
   const showDevPanel = false;
 
   // Temporary dev mode handlers (to be replaced by context)
@@ -264,10 +271,53 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
     }
   };
 
-  // Dev mode handlers will be connected via context in the future
-
   const step = guidedSteps[currentStep];
   const progress = ((currentStep + 1) / guidedSteps.length) * 100;
+
+  // Register activities with ActivityRegistry on mount
+  useEffect(() => {
+    console.log('🔧 [AIEnvironmentalImpactModule]: Registering activities...');
+    clearRegistry();
+
+    guidedSteps.forEach((step, index) => {
+      const activityRegistration = {
+        id: step.id,
+        type: step.type === 'exit-ticket' ? 'certificate' :
+              step.type === 'video' ? 'video' :
+              step.type === 'reflection' ? 'reflection' :
+              step.type === 'intro' ? 'interactive' :
+              'quiz',
+        title: step.title,
+        completed: index < currentStep
+      };
+      console.log(`📝 Registering activity: ${activityRegistration.id} (${activityRegistration.type})`);
+      registerActivity(activityRegistration);
+    });
+  }, []); // Only register once on mount to avoid loops
+
+  // Listen for dev panel navigation commands
+  useEffect(() => {
+    const handleGoToActivity = (event: CustomEvent) => {
+      const activityIndex = event.detail;
+      console.log(`🎯 [AIEnvironmentalImpactModule]: Received goToActivity command for index ${activityIndex}`);
+
+      // Logic to navigate to the specific activity based on index
+      if (activityIndex >= 0 && activityIndex < guidedSteps.length) {
+        setCurrentStep(activityIndex);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setReflectionText('');
+        setReflectionFeedback('');
+        console.log(`✅ Jumped to activity ${activityIndex}`);
+      }
+    };
+
+    window.addEventListener('goToActivity', handleGoToActivity as EventListener);
+
+    return () => {
+      window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

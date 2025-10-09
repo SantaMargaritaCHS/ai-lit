@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Eye, UserCheck, Lock, AlertTriangle, CheckCircle, ArrowRight, Award } from 'lucide-react';
+import { useDevMode } from '@/context/DevModeContext';
+import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 
 interface PrivacyScenario {
   id: string;
@@ -113,12 +115,79 @@ interface PrivacyDataRightsModuleProps {
 }
 
 export function PrivacyDataRightsModule({ onComplete, userName = "AI Explorer" }: PrivacyDataRightsModuleProps) {
+  // Get isDevMode from context
+  const { isDevModeActive: isDevMode } = useDevMode();
+
+  // ActivityRegistry hooks
+  const { registerActivity, clearRegistry, goToActivity } = useActivityRegistry();
+
   const [currentStep, setCurrentStep] = useState(0);
   const [currentScenario, setCurrentScenario] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [showResults, setShowResults] = useState(false);
+
+  // Define activities for this module
+  const activities = [
+    { id: 'intro', title: 'Introduction', type: 'interactive' as const },
+    ...privacyScenarios.map((scenario, index) => ({
+      id: `scenario-${index}`,
+      title: scenario.title,
+      type: 'interactive' as const
+    })),
+    { id: 'results', title: 'Results & Certificate', type: 'certificate' as const }
+  ];
+
+  // Register activities with ActivityRegistry on mount
+  useEffect(() => {
+    console.log('🔧 PrivacyDataRightsModule: Registering activities...');
+    clearRegistry();
+
+    activities.forEach((activity, index) => {
+      const activityRegistration = {
+        id: activity.id,
+        type: activity.type,
+        title: activity.title,
+        completed: currentStep === 0 ? currentScenario > index - 1 : showResults && index === activities.length - 1
+      };
+      console.log(`📝 Registering activity: ${activityRegistration.id} (${activityRegistration.type})`);
+      registerActivity(activityRegistration);
+    });
+  }, []); // Only register once on mount to avoid loops
+
+  // Listen for dev panel navigation commands
+  useEffect(() => {
+    const handleGoToActivity = (event: CustomEvent) => {
+      const activityIndex = event.detail;
+      console.log(`🎯 PrivacyDataRightsModule: Received goToActivity command for index ${activityIndex}`);
+
+      if (activityIndex === 0) {
+        // Go to intro
+        setCurrentStep(0);
+        setCurrentScenario(0);
+        setShowResults(false);
+      } else if (activityIndex > 0 && activityIndex <= privacyScenarios.length) {
+        // Go to specific scenario
+        setCurrentStep(1);
+        setCurrentScenario(activityIndex - 1);
+        setShowResults(false);
+        setShowExplanation(false);
+        setSelectedAnswer(null);
+      } else if (activityIndex === activities.length - 1) {
+        // Go to results
+        setShowResults(true);
+      }
+
+      console.log(`✅ Jumped to activity ${activityIndex}`);
+    };
+
+    window.addEventListener('goToActivity', handleGoToActivity as EventListener);
+
+    return () => {
+      window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
+    };
+  }, [activities.length]);
 
   const handleAnswerSubmit = () => {
     if (selectedAnswer === null) return;

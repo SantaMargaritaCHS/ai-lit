@@ -6,6 +6,7 @@ import { Brain } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import PremiumVideoPlayer from '../PremiumVideoPlayer';
 import { useDevMode } from '@/context/DevModeContext';
+import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 import { UnderstandingLLMsDeveloperPanel } from './UnderstandingLLMsDeveloperPanel';
 import { SecretKeyPrompt } from '@/components/SecretKeyPrompt';
 import '../../styles/premium-video-llm.css';
@@ -70,6 +71,48 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     { id: 'exit-ticket', title: 'Exit Ticket', duration: '2 minutes' },
     { id: 'certificate', title: 'Certificate', duration: '1 minute' }
   ];
+
+  // ActivityRegistry hooks
+  const { registerActivity, clearRegistry, goToActivity } = useActivityRegistry();
+
+  // Register activities with ActivityRegistry on mount
+  useEffect(() => {
+    console.log('🔧 UnderstandingLLMsModule: Registering activities...');
+    clearRegistry();
+
+    phases.forEach((phase, index) => {
+      const activity = {
+        id: phase.id,
+        type: phase.id === 'certificate' ? 'certificate' as const :
+              phase.id.includes('video') ? 'video' as const :
+              phase.id.includes('reflection') || phase.id.includes('exit') ? 'reflection' as const :
+              'interactive' as const,
+        title: phase.title,
+        completed: index < currentPhase
+      };
+      console.log(`📝 Registering activity: ${activity.id} (${activity.type})`);
+      registerActivity(activity);
+    });
+  }, []); // Only register once on mount to avoid loops
+
+  // Listen for dev panel navigation commands
+  useEffect(() => {
+    const handleGoToActivity = (event: CustomEvent) => {
+      const activityIndex = event.detail;
+      console.log(`🎯 UnderstandingLLMsModule: Received goToActivity command for index ${activityIndex}`);
+
+      if (activityIndex >= 0 && activityIndex < phases.length) {
+        setCurrentPhase(activityIndex);
+        console.log(`✅ Jumped to phase ${activityIndex}: ${phases[activityIndex].title}`);
+      }
+    };
+
+    window.addEventListener('goToActivity', handleGoToActivity as EventListener);
+
+    return () => {
+      window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
+    };
+  }, [phases]);
 
   // Video segments configuration for single video approach
   const videoSegments = {

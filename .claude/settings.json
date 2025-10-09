@@ -21,20 +21,7 @@
     ],
     "ask": []
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Read|Grep|Glob|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/runner/claude-gemini-bridge/hooks/gemini-bridge.sh",
-            "description": "Delegate large-scale analysis to Gemini"
-          }
-        ]
-      }
-    ]
-  },
+  "hooks": {},
   "projectContext": {
     "type": "educational-web-app",
     "language": "TypeScript/React",
