@@ -19,6 +19,8 @@ import { initializeRedesignAnalytics } from '@/services/videoAnalyticsRedesign';
 import EnhancedAIOrNotQuiz from './EnhancedAIOrNotQuiz';
 import AIInTheWildActivity from './AIInTheWildActivity';
 import VideoReflectionActivity from './VideoReflectionActivity';
+import ResumeProgressDialog from './ResumeProgressDialog';
+import { saveProgress, loadProgress, clearProgress, getProgressSummary } from '@/lib/progressPersistence';
 
 interface CompactWhatIsAIModuleProps {
   onComplete: () => void;
@@ -31,22 +33,29 @@ interface ActivityState {
   completed: boolean;
 }
 
+// Module identifier for progress persistence
+const MODULE_ID = 'what-is-ai';
+
 // Direct Firebase URL for fast loading (bypassing getDownloadURL API calls)
 const DIRECT_VIDEO_URLS = {
   'Videos/1 Introduction to Artificial Intelligence.mp4': 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2F1%20Introduction%20to%20Artificial%20Intelligence.mp4?alt=media&token=52c11993-7b1f-4fa5-b2a0-b6fa5b6ba857'
 };
 
 
-export default function CompactWhatIsAIModule({ 
-  onComplete, 
-  userName = '' 
+export default function CompactWhatIsAIModule({
+  onComplete,
+  userName = ''
 }: CompactWhatIsAIModuleProps) {
   // Use passed userName directly
   const [userNameState] = useState(userName);
-  
+
   // Essential refs and state that need to be defined early
   const videoRef = useRef<HTMLVideoElement>(null);
-  
+
+  // Progress persistence state
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [savedProgress, setSavedProgress] = useState<ReturnType<typeof getProgressSummary>>(null);
+
   // Activity flow state - NEW IMPROVED PEDAGOGICAL FLOW
   const [currentActivity, setCurrentActivity] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -127,6 +136,37 @@ export default function CompactWhatIsAIModule({
     // Initialize the redesigned analytics system
     initializeRedesignAnalytics();
   }, []);
+
+  // Load saved progress on mount (with anti-cheat validation)
+  useEffect(() => {
+    const progress = loadProgress(MODULE_ID, activities);
+
+    if (progress) {
+      // Valid progress found - show resume dialog
+      const summary = getProgressSummary(MODULE_ID);
+      setSavedProgress(summary);
+      setShowResumeDialog(true);
+      console.log('✅ Progress found - showing resume dialog');
+    } else {
+      console.log('ℹ️ No valid progress found - starting fresh');
+    }
+  }, []); // Only run on mount
+
+  // Save progress whenever activity state changes (debounced to avoid excessive writes)
+  useEffect(() => {
+    // Don't save on initial mount or if showing resume dialog
+    if (currentActivity === 0 && activities[0]?.completed === false) {
+      return; // Skip saving if we're still on the welcome screen with no progress
+    }
+
+    // Don't save if we're showing the resume dialog (user hasn't chosen yet)
+    if (showResumeDialog) {
+      return;
+    }
+
+    // Save progress with anti-cheat protection
+    saveProgress(MODULE_ID, currentActivity, activities);
+  }, [currentActivity, activities, showResumeDialog]);
 
   // Register activities with the ActivityRegistry for dev mode - only on mount
   useEffect(() => {
@@ -216,6 +256,32 @@ export default function CompactWhatIsAIModule({
     }, 200);
   };
 
+  // Handle resume from saved progress
+  const handleResumeProgress = () => {
+    const progress = loadProgress(MODULE_ID, activities);
+
+    if (progress) {
+      // Restore saved state
+      setCurrentActivity(progress.currentActivity);
+      setActivities(progress.activities);
+      setShowResumeDialog(false);
+      console.log(`✅ Resumed at activity ${progress.currentActivity + 1}/${progress.activities.length}`);
+    } else {
+      // Progress validation failed - start over
+      console.warn('⚠️ Could not resume progress - starting over');
+      handleStartOver();
+    }
+  };
+
+  // Handle starting over (clears saved progress)
+  const handleStartOver = () => {
+    clearProgress(MODULE_ID);
+    setShowResumeDialog(false);
+    setCurrentActivity(0);
+    setActivities(prev => prev.map(a => ({ ...a, completed: false })));
+    console.log('🔄 Starting over - progress cleared');
+  };
+
 
 
   const renderCurrentActivity = () => {
@@ -232,51 +298,51 @@ export default function CompactWhatIsAIModule({
             <div className="text-center mb-6">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">What is AI?</h1>
               <p className="text-lg text-gray-600 mb-6">Interactive AI Literacy Module</p>
-              
+
               {/* Activity Overview */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6 text-left">
                 <div className="flex items-center mb-4">
                   <Brain className="h-8 w-8 text-blue-600 mr-3" />
-                  <h3 className="text-xl font-bold text-blue-900">What You'll Learn</h3>
+                  <h3 className="text-xl font-bold text-blue-900">What You'll Explore</h3>
                 </div>
-                
+
                 <div className="grid gap-4 mb-4">
                   <div className="flex items-start">
-                    <Target className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
+                    <Smartphone className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
                     <div>
-                      <p className="font-medium text-blue-900">Identify AI in Daily Life</p>
-                      <p className="text-sm text-blue-700">Discover the AI tools you already use every day</p>
+                      <p className="font-medium text-blue-900">Spot AI in Everyday Apps</p>
+                      <p className="text-sm text-blue-700">Discover which technologies around you use AI and which don't</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
-                    <Lightbulb className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
+                    <Zap className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
                     <div>
-                      <p className="font-medium text-blue-900">Understand AI vs. Not AI</p>
-                      <p className="text-sm text-blue-700">Learn to distinguish real AI from regular computer programs</p>
+                      <p className="font-medium text-blue-900">Explore How AI Works</p>
+                      <p className="text-sm text-blue-700">Connect the steps: Data → Patterns → Actions in real apps</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
-                    <Globe className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
+                    <MessageCircle className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
                     <div>
-                      <p className="font-medium text-blue-900">Explore AI History</p>
-                      <p className="text-sm text-blue-700">See how AI developed over 70+ years</p>
+                      <p className="font-medium text-blue-900">Think Critically About AI</p>
+                      <p className="text-sm text-blue-700">Reflect on AI as a tool and its role in your future</p>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-center pt-4 border-t border-blue-200">
                   <div className="flex items-center text-blue-700">
                     <Trophy className="h-4 w-4 mr-2" />
-                    <span className="text-sm font-medium">Certificate Available</span>
+                    <span className="text-sm font-medium">Earn Your Certificate</span>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <Button onClick={handleNextActivity} className="w-full primary-button">
-              Start Learning About AI <ArrowRight className="ml-2 h-4 w-4" />
+              Start Exploring <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         );
@@ -493,6 +559,9 @@ export default function CompactWhatIsAIModule({
               courseName="What is AI?"
               completionDate={new Date().toLocaleDateString()}
               onDownload={() => {
+                // Clear progress when certificate is downloaded (module complete)
+                clearProgress(MODULE_ID);
+                console.log('🎓 Certificate downloaded - progress cleared');
                 // Certificate downloaded, module is complete
                 onComplete();
               }}
@@ -519,6 +588,18 @@ export default function CompactWhatIsAIModule({
 
   return (
     <>
+      {/* Resume Progress Dialog */}
+      {showResumeDialog && savedProgress && savedProgress.exists && (
+        <ResumeProgressDialog
+          activityIndex={savedProgress.activityIndex!}
+          activityTitle={savedProgress.activityTitle!}
+          totalActivities={savedProgress.totalActivities!}
+          lastUpdated={savedProgress.lastUpdated!}
+          onResume={handleResumeProgress}
+          onStartOver={handleStartOver}
+        />
+      )}
+
       <div className="module-container">
         <div className="module-content">
           {/* Compact Progress Header */}

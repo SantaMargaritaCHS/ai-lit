@@ -31,14 +31,14 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
   // Define the intro slide
   const introSlides: Slide[] = [
     {
-      title: "Try It Out: Spot the AI",
-      subtitle: "Explore how AI shows up in everyday technology",
+      title: "Explore AI in Everyday Tech",
+      subtitle: "A fun icebreaker to discover AI around you",
       icon: Brain,
       content: (
         <div className="space-y-6 max-w-2xl mx-auto">
           <p className="text-lg text-gray-700 dark:text-gray-300 text-center">
-            You've seen some examples. Now let's see if you can identify which technologies use AI
-            and which just follow programmed rules. This is just a fun way to explore!
+            Before we dive deep into AI, let's explore where it shows up in your daily life!
+            You'll look at 12 different technologies and discover which ones use AI and which don't.
           </p>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -58,7 +58,7 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
 
           <div className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-lg border-l-4 border-blue-600">
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              <strong>12 scenarios to explore</strong> - Each one teaches you something new about AI!
+              <strong>12 everyday scenarios</strong> - Each one reveals something interesting about how AI works!
             </p>
           </div>
         </div>
@@ -224,33 +224,28 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              AI or Not? Challenge
+              Explore: AI or Not?
             </CardTitle>
-            <div className="flex gap-2">
-              <Badge variant="outline">
-                Question {currentQuestion + 1} of {questions.length}
-              </Badge>
-              <Badge variant="secondary">
-                Score: {score}/{questions.length}
-              </Badge>
-            </div>
+            <Badge variant="outline" className="text-sm">
+              Scenario {currentQuestion + 1} of {questions.length}
+            </Badge>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Explore everyday technology and learn to identify AI. Each scenario includes teaching points to build your understanding.
+          <p className="text-base text-secondary mt-2">
+            Explore everyday technology and discover which apps use AI. Each scenario teaches you something new!
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
           {!completed ? (
             <>
               <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+                <div className="bg-card border border-primary p-6 rounded-lg">
                   <div className="flex items-center gap-2 mb-3">
                     <Badge variant="outline">{currentQ.category}</Badge>
                   </div>
                   <h3 className="text-lg font-semibold mb-4">
                     Is this artificial intelligence?
                   </h3>
-                  <p className="text-lg text-center py-4 px-6 bg-white dark:bg-gray-700 rounded-lg border-2 border-dashed">
+                  <p className="text-lg text-center py-4 px-6 bg-module rounded-lg border-2 border-dashed border-accent">
                     {currentQ.scenario}
                   </p>
                 </div>
@@ -261,7 +256,7 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
                       onClick={() => handleAnswer(true)}
                       size="lg"
                       variant="outline"
-                      className="h-16 text-lg border-2 border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
+                      className="h-16 text-lg border-2 border-accent hover:bg-primary-soft transition-colors"
                     >
                       ✓ Yes, this is AI
                     </Button>
@@ -269,7 +264,7 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
                       onClick={() => handleAnswer(false)}
                       size="lg"
                       variant="outline"
-                      className="h-16 text-lg border-2 border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
+                      className="h-16 text-lg border-2 border-accent hover:bg-primary-soft transition-colors"
                     >
                       ✗ No, this is not AI
                     </Button>
@@ -278,17 +273,17 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
 
                 {showExplanation && (
                   <div className="space-y-4">
-                    <Alert className={isAnswerCorrect(currentQ.id) ? 'border-green-200 bg-green-50 dark:bg-green-950' : 'border-red-200 bg-red-50 dark:bg-red-950'}>
+                    <Alert className={isAnswerCorrect(currentQ.id) ? 'bg-green-soft border border-success' : 'bg-red-soft border border-error'}>
                       <div className="flex items-center gap-2">
                         {isAnswerCorrect(currentQ.id) ? (
                           <>
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                            <span className="font-semibold text-green-800 dark:text-green-200">Correct!</span>
+                            <CheckCircle className="h-5 w-5 text-success" />
+                            <span className="font-semibold text-success">Correct!</span>
                           </>
                         ) : (
                           <>
-                            <XCircle className="h-5 w-5 text-red-600" />
-                            <span className="font-semibold text-red-800 dark:text-red-200">Not quite!</span>
+                            <XCircle className="h-5 w-5 text-error" />
+                            <span className="font-semibold text-error">Not quite!</span>
                           </>
                         )}
                       </div>
@@ -297,14 +292,14 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
                       </AlertDescription>
                     </Alert>
 
-                    <div className="bg-blue-100 dark:bg-blue-950 p-4 rounded-lg border-l-4 border-blue-600">
+                    <div className="bg-primary-soft p-4 rounded-lg border-l-4 border-accent">
                       <div className="flex items-center gap-2 mb-2">
-                        <Lightbulb className="h-4 w-4 text-blue-600" />
-                        <span className="font-semibold text-blue-900 dark:text-blue-200">
+                        <Lightbulb className="h-4 w-4 text-accent" />
+                        <span className="font-semibold">
                           Teaching Point:
                         </span>
                       </div>
-                      <p className="text-sm text-blue-800 dark:text-blue-300">
+                      <p className="text-sm">
                         {currentQ.teachingPoint}
                       </p>
                     </div>
@@ -326,37 +321,34 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
             </>
           ) : (
             <div className="text-center space-y-6">
-              <div className="p-8 rounded-lg border-2 bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-950 dark:to-blue-950 border-green-300">
-                <h3 className="text-2xl font-bold mb-4">
-                  Activity Complete! 🎉
+              <div className="p-8 rounded-lg bg-primary-soft border border-accent">
+                <h3 className="text-2xl font-bold mb-4 text-accent">
+                  Exploration Complete! 🎉
                 </h3>
-                <div className="text-6xl font-bold mb-2 text-blue-600">
-                  {score}/{questions.length}
-                </div>
-                <div className="text-lg font-semibold mb-2">
-                  {Math.round((score / questions.length) * 100)}%
-                </div>
-                <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                <p className="text-lg mb-6 text-secondary">
+                  You explored {questions.length} everyday technologies and discovered {score} that use AI!
+                </p>
+                <p className="text-base mb-4">
                   {score === questions.length
-                    ? "Perfect! You have an excellent understanding of what AI is and isn't."
+                    ? "Amazing! You spotted every AI system. You have a strong intuition for what AI is and isn't."
                     : score >= questions.length * 0.8
-                    ? "Great job! You're getting the hang of identifying AI."
-                    : "Nice work exploring! The teaching points will help build your understanding."}
+                    ? "Nice work! You're starting to recognize the patterns that distinguish AI from traditional software."
+                    : "Great exploration! Each scenario taught you something new about how AI learns and adapts."}
                 </p>
               </div>
 
-              <div className="bg-blue-100 dark:bg-blue-950 p-6 rounded-lg border-l-4 border-blue-600">
-                <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">
-                  Key Takeaway
+              <div className="bg-primary-soft p-6 rounded-lg border-l-4 border-accent">
+                <h4 className="font-semibold mb-3">
+                  Key Insight
                 </h4>
-                <p className="text-sm text-blue-800 dark:text-blue-300">
-                  AI systems learn from data and can adapt their behavior, while traditional
-                  computer programs follow predetermined rules. The key difference is learning
-                  and pattern recognition from examples.
+                <p className="text-sm">
+                  AI systems <strong>learn from data</strong> and can adapt their behavior, while traditional
+                  computer programs follow predetermined rules. The key difference is <strong>learning
+                  and pattern recognition</strong> from examples.
                 </p>
               </div>
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted">
                 Moving to the next activity in 3 seconds...
               </p>
             </div>

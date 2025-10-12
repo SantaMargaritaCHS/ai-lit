@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Variable Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .result {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #4CAF50; }
+        .error { border-left: 4px solid #f44336; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Environment Variable Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(title, content, isSuccess) {
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = `<h2>${title}</h2><pre>${content}</pre>`;
+            resultsDiv.appendChild(div);
+        }
+
+        // Test 1: Check import.meta.env
+        const allEnv = import.meta.env;
+        addResult('📋 All Environment Variables', JSON.stringify(allEnv, null, 2), true);
+
+        // Test 2: Check VITE_GEMINI_API_KEY specifically
+        const viteGeminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (viteGeminiKey) {
+            addResult(
+                '✅ VITE_GEMINI_API_KEY Found!',
+                `Present: ${viteGeminiKey.substring(0, 15)}... (${viteGeminiKey.length} chars)`,
+                true
+            );
+        } else {
+            addResult('❌ VITE_GEMINI_API_KEY Not Found', 'The environment variable is not available', false);
+        }
+
+        // Test 3: Check GEMINI_API_KEY (from define block)
+        const geminiKey = import.meta.env.GEMINI_API_KEY;
+        if (geminiKey) {
+            addResult(
+                '✅ GEMINI_API_KEY Found (from define block)!',
+                `Present: ${geminiKey.substring(0, 15)}... (${geminiKey.length} chars)`,
+                true
+            );
+        } else {
+            addResult('❌ GEMINI_API_KEY Not Found', 'The define block may not be working', false);
+        }
+
+        // Test 4: Try to import the Gemini client
+        try {
+            const { isGeminiConfigured } = await import('/src/services/geminiClient.ts');
+            const isConfigured = isGeminiConfigured();
+            addResult(
+                isConfigured ? '✅ Gemini Client Configured!' : '❌ Gemini Client Not Configured',
+                `isGeminiConfigured() returned: ${isConfigured}`,
+                isConfigured
+            );
+        } catch (error) {
+            addResult('❌ Error Importing Gemini Client', error.message, false);
+        }
+    </script>
+</body>
+</html>

@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Sparkles, Loader2, Zap } from 'lucide-react';
 import { useDevMode } from '@/context/DevModeContext';
-import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
+import { generateEducationFeedback, isNonsensical } from '@/utils/aiEducationFeedback';
 import './WhatIsAIModule.css';
 
 interface VideoReflectionActivityProps {
@@ -49,6 +49,9 @@ export default function VideoReflectionActivity({
 
   const handleSubmit = async () => {
     if (!showFeedback) {
+      // Check if response is nonsensical BEFORE calling AI
+      const isInvalid = isNonsensical(response);
+
       // Get AI feedback
       setIsLoadingFeedback(true);
       try {
@@ -57,18 +60,21 @@ export default function VideoReflectionActivity({
         setShowFeedback(true);
         setIsLoadingFeedback(false);
 
-        // Check if the feedback is asking for retry (indicates invalid response)
-        const retryPhrases = [
-          "bit short",
-          "unclear",
-          "elaborate more",
-          "please try again",
-          "could you expand"
-        ];
-        const needsRetryResponse = retryPhrases.some(phrase =>
-          feedback.toLowerCase().includes(phrase)
-        );
-        setNeedsRetry(needsRetryResponse);
+        // Determine if retry is needed based on:
+        // 1. Pre-validation (gibberish/too short)
+        // 2. Gemini's feedback indicating the response is inadequate
+        const feedbackIndicatesRetry =
+          feedback.toLowerCase().includes('does not address') ||
+          feedback.toLowerCase().includes('please re-read') ||
+          feedback.toLowerCase().includes('inappropriate language') ||
+          feedback.toLowerCase().includes('off-topic') ||
+          feedback.toLowerCase().includes('lacks depth') ||
+          feedback.toLowerCase().includes('could you elaborate') ||
+          feedback.toLowerCase().includes('needs more depth') ||
+          feedback.toLowerCase().includes('monitored for inappropriate');
+
+        // Require retry if EITHER pre-validation failed OR Gemini says response is inadequate
+        setNeedsRetry(isInvalid || feedbackIndicatesRetry);
       } catch (error) {
         console.error('Failed to get AI feedback:', error);
         setAiFeedback('Thank you for your thoughtful reflection! Your insights about AI are valuable as you continue learning.');
@@ -89,7 +95,7 @@ export default function VideoReflectionActivity({
     // Keep the response so they can edit it
   };
 
-  const minResponseLength = 20;
+  const minResponseLength = 100;
   const isResponseValid = response.trim().length >= minResponseLength;
 
   return (
@@ -172,33 +178,33 @@ export default function VideoReflectionActivity({
               animate={{ opacity: 1, scale: 1 }}
               className={`border-2 rounded-lg p-6 ${
                 needsRetry
-                  ? 'bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 border-yellow-300 dark:border-yellow-700'
+                  ? 'bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 border-blue-300 dark:border-blue-700'
                   : 'bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border-purple-300 dark:border-purple-700'
               }`}
             >
               <div className="flex items-start gap-3">
                 <div className={`rounded-full p-2 flex-shrink-0 ${
                   needsRetry
-                    ? 'bg-yellow-200 dark:bg-yellow-800'
+                    ? 'bg-blue-200 dark:bg-blue-800'
                     : 'bg-purple-200 dark:bg-purple-800'
                 }`}>
                   <Sparkles className={`w-5 h-5 ${
                     needsRetry
-                      ? 'text-yellow-700 dark:text-yellow-300'
+                      ? 'text-blue-700 dark:text-blue-300'
                       : 'text-purple-700 dark:text-purple-300'
                   }`} />
                 </div>
                 <div className="flex-1">
                   <h4 className={`font-semibold mb-3 ${
                     needsRetry
-                      ? 'text-yellow-900 dark:text-yellow-100'
+                      ? 'text-blue-900 dark:text-blue-100'
                       : 'text-purple-900 dark:text-purple-100'
                   }`}>
                     AI Feedback
                   </h4>
                   <p className={`leading-relaxed ${
                     needsRetry
-                      ? 'text-yellow-900 dark:text-yellow-200'
+                      ? 'text-blue-900 dark:text-blue-200'
                       : 'text-purple-900 dark:text-purple-200'
                   }`}>
                     {aiFeedback}
@@ -210,23 +216,13 @@ export default function VideoReflectionActivity({
 
           {/* Show appropriate buttons based on state */}
           {needsRetry ? (
-            <div className="flex gap-3">
-              <Button
-                onClick={handleTryAgain}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                size="lg"
-              >
-                Try Again
-              </Button>
-              <Button
-                onClick={onComplete}
-                variant="outline"
-                className="flex-1"
-                size="lg"
-              >
-                Continue Anyway
-              </Button>
-            </div>
+            <Button
+              onClick={handleTryAgain}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              size="lg"
+            >
+              Try Again
+            </Button>
           ) : (
             <Button
               onClick={handleSubmit}

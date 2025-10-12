@@ -12,14 +12,14 @@ const exitQuestions = [
   {
     id: 'practical-application',
     question: "Now that you understand how LLMs work (pattern matching, not true understanding), how will this knowledge help you interact with AI tools more effectively?",
-    minLength: 30,
+    minLength: 100,
     placeholder: "Think about how knowing the limitations and capabilities changes your approach...",
     focusArea: "Understanding AI mechanics"
   },
   {
-    id: 'classroom-integration', 
+    id: 'classroom-integration',
     question: "Based on what you learned about tokenization and context windows, what's one specific way you could use this knowledge when teaching students about AI?",
-    minLength: 30,
+    minLength: 100,
     placeholder: "Consider how you might explain AI limitations or help students write better prompts...",
     focusArea: "Classroom application"
   }

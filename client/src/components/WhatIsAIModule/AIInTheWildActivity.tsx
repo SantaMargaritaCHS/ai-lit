@@ -36,6 +36,7 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
   const { isDevModeActive } = useDevMode();
   const [showIntroSlides, setShowIntroSlides] = useState(true);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
+  const [currentStep, setCurrentStep] = useState<'data' | 'pattern' | 'action'>('data');
   const [selectedData, setSelectedData] = useState<string | null>(null);
   const [selectedPattern, setSelectedPattern] = useState<string | null>(null);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
@@ -270,9 +271,21 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
   const handleCardClick = (category: 'data' | 'pattern' | 'action', cardId: string, text: string) => {
     if (showFeedback) return; // Don't allow changes after feedback
 
-    if (category === 'data') setSelectedData(text);
-    if (category === 'pattern') setSelectedPattern(text);
-    if (category === 'action') setSelectedAction(text);
+    if (category === 'data') {
+      setSelectedData(text);
+      // Auto-advance to pattern step after selection
+      setTimeout(() => setCurrentStep('pattern'), 600);
+    }
+    if (category === 'pattern') {
+      setSelectedPattern(text);
+      // Auto-advance to action step after selection
+      setTimeout(() => setCurrentStep('action'), 600);
+    }
+    if (category === 'action') {
+      setSelectedAction(text);
+      // Auto-show feedback after completing all steps
+      setTimeout(() => checkAnswers(), 600);
+    }
   };
 
   const checkAnswers = () => {
@@ -290,6 +303,7 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
   const nextScenario = () => {
     if (currentScenarioIndex < scenarios.length - 1) {
       setCurrentScenarioIndex(currentScenarioIndex + 1);
+      setCurrentStep('data'); // Reset to first step
       setSelectedData(null);
       setSelectedPattern(null);
       setSelectedAction(null);
@@ -384,28 +398,26 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
             <Trophy className="w-16 h-16 text-yellow-500 mx-auto" />
 
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                Activity Complete! 🎉
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                Exploration Complete! 🎉
               </h2>
-              <div className="text-6xl font-bold mb-2 text-blue-600">
-                {score}/{scenarios.length}
-              </div>
-              <div className="text-lg font-semibold mb-2">
-                {Math.round((score / scenarios.length) * 100)}%
-              </div>
+              <p className="text-xl text-gray-800 dark:text-gray-200 mb-6">
+                You explored {scenarios.length} real-world apps and discovered how AI works in each one!
+              </p>
             </div>
 
-            <p className="text-lg text-gray-800 dark:text-gray-200">
+            <p className="text-lg text-gray-700 dark:text-gray-300">
               {score === scenarios.length
-                ? 'Perfect! You mastered the Data → Pattern → Action framework!'
+                ? 'Amazing! You connected every step correctly. You really understand the Data → Pattern → Action framework!'
                 : score >= scenarios.length * 0.7
-                ? 'Great job! You understand how AI works in real-world apps.'
-                : 'Nice work! You explored how AI systems work in everyday apps.'}
+                ? 'Great work! You\'re getting the hang of how AI systems operate in everyday apps.'
+                : 'Nice exploration! Each scenario revealed something new about how AI makes decisions.'}
             </p>
 
-            <div className="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border-2 border-blue-300">
+            <div className="bg-white/70 dark:bg-gray-800/70 p-6 rounded-lg border-2 border-blue-300">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Key Insight</h4>
               <p className="text-sm text-gray-800 dark:text-gray-200">
-                <strong>Key Takeaway:</strong> Every AI system collects data, finds patterns, and takes action based on those patterns.
+                <strong>Every AI system</strong> collects data, finds patterns, and takes action based on those patterns. This three-step process is at the heart of how AI works!
               </p>
             </div>
 
@@ -507,19 +519,14 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
           <div className="flex items-center justify-between mb-2">
             <CardTitle className="flex items-center gap-2">
               <Brain className="w-6 h-6 text-blue-600" />
-              AI in the Wild
+              How AI Works: Connect the Steps
             </CardTitle>
-            <div className="flex gap-2">
-              <Badge variant="outline">
-                Scenario {currentScenarioIndex + 1} of {scenarios.length}
-              </Badge>
-              <Badge variant="secondary">
-                Score: {score}/{scenarios.length}
-              </Badge>
-            </div>
+            <Badge variant="outline" className="text-sm">
+              Scenario {currentScenarioIndex + 1} of {scenarios.length}
+            </Badge>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Figure out how real apps use Data → Patterns → Actions
+            Discover how real apps use Data → Patterns → Actions. Select one step at a time!
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -540,12 +547,54 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
                 <p className="text-lg text-gray-800 dark:text-gray-200">{currentScenario.description}</p>
               </div>
 
-              {/* Interactive Cards */}
-              <div className="space-y-6">
-                {renderCardSection('data', 'What DATA is the AI collecting?', Database, currentScenario.dataCards, selectedData)}
-                {renderCardSection('pattern', 'What PATTERN is it finding?', TrendingUp, currentScenario.patternCards, selectedPattern)}
-                {renderCardSection('action', 'What ACTION does it take?', Target, currentScenario.actionCards, selectedAction)}
+              {/* Step Progress Indicator */}
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  currentStep === 'data' || selectedData
+                    ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-500'
+                    : 'bg-gray-100 dark:bg-gray-800 border-gray-300'
+                }`}>
+                  <Database className="w-4 h-4" />
+                  <span className="text-sm font-medium">1. Data</span>
+                  {selectedData && <CheckCircle className="w-4 h-4 text-green-600" />}
+                </div>
+                <div className="w-8 h-0.5 bg-gray-300" />
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  currentStep === 'pattern' || selectedPattern
+                    ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-500'
+                    : 'bg-gray-100 dark:bg-gray-800 border-gray-300'
+                }`}>
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="text-sm font-medium">2. Pattern</span>
+                  {selectedPattern && <CheckCircle className="w-4 h-4 text-green-600" />}
+                </div>
+                <div className="w-8 h-0.5 bg-gray-300" />
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  currentStep === 'action' || selectedAction
+                    ? 'bg-green-100 dark:bg-green-900/30 border-green-500'
+                    : 'bg-gray-100 dark:bg-gray-800 border-gray-300'
+                }`}>
+                  <Target className="w-4 h-4" />
+                  <span className="text-sm font-medium">3. Action</span>
+                  {selectedAction && <CheckCircle className="w-4 h-4 text-green-600" />}
+                </div>
               </div>
+
+              {/* Current Step Content */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4"
+                >
+                  {currentStep === 'data' && renderCardSection('data', 'What DATA is the AI collecting?', Database, currentScenario.dataCards, selectedData)}
+                  {currentStep === 'pattern' && renderCardSection('pattern', 'What PATTERN is it finding?', TrendingUp, currentScenario.patternCards, selectedPattern)}
+                  {currentStep === 'action' && renderCardSection('action', 'What ACTION does it take?', Target, currentScenario.actionCards, selectedAction)}
+                </motion.div>
+              </AnimatePresence>
 
               {/* Feedback */}
               {showFeedback && (
@@ -583,18 +632,9 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
                 </motion.div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex justify-between pt-4">
-                {!showFeedback ? (
-                  <Button
-                    onClick={checkAnswers}
-                    disabled={!isAnswerComplete}
-                    className="w-full"
-                    size="lg"
-                  >
-                    Check Answers
-                  </Button>
-                ) : (
+              {/* Action Buttons - Only show when feedback is visible */}
+              {showFeedback && (
+                <div className="pt-4">
                   <Button
                     onClick={nextScenario}
                     className="w-full"
@@ -602,8 +642,8 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
                   >
                     {currentScenarioIndex < scenarios.length - 1 ? 'Next Scenario' : 'Complete Activity'}
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
 

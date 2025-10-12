@@ -65,10 +65,38 @@ export const generateWithGemini = async (
         temperature: options.temperature ?? 0.7, // Balanced creativity
         maxOutputTokens: options.maxOutputTokens ?? 1500, // High limit to account for thinking (500+) + response (200-300)
       },
+      // Safety settings for educational environment with high school students (ages 14-18)
+      // These filters protect students from inappropriate content in AI responses
+      safetySettings: [
+        {
+          category: 'HARM_CATEGORY_HARASSMENT',
+          threshold: 'BLOCK_LOW_AND_ABOVE', // Strict - block harassment early
+        },
+        {
+          category: 'HARM_CATEGORY_HATE_SPEECH',
+          threshold: 'BLOCK_LOW_AND_ABOVE', // Strict - zero tolerance for hate speech
+        },
+        {
+          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+          threshold: 'BLOCK_MEDIUM_AND_ABOVE', // Moderate - educational discussions okay
+        },
+        {
+          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+          threshold: 'BLOCK_MEDIUM_AND_ABOVE', // Moderate - AI ethics discussions okay
+        },
+      ],
     });
 
     const result = await model.generateContent(prompt);
     const response = result.response;
+
+    // Check if response was blocked by safety filters
+    if (result.response.promptFeedback?.blockReason) {
+      console.warn('⚠️ Content blocked by Gemini safety filters:', result.response.promptFeedback.blockReason);
+      console.warn('This typically indicates inappropriate content in the student response');
+      return null; // Will trigger fallback message in calling function
+    }
+
     const text = response.text();
 
     if (!text || text.trim().length === 0) {
