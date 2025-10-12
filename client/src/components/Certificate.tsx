@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Download, Sparkles } from 'lucide-react';
+import { Award, Download, Sparkles, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 // import { useGame } from '../context/GameContext';
 
@@ -29,9 +29,23 @@ export const Certificate: React.FC<CertificateProps> = ({
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
-  
+
   // Use provided userName or fallback
   const displayName = userName || 'Valued Educator';
+
+  // Generate unique verification code (memoized so it stays consistent)
+  const verificationCode = useMemo(() => {
+    // Generate 8 random hex characters
+    const randomBytes = new Uint8Array(4);
+    crypto.getRandomValues(randomBytes);
+    return Array.from(randomBytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase();
+  }, []); // Empty deps = generated once on mount
+
+  // Format code as XXXX-XXXX
+  const formattedCode = `${verificationCode.slice(0, 4)}-${verificationCode.slice(4)}`;
 
   const downloadCertificate = async () => {
     if (isDownloading) return;
@@ -53,7 +67,7 @@ export const Certificate: React.FC<CertificateProps> = ({
         <div style="
           width: 800px;
           height: 600px;
-          background: white;
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
           border: 16px solid #2563eb;
           padding: 50px 60px;
           box-sizing: border-box;
@@ -62,7 +76,35 @@ export const Certificate: React.FC<CertificateProps> = ({
           display: flex;
           flex-direction: column;
           justify-content: space-between;
+          position: relative;
         ">
+          <!-- Verification Code Badge (Top Right) -->
+          <div style="
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1e40af;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 8px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          ">
+            <div style="
+              font-size: 9px;
+              color: #93c5fd;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              margin-bottom: 2px;
+            ">Verification Code</div>
+            <div style="
+              font-family: 'Courier New', monospace;
+              font-size: 16px;
+              font-weight: bold;
+              color: #ffffff;
+              letter-spacing: 2px;
+            ">${formattedCode}</div>
+          </div>
+
           <div>
             <h1 style="
               font-size: 38px;
@@ -71,61 +113,94 @@ export const Certificate: React.FC<CertificateProps> = ({
               margin: 0 0 40px 0;
             ">Certificate of Completion</h1>
           </div>
-          
+
           <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
             <p style="
               font-size: 16px;
               color: #374151;
               margin: 0 0 20px 0;
             ">This certifies that</p>
-            
+
             <h2 style="
               font-size: 32px;
               font-weight: bold;
               color: #2563eb;
               margin: 0 0 20px 0;
             ">${displayName}</h2>
-            
+
             <p style="
               font-size: 16px;
               color: #374151;
               margin: 0 0 20px 0;
             ">has successfully completed the</p>
-            
+
             <h3 style="
               font-size: 24px;
               font-weight: bold;
               color: #2563eb;
               margin: 0 0 15px 0;
             ">${courseName}</h3>
-            
+
             <p style="
               font-size: 16px;
               color: #374151;
               margin: 0;
             ">learning activity</p>
           </div>
-          
-          <div style="display: flex; flex-direction: column; align-items: center;">
-            <p style="
-              font-size: 14px;
-              color: #6b7280;
-              margin: 0 0 20px 0;
-            ">Completed on ${completionDate}</p>
-            
+
+          <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <!-- Left: Date and Seal -->
+            <div style="display: flex; flex-direction: column; align-items: flex-start; flex: 1;">
+              <p style="
+                font-size: 14px;
+                color: #6b7280;
+                margin: 0 0 10px 0;
+              ">Completed on ${completionDate}</p>
+
+              <div style="
+                width: 50px;
+                height: 50px;
+                background: #fbbf24;
+                border: 3px solid #f59e0b;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              ">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#b45309" stroke="none">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Right: Verification Info -->
             <div style="
-              width: 50px;
-              height: 50px;
-              background: #fbbf24;
-              border: 3px solid #f59e0b;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
+              text-align: right;
+              padding: 12px 16px;
+              background: rgba(255, 255, 255, 0.7);
+              border-left: 3px solid #3b82f6;
+              border-radius: 4px;
             ">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#b45309" stroke="none">
-                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-              </svg>
+              <p style="
+                font-size: 10px;
+                color: #6b7280;
+                margin: 0 0 4px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              ">Certificate ID</p>
+              <p style="
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                font-weight: bold;
+                color: #1e40af;
+                margin: 0;
+                letter-spacing: 1px;
+              ">${formattedCode}</p>
+              <p style="
+                font-size: 9px;
+                color: #9ca3af;
+                margin: 4px 0 0 0;
+              ">Unique certificate identifier</p>
             </div>
           </div>
         </div>
@@ -209,7 +284,7 @@ export const Certificate: React.FC<CertificateProps> = ({
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="max-w-2xl mx-auto"
     >
-      <Card 
+      <Card
         ref={certificateRef}
         className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 border-2 border-yellow-500 relative overflow-hidden group"
       >
@@ -217,6 +292,15 @@ export const Certificate: React.FC<CertificateProps> = ({
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full blur-3xl" />
+        </div>
+
+        {/* Verification Code Badge (Top Right) */}
+        <div className="absolute top-4 right-4 z-20 bg-blue-800 border-2 border-blue-500 rounded-lg px-4 py-2 shadow-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <Shield className="w-3 h-3 text-blue-300" />
+            <p className="text-[10px] text-blue-300 uppercase tracking-wider">Verification Code</p>
+          </div>
+          <p className="font-mono font-bold text-lg text-white tracking-widest">{formattedCode}</p>
         </div>
 
         <CardContent className="relative z-10 p-12 text-center">
@@ -272,6 +356,15 @@ export const Certificate: React.FC<CertificateProps> = ({
                 <span>You can close this window after downloading - but make sure to save your certificate first!</span>
               </li>
             </ol>
+            <div className="mt-3 p-3 bg-blue-900/20 border border-blue-500/30 rounded flex items-start gap-2">
+              <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-blue-300 text-sm font-semibold mb-1">Verification Code: {formattedCode}</p>
+                <p className="text-blue-200 text-xs">
+                  Each certificate has a unique verification code (shown in the top-right corner). This helps prevent certificate sharing and ensures authenticity.
+                </p>
+              </div>
+            </div>
             <div className="mt-3 p-3 bg-yellow-900/20 border border-yellow-500/30 rounded">
               <p className="text-yellow-300 text-sm">
                 <strong>Note:</strong> You cannot access this certificate again without completing the entire module, so please download it now.
