@@ -225,19 +225,50 @@ export default function HomePage() {
         </div>
 
         <div className="mt-12 text-center">
-          <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
-            <h2 className="text-xl font-semibold mb-3">Direct Link Access</h2>
-            <p className="text-gray-600 mb-4">
-              You can share direct links to any module using the URL format:
+          <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
+            <h2 className="text-xl font-semibold mb-3">📎 Production Module Links</h2>
+            <p className="text-gray-600 mb-6">
+              Direct links to share with students. Click any link to copy.
             </p>
-            <code className="bg-gray-100 px-3 py-1 rounded text-sm">
-              https://your-domain.com/module/[module-id]
-            </code>
-            <p className="text-sm text-gray-500 mt-4">
-              Example: https://your-domain.com/module/what-is-ai
-            </p>
-            <p className="text-xs text-gray-500 mt-2 font-semibold">
-              Note: Each module requires its own name entry for proper certificate attribution.
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
+              {modules.map((module) => {
+                const productionUrl = `https://AILitStudents.replit.app/module/${module.id}`;
+                const isCopied = copiedId === `prod-${module.id}`;
+
+                return (
+                  <button
+                    key={module.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigator.clipboard.writeText(productionUrl);
+                      setCopiedId(`prod-${module.id}`);
+                      setTimeout(() => setCopiedId(null), 2000);
+                    }}
+                    className="flex items-start gap-3 p-3 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg transition-all group text-left"
+                  >
+                    <div className="flex-shrink-0 mt-1">
+                      {isCopied ? (
+                        <Check className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm mb-1">
+                        {module.title}
+                      </p>
+                      <p className="text-xs font-mono text-gray-600 break-all">
+                        {productionUrl}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="text-xs text-gray-500 mt-6 font-semibold">
+              💡 Tip: Each module requires name entry for proper certificate attribution
             </p>
           </div>
 
