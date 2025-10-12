@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown } from 'lucide-react';
+import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
 const modules = [
@@ -87,11 +87,24 @@ export default function HomePage() {
   const copyModuleUrl = (e: React.MouseEvent, moduleId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const url = `${window.location.origin}/module/${moduleId}`;
     navigator.clipboard.writeText(url);
     setCopiedId(moduleId);
-    
+
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 2000);
+  };
+
+  const copyProductionUrl = (e: React.MouseEvent, moduleId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const url = `https://AILitStudents.replit.app/module/${moduleId}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(`prod-${moduleId}`);
+
     setTimeout(() => {
       setCopiedId(null);
     }, 2000);
@@ -204,17 +217,30 @@ export default function HomePage() {
                           <Clock className="w-4 h-4 mr-1" />
                           <span>{module.duration}</span>
                         </div>
-                        <button
-                          onClick={(e) => copyModuleUrl(e, module.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-lg"
-                          title="Copy module link"
-                        >
-                          {copiedId === module.id ? (
-                            <Check className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <Copy className="w-4 h-4 text-gray-600" />
-                          )}
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => copyModuleUrl(e, module.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-lg"
+                            title="Copy local link"
+                          >
+                            {copiedId === module.id ? (
+                              <Check className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Copy className="w-4 h-4 text-gray-600" />
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => copyProductionUrl(e, module.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-blue-100 rounded-lg"
+                            title="Copy production link"
+                          >
+                            {copiedId === `prod-${module.id}` ? (
+                              <Check className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <ExternalLink className="w-4 h-4 text-blue-600" />
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -225,53 +251,6 @@ export default function HomePage() {
         </div>
 
         <div className="mt-12 text-center">
-          <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
-            <h2 className="text-xl font-semibold mb-3">📎 Production Module Links</h2>
-            <p className="text-gray-600 mb-6">
-              Direct links to share with students. Click any link to copy.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
-              {modules.map((module) => {
-                const productionUrl = `https://AILitStudents.replit.app/module/${module.id}`;
-                const isCopied = copiedId === `prod-${module.id}`;
-
-                return (
-                  <button
-                    key={module.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigator.clipboard.writeText(productionUrl);
-                      setCopiedId(`prod-${module.id}`);
-                      setTimeout(() => setCopiedId(null), 2000);
-                    }}
-                    className="flex items-start gap-3 p-3 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg transition-all group text-left"
-                  >
-                    <div className="flex-shrink-0 mt-1">
-                      {isCopied ? (
-                        <Check className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <Copy className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 text-sm mb-1">
-                        {module.title}
-                      </p>
-                      <p className="text-xs font-mono text-gray-600 break-all">
-                        {productionUrl}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <p className="text-xs text-gray-500 mt-6 font-semibold">
-              💡 Tip: Each module requires name entry for proper certificate attribution
-            </p>
-          </div>
-
           {/* Advanced Settings for Testing */}
           <div className="mt-4">
             <button
