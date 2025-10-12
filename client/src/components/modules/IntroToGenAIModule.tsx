@@ -13,6 +13,10 @@ import { useActivityRegistry } from '../../context/ActivityRegistryContext';
 import { useDevMode } from '@/context/DevModeContext';
 // Enhanced interactive activities - no longer using drag and drop
 // Developer mode props will be passed from activity wrapper
+import { saveProgress, loadProgress, clearProgress, getProgressSummary } from '@/lib/progressPersistence';
+import ResumeProgressDialog from '../WhatIsAIModule/ResumeProgressDialog';
+
+const MODULE_ID = 'intro-to-gen-ai';
 
 interface IntroToGenAIModuleProps {
   onComplete?: () => void;
@@ -131,6 +135,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     clearRegistry
   } = useActivityRegistry();
   const { isDevModeActive, goToActivity: devGoToActivity } = useDevMode();
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [savedProgress, setSavedProgress] = useState<ReturnType<typeof getProgressSummary>>(null);
 
   // Define phases for navigation
   const phases: Phase[] = [
@@ -139,6 +145,13 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     'video-segment-3', 'exit-activity', 'certificate'
   ];
   const currentPhaseIndex = phases.indexOf(phase);
+
+  // Convert phases to activities format for progress persistence
+  const phaseActivities = phases.map((phaseId, index) => ({
+    id: phaseId,
+    title: phaseId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    completed: completedPhases.has(phaseId)
+  }));
   const [sortingGameScore, setSortingGameScore] = useState(0);
   const [reflectionResponse, setReflectionResponse] = useState('');
   const [aiFeedback, setAIFeedback] = useState('');
@@ -198,6 +211,32 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
     console.log('🔧 IntroToGenAIModule: All activities registered');
   }, []); // Only register once on mount to avoid loops
+
+  // Load progress on mount
+  useEffect(() => {
+    const progress = loadProgress(MODULE_ID, phaseActivities);
+    if (progress) {
+      const summary = getProgressSummary(MODULE_ID);
+      setSavedProgress(summary);
+      setShowResumeDialog(true);
+      console.log('✅ Progress found - showing resume dialog');
+    } else {
+      console.log('ℹ️ No valid progress found - starting fresh');
+    }
+  }, []);
+
+  // Save progress when phase or completedPhases change
+  useEffect(() => {
+    // Don't save on initial render
+    if (currentPhaseIndex === 0 && completedPhases.size === 0) {
+      return;
+    }
+    // Don't save while showing resume dialog
+    if (showResumeDialog) {
+      return;
+    }
+    saveProgress(MODULE_ID, currentPhaseIndex, phaseActivities);
+  }, [currentPhaseIndex, completedPhases, showResumeDialog]);
 
   // Listen for dev panel navigation commands via event
   useEffect(() => {
@@ -321,13 +360,43 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    
+
     debounceTimerRef.current = setTimeout(() => {
       if (isMountedRef.current) {
         handleReflectionSubmit(value);
       }
     }, 500);
   }, []);
+
+  // Progress persistence handlers
+  const handleResumeProgress = () => {
+    const progress = loadProgress(MODULE_ID, phaseActivities);
+    if (progress) {
+      const targetPhase = phases[progress.currentActivity];
+      setPhase(targetPhase);
+      // Restore completed phases
+      const newCompletedPhases = new Set<Phase>();
+      progress.activities.forEach((activity, index) => {
+        if (activity.completed && index < phases.length) {
+          newCompletedPhases.add(phases[index]);
+        }
+      });
+      setCompletedPhases(newCompletedPhases);
+      setShowResumeDialog(false);
+      console.log(`✅ Resumed at phase ${progress.currentActivity + 1}: ${targetPhase}`);
+    } else {
+      console.warn('⚠️ Could not resume - starting over');
+      handleStartOver();
+    }
+  };
+
+  const handleStartOver = () => {
+    clearProgress(MODULE_ID);
+    setShowResumeDialog(false);
+    setPhase('introduction');
+    setCompletedPhases(new Set());
+    console.log('🔄 Starting over - progress cleared');
+  };
 
   // Enhanced interactive activity logic implemented in individual phase renders
 
@@ -1380,8 +1449,9 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
           instructor="AI Literacy Platform"
           moduleId="intro-to-gen-ai"
           onDownload={() => {
+            clearProgress(MODULE_ID);
             console.log('📊 Certificate downloaded for Introduction to Generative AI module');
-            
+
             // Log completion analytics
             fetch('/api/analytics/certificate', {
               method: 'POST',
@@ -1624,6 +1694,17 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
   return (
     <>
+      {showResumeDialog && savedProgress && savedProgress.exists && (
+        <ResumeProgressDialog
+          activityIndex={savedProgress.activityIndex!}
+          activityTitle={savedProgress.activityTitle!}
+          totalActivities={savedProgress.totalActivities!}
+          lastUpdated={savedProgress.lastUpdated!}
+          onResume={handleResumeProgress}
+          onStartOver={handleStartOver}
+        />
+      )}
+
       {/* ModuleDevControls removed - using UniversalDevMode from context */}
 
       <div className="max-w-4xl mx-auto p-6">

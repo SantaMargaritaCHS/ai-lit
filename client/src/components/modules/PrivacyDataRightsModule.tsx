@@ -4,6 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Eye, UserCheck, Lock, AlertTriangle, CheckCircle, ArrowRight, Award } from 'lucide-react';
 import { useDevMode } from '@/context/DevModeContext';
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
+import { saveProgress, loadProgress, clearProgress, getProgressSummary } from '@/lib/progressPersistence';
+import ResumeProgressDialog from '../WhatIsAIModule/ResumeProgressDialog';
+
+const MODULE_ID = 'privacy-data-rights';
 
 interface PrivacyScenario {
   id: string;
@@ -121,6 +125,10 @@ export function PrivacyDataRightsModule({ onComplete, userName = "AI Explorer" }
   // ActivityRegistry hooks
   const { registerActivity, clearRegistry, goToActivity } = useActivityRegistry();
 
+  // Progress persistence state
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [savedProgress, setSavedProgress] = useState<ReturnType<typeof getProgressSummary>>(null);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [currentScenario, setCurrentScenario] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -189,6 +197,75 @@ export function PrivacyDataRightsModule({ onComplete, userName = "AI Explorer" }
     };
   }, [activities.length]);
 
+  // Load progress on mount
+  useEffect(() => {
+    const progress = loadProgress(MODULE_ID, activities);
+    if (progress) {
+      const summary = getProgressSummary(MODULE_ID);
+      setSavedProgress(summary);
+      setShowResumeDialog(true);
+      console.log('✅ Progress found - showing resume dialog');
+    } else {
+      console.log('ℹ️ No valid progress found - starting fresh');
+    }
+  }, []);
+
+  // Save progress when state changes
+  useEffect(() => {
+    // Don't save on initial render
+    if (currentStep === 0 && currentScenario === 0 && correctAnswers === 0 && !showResults) {
+      return;
+    }
+    // Don't save while showing resume dialog
+    if (showResumeDialog) {
+      return;
+    }
+    // Calculate current activity index
+    const currentActivityIndex = showResults ? activities.length - 1 : (currentStep === 0 ? 0 : currentScenario + 1);
+    // Create activities with completion status
+    const activitiesWithCompletion = activities.map((activity, index) => ({
+      ...activity,
+      completed: index < currentActivityIndex || (showResults && index === activities.length - 1)
+    }));
+    saveProgress(MODULE_ID, currentActivityIndex, activitiesWithCompletion);
+  }, [currentStep, currentScenario, showResults, showResumeDialog]);
+
+  // Progress persistence handlers
+  const handleResumeProgress = () => {
+    const progress = loadProgress(MODULE_ID, activities);
+    if (progress) {
+      const activityIndex = progress.currentActivity;
+      if (activityIndex === 0) {
+        setCurrentStep(0);
+        setCurrentScenario(0);
+        setShowResults(false);
+      } else if (activityIndex === activities.length - 1) {
+        setShowResults(true);
+      } else {
+        setCurrentStep(1);
+        setCurrentScenario(activityIndex - 1);
+        setShowResults(false);
+      }
+      setShowResumeDialog(false);
+      console.log(`✅ Resumed at activity ${activityIndex + 1}/${activities.length}`);
+    } else {
+      console.warn('⚠️ Could not resume - starting over');
+      handleStartOver();
+    }
+  };
+
+  const handleStartOver = () => {
+    clearProgress(MODULE_ID);
+    setShowResumeDialog(false);
+    setCurrentStep(0);
+    setCurrentScenario(0);
+    setShowResults(false);
+    setCorrectAnswers(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    console.log('🔄 Starting over - progress cleared');
+  };
+
   const handleAnswerSubmit = () => {
     if (selectedAnswer === null) return;
 
@@ -212,6 +289,8 @@ export function PrivacyDataRightsModule({ onComplete, userName = "AI Explorer" }
   };
 
   const handleComplete = () => {
+    clearProgress(MODULE_ID);
+    console.log('🎓 Module complete - progress cleared');
     onComplete();
   };
 
@@ -487,13 +566,22 @@ export function PrivacyDataRightsModule({ onComplete, userName = "AI Explorer" }
     );
   };
 
-  if (showResults) {
-    return renderResults();
-  }
+  return (
+    <>
+      {showResumeDialog && savedProgress && savedProgress.exists && (
+        <ResumeProgressDialog
+          activityIndex={savedProgress.activityIndex!}
+          activityTitle={savedProgress.activityTitle!}
+          totalActivities={savedProgress.totalActivities!}
+          lastUpdated={savedProgress.lastUpdated!}
+          onResume={handleResumeProgress}
+          onStartOver={handleStartOver}
+        />
+      )}
 
-  if (currentStep === 0) {
-    return renderIntroduction();
-  }
-
-  return renderScenario();
+      {showResults && renderResults()}
+      {!showResults && currentStep === 0 && renderIntroduction()}
+      {!showResults && currentStep === 1 && renderScenario()}
+    </>
+  );
 }
