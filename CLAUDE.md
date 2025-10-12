@@ -1,5 +1,45 @@
 # CLAUDE.md - AI Assistant Guidelines for AI Literacy Student Platform
 
+## 🔐 IMPORTANT: Secrets Management
+
+**CRITICAL**: This project uses API keys that must NEVER be committed to GitHub.
+
+### Secrets Location
+All secrets are stored in:
+- **Replit Secrets** (accessible via lock icon in Replit sidebar)
+- **Local file**: `/home/runner/workspace/.secrets.local` (gitignored)
+
+### Required Secrets
+```bash
+GEMINI_API_KEY=your_gemini_api_key_here
+BROWSERLESS_API_KEY=your_browserless_api_key_here
+AI_LITERACY_BOT_API_KEY=your_ai_literacy_bot_api_key_here
+VITE_GOOGLE_API_KEY=your_google_api_key_here
+```
+
+### Accessing Secrets in Scripts
+```bash
+# Load from local secrets file
+source /home/runner/workspace/.secrets.local
+
+# Or access directly from environment (Replit Secrets)
+echo $GEMINI_API_KEY
+```
+
+**NEVER**:
+- ❌ Commit `.secrets.local` to git
+- ❌ Hardcode API keys in source files
+- ❌ Share API keys in documentation
+- ❌ Push secrets to public repositories
+
+**ALWAYS**:
+- ✅ Use environment variables
+- ✅ Keep secrets in `.secrets.local` (gitignored)
+- ✅ Document what secrets are needed, not their values
+- ✅ Rotate keys if accidentally exposed
+
+---
+
 ## 🎯 Project Overview
 
 ### Core Purpose
@@ -246,6 +286,180 @@ useEffect(() => {
 **Problem**: Module "bounces back" to previous activity
 - Solution: Remove activity registration from state-dependent useEffect
 - Solution: Ensure registration only happens once on mount with empty deps `[]`
+
+## 🔍 Gemini Vision Workflow for Automated Testing
+
+### Overview
+This project uses **Gemini Vision API** to automatically analyze the application's UI and diagnose issues. This is superior to traditional browser automation because Gemini can understand context, identify bugs, and provide actionable insights.
+
+### Key Scripts
+
+#### 1. Gemini Vision Inspector
+**Path**: `/home/runner/workspace/scripts/gemini-vision-inspector.js`
+
+**What it does**:
+- Takes screenshots of the app using Browserless API
+- Analyzes screenshots with Gemini Vision
+- Identifies UI issues, bugs, and testing opportunities
+- Provides detailed, actionable recommendations
+
+**Usage**:
+```bash
+node /home/runner/workspace/scripts/gemini-vision-inspector.js
+```
+
+**When to use**:
+- "Inspect the What Is AI module"
+- "Check if the UI looks correct"
+- "Analyze the current state of the app"
+- "Take a screenshot and tell me what you see"
+
+#### 2. Console Log Analyzer
+**Path**: `/home/runner/workspace/scripts/analyze-console-logs.js`
+
+**What it does**:
+- Takes console logs from browser DevTools
+- Uses Gemini to analyze and diagnose issues
+- Identifies missing logs, errors, and configuration problems
+
+**Usage**:
+```bash
+node /home/runner/workspace/scripts/analyze-console-logs.js
+```
+
+#### 3. Screenshot + Vision Workflow
+
+**Best practice for debugging**:
+
+1. **Take a screenshot** with Browserless:
+```bash
+curl -X POST 'https://production-sfo.browserless.io/screenshot?token=${BROWSERLESS_API_KEY}' \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://AILitStudents.replit.app/module/what-is-ai"}' \
+  --output /home/runner/workspace/screenshots/debug.png
+```
+
+2. **Analyze with Gemini Vision**:
+```bash
+node /home/runner/workspace/scripts/gemini-vision-inspector.js
+```
+
+3. **Follow Gemini's recommendations** for next steps
+
+### Advantages Over Traditional Automation
+
+**Traditional Browser Automation (Puppeteer/Playwright)**:
+- ❌ Requires complex scripting
+- ❌ Breaks when UI changes
+- ❌ Can't understand context
+- ❌ Difficult to maintain
+
+**Gemini Vision Approach**:
+- ✅ Natural language analysis
+- ✅ Understands context and intent
+- ✅ Identifies bugs humans might miss
+- ✅ Provides actionable recommendations
+- ✅ Works with any screenshot
+- ✅ No complex scripting needed
+
+### Common Use Cases
+
+#### Testing Gemini API Feedback
+```bash
+# 1. Take screenshot of reflection activity
+curl -X POST 'https://production-sfo.browserless.io/screenshot?token=${BROWSERLESS_API_KEY}' \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://AILitStudents.replit.app/module/what-is-ai"}' \
+  --output screenshots/reflection-test.png
+
+# 2. Ask Gemini to analyze
+node scripts/gemini-vision-inspector.js
+
+# 3. Follow its guidance to test feedback
+```
+
+#### Debugging UI Issues
+```bash
+# Just run the inspector - it handles everything
+node scripts/gemini-vision-inspector.js
+```
+
+#### Analyzing Console Logs
+```bash
+# Copy console logs from DevTools and paste when prompted
+node scripts/analyze-console-logs.js
+```
+
+### Integration with Development Workflow
+
+**When Claude should use Gemini Vision**:
+
+1. **User reports UI bug**: "The button isn't showing"
+   → Take screenshot, analyze with Gemini Vision
+
+2. **Testing new features**: "Does the reflection activity look right?"
+   → Screenshot + analysis
+
+3. **Debugging errors**: "Why isn't the feedback working?"
+   → Analyze console logs + screenshot
+
+4. **Visual regression**: "Did my changes break the UI?"
+   → Before/after screenshots + comparison
+
+5. **Accessibility review**: "Is this accessible?"
+   → Gemini can identify contrast issues, missing labels, etc.
+
+### API Keys Required
+
+- `GEMINI_API_KEY`: For vision analysis (stored in `.secrets.local`)
+- `BROWSERLESS_API_KEY`: For taking screenshots (stored in `.secrets.local`)
+
+**NEVER commit these to git!**
+
+### Screenshot Storage
+
+All screenshots are saved to:
+```
+/home/runner/workspace/screenshots/
+```
+
+This directory is **NOT in .gitignore** so screenshots can be committed if needed for documentation, but API keys in scripts are loaded from environment variables.
+
+### Troubleshooting
+
+**"BROWSERLESS_API_KEY not found"**:
+```bash
+# Load secrets
+source /home/runner/workspace/.secrets.local
+
+# Or export manually
+export BROWSERLESS_API_KEY="your_key_here"
+```
+
+**"Gemini API key not found"**:
+```bash
+# Check if set
+echo $GEMINI_API_KEY
+
+# Load from secrets file
+source /home/runner/workspace/.secrets.local
+```
+
+**Screenshot fails**:
+- Ensure Browserless account is active
+- Check API quota hasn't been exceeded
+- Verify the URL is publicly accessible
+
+### Files Created
+
+| File | Purpose | Git Status |
+|------|---------|------------|
+| `/home/runner/workspace/scripts/gemini-vision-inspector.js` | Main vision analyzer | ✅ Commit |
+| `/home/runner/workspace/scripts/analyze-console-logs.js` | Console log analyzer | ✅ Commit |
+| `/home/runner/workspace/.secrets.local` | API keys storage | ❌ **NEVER COMMIT** |
+| `/home/runner/workspace/screenshots/` | Screenshot storage | ✅ Commit (images only) |
+
+---
 
 ## 🔄 Checkpoint Restart System
 

@@ -12,7 +12,8 @@
       "Read(//home/runner/**)",
       "Bash(source:*)",
       "Bash(echo $GEMINI_API_KEY)",
-      "Bash(echo $REPL_SLUG)"
+      "Bash(echo $REPL_SLUG)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

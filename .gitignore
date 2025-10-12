@@ -12,6 +12,13 @@ build
 .env.local
 .env.production
 
+# Secrets - NEVER COMMIT THESE
+.secrets.local
+*.key
+*.pem
+*secret*
+*SECRET*
+
 # IDE
 .vscode
 .idea

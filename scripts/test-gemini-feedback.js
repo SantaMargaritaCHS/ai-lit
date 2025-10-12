@@ -67,10 +67,16 @@ export default async ({ page }) => {
   console.log('✏️  Filling in name...');
   await page.type('input[placeholder*="name"]', 'Test User');
   await page.click('input[type="checkbox"]');
-  await page.click('button:has-text("Start Learning")');
+
+  // Find and click Start Learning button
+  await page.evaluate(() => {
+    const buttons = Array.from(document.querySelectorAll('button'));
+    const startButton = buttons.find(btn => btn.textContent.includes('Start Learning'));
+    if (startButton) startButton.click();
+  });
 
   // Wait for module to load
-  await page.waitForTimeout(3000);
+  await new Promise(r => setTimeout(r, 3000));
 
   // Activate dev mode
   console.log('🔧 Activating dev mode...');
@@ -80,7 +86,7 @@ export default async ({ page }) => {
   await page.keyboard.up('Alt');
   await page.keyboard.up('Control');
 
-  await page.waitForTimeout(1000);
+  await new Promise(r => setTimeout(r, 1000));
 
   // Check if password prompt appeared
   const hasPasswordPrompt = await page.$('input[type="password"]');
@@ -88,7 +94,7 @@ export default async ({ page }) => {
     console.log('🔑 Entering dev mode password...');
     await page.type('input[type="password"]', '752465Ledezma');
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(2000);
+    await new Promise(r => setTimeout(r, 2000));
   }
 
   // Take screenshot after dev mode
@@ -106,7 +112,7 @@ export default async ({ page }) => {
   if (reflectionButton) {
     console.log('✅ Found reflection activity, clicking...');
     await reflectionButton.asElement().click();
-    await page.waitForTimeout(3000);
+    await new Promise(r => setTimeout(r, 3000));
   }
 
   // Try to submit a reflection
@@ -115,7 +121,7 @@ export default async ({ page }) => {
   if (textarea) {
     await textarea.type('This is a comprehensive test reflection about artificial intelligence. AI is transforming how we learn, work, and interact with technology in profound ways. I think the implications are far-reaching.');
 
-    await page.waitForTimeout(1000);
+    await new Promise(r => setTimeout(r, 1000));
 
     // Find and click submit button
     const submitButton = await page.evaluateHandle(() => {
@@ -134,7 +140,7 @@ export default async ({ page }) => {
 
       // Wait for feedback (important!)
       console.log('⏳ Waiting for Gemini API response...');
-      await page.waitForTimeout(8000);
+      await new Promise(r => setTimeout(r, 8000));
     }
   }
 
