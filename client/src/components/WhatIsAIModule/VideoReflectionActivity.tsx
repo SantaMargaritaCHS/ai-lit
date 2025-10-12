@@ -25,6 +25,7 @@ export default function VideoReflectionActivity({
   const [aiFeedback, setAiFeedback] = useState('');
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [needsRetry, setNeedsRetry] = useState(false);
 
 
   // Developer mode auto-fill responses based on video segment
@@ -55,16 +56,37 @@ export default function VideoReflectionActivity({
         setAiFeedback(feedback);
         setShowFeedback(true);
         setIsLoadingFeedback(false);
+
+        // Check if the feedback is asking for retry (indicates invalid response)
+        const retryPhrases = [
+          "bit short",
+          "unclear",
+          "elaborate more",
+          "please try again",
+          "could you expand"
+        ];
+        const needsRetryResponse = retryPhrases.some(phrase =>
+          feedback.toLowerCase().includes(phrase)
+        );
+        setNeedsRetry(needsRetryResponse);
       } catch (error) {
         console.error('Failed to get AI feedback:', error);
         setAiFeedback('Thank you for your thoughtful reflection! Your insights about AI are valuable as you continue learning.');
         setShowFeedback(true);
         setIsLoadingFeedback(false);
+        setNeedsRetry(false);
       }
     } else {
       // Continue to next activity
       onComplete();
     }
+  };
+
+  const handleTryAgain = () => {
+    setShowFeedback(false);
+    setAiFeedback('');
+    setNeedsRetry(false);
+    // Keep the response so they can edit it
   };
 
   const minResponseLength = 20;
@@ -131,7 +153,7 @@ export default function VideoReflectionActivity({
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-500">
                   {response.length} characters
-                  {minResponseLength && ` (minimum: ${minResponseLength})`}
+                  {minResponseLength && ` (suggested minimum: ${minResponseLength})`}
                 </div>
                 {isResponseValid && (
                   <div className="text-green-600 text-sm font-medium flex items-center gap-1">
@@ -148,37 +170,82 @@ export default function VideoReflectionActivity({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-6"
+              className={`border-2 rounded-lg p-6 ${
+                needsRetry
+                  ? 'bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 border-yellow-300 dark:border-yellow-700'
+                  : 'bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border-purple-300 dark:border-purple-700'
+              }`}
             >
               <div className="flex items-start gap-3">
-                <div className="bg-purple-200 dark:bg-purple-800 rounded-full p-2 flex-shrink-0">
-                  <Sparkles className="w-5 h-5 text-purple-700 dark:text-purple-300" />
+                <div className={`rounded-full p-2 flex-shrink-0 ${
+                  needsRetry
+                    ? 'bg-yellow-200 dark:bg-yellow-800'
+                    : 'bg-purple-200 dark:bg-purple-800'
+                }`}>
+                  <Sparkles className={`w-5 h-5 ${
+                    needsRetry
+                      ? 'text-yellow-700 dark:text-yellow-300'
+                      : 'text-purple-700 dark:text-purple-300'
+                  }`} />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-3">AI Feedback</h4>
-                  <p className="text-purple-900 dark:text-purple-200 leading-relaxed">{aiFeedback}</p>
+                  <h4 className={`font-semibold mb-3 ${
+                    needsRetry
+                      ? 'text-yellow-900 dark:text-yellow-100'
+                      : 'text-purple-900 dark:text-purple-100'
+                  }`}>
+                    AI Feedback
+                  </h4>
+                  <p className={`leading-relaxed ${
+                    needsRetry
+                      ? 'text-yellow-900 dark:text-yellow-200'
+                      : 'text-purple-900 dark:text-purple-200'
+                  }`}>
+                    {aiFeedback}
+                  </p>
                 </div>
               </div>
             </motion.div>
           )}
 
-          <Button
-            onClick={handleSubmit}
-            disabled={!isResponseValid && !showFeedback}
-            className="w-full"
-            size="lg"
-          >
-            {isLoadingFeedback ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Getting AI Feedback...
-              </>
-            ) : showFeedback ? (
-              'Continue Learning'
-            ) : (
-              'Submit Reflection'
-            )}
-          </Button>
+          {/* Show appropriate buttons based on state */}
+          {needsRetry ? (
+            <div className="flex gap-3">
+              <Button
+                onClick={handleTryAgain}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                size="lg"
+              >
+                Try Again
+              </Button>
+              <Button
+                onClick={onComplete}
+                variant="outline"
+                className="flex-1"
+                size="lg"
+              >
+                Continue Anyway
+              </Button>
+            </div>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={isLoadingFeedback}
+              className="w-full"
+              size="lg"
+            >
+              {isLoadingFeedback ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Getting AI Feedback...
+                </>
+              ) : showFeedback ? (
+                'Continue Learning'
+              ) : (
+                'Submit Reflection'
+              )}
+            </Button>
+          )}
         </CardContent>
       </Card>
       </motion.div>

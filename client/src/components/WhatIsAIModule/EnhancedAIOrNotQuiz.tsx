@@ -7,8 +7,6 @@ import { CheckCircle, XCircle, ArrowRight, Lightbulb, RotateCcw, Brain } from 'l
 import ActivityIntroSlides, { type Slide } from '@/components/ActivityIntroSlides';
 import './WhatIsAIModule.css';
 
-const MIN_PASSING_SCORE = 0.70;
-
 interface EnhancedAIOrNotQuizProps {
   onComplete: () => void;
 }
@@ -29,19 +27,18 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
-  const [hasPassed, setHasPassed] = useState(false);
 
   // Define the intro slide
   const introSlides: Slide[] = [
     {
-      title: "Test Your Understanding",
-      subtitle: "See if you can identify AI in everyday technology",
+      title: "Try It Out: Spot the AI",
+      subtitle: "Explore how AI shows up in everyday technology",
       icon: Brain,
       content: (
         <div className="space-y-6 max-w-2xl mx-auto">
           <p className="text-lg text-gray-700 dark:text-gray-300 text-center">
-            You've seen some examples. Now let's see if you can tell which technologies use AI
-            and which just follow programmed rules.
+            You've seen some examples. Now let's see if you can identify which technologies use AI
+            and which just follow programmed rules. This is just a fun way to explore!
           </p>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -61,10 +58,7 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
 
           <div className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-lg border-l-4 border-blue-600">
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              <strong>Passing score: 70%</strong> (9 out of 12 questions)
-            </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              If you don't pass, you can try again.
+              <strong>12 scenarios to explore</strong> - Each one teaches you something new about AI!
             </p>
           </div>
         </div>
@@ -188,16 +182,12 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
       setCurrentQuestion(currentQuestion + 1);
       setShowExplanation(false);
     } else {
-      const percentage = score / questions.length;
       setCompleted(true);
-      setHasPassed(percentage >= MIN_PASSING_SCORE);
 
-      // Only auto-complete if passed
-      if (percentage >= MIN_PASSING_SCORE) {
-        setTimeout(() => {
-          onComplete();
-        }, 3000);
-      }
+      // Auto-complete after showing results
+      setTimeout(() => {
+        onComplete();
+      }, 3000);
     }
   };
 
@@ -207,7 +197,6 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
     setShowExplanation(false);
     setScore(0);
     setCompleted(false);
-    setHasPassed(false);
   };
 
   const isAnswerCorrect = (questionId: string) => {
@@ -247,7 +236,7 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
             </div>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Test your ability to identify AI in everyday technology. Each scenario includes teaching points to build your understanding.
+            Explore everyday technology and learn to identify AI. Each scenario includes teaching points to build your understanding.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -337,29 +326,22 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
             </>
           ) : (
             <div className="text-center space-y-6">
-              <div className={`p-8 rounded-lg border-2 ${
-                hasPassed
-                  ? 'bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-950 dark:to-blue-950 border-green-300'
-                  : 'bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-950 dark:to-orange-950 border-yellow-300'
-              }`}>
+              <div className="p-8 rounded-lg border-2 bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-950 dark:to-blue-950 border-green-300">
                 <h3 className="text-2xl font-bold mb-4">
-                  {hasPassed ? 'Quiz Complete! 🎉' : 'Quiz Complete'}
+                  Activity Complete! 🎉
                 </h3>
-                <div className={`text-6xl font-bold mb-2 ${
-                  hasPassed ? 'text-green-600' : 'text-yellow-600'
-                }`}>
+                <div className="text-6xl font-bold mb-2 text-blue-600">
                   {score}/{questions.length}
                 </div>
                 <div className="text-lg font-semibold mb-2">
-                  {Math.round((score / questions.length) * 100)}% Score
+                  {Math.round((score / questions.length) * 100)}%
                 </div>
                 <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
-                  {hasPassed
-                    ? score === questions.length
-                      ? "Perfect score! You have an excellent understanding of what AI is and isn't."
-                      : "Great job! You've passed and demonstrated solid understanding of AI concepts."
-                    : `You need at least ${Math.round(MIN_PASSING_SCORE * 100)}% to pass. Review the teaching points and try again!`
-                  }
+                  {score === questions.length
+                    ? "Perfect! You have an excellent understanding of what AI is and isn't."
+                    : score >= questions.length * 0.8
+                    ? "Great job! You're getting the hang of identifying AI."
+                    : "Nice work exploring! The teaching points will help build your understanding."}
                 </p>
               </div>
 
@@ -374,20 +356,9 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
                 </p>
               </div>
 
-              {hasPassed ? (
-                <p className="text-sm text-gray-500">
-                  Moving to the next activity in 3 seconds...
-                </p>
-              ) : (
-                <Button
-                  onClick={resetQuiz}
-                  size="lg"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Try Again
-                </Button>
-              )}
+              <p className="text-sm text-gray-500">
+                Moving to the next activity in 3 seconds...
+              </p>
             </div>
           )}
         </CardContent>

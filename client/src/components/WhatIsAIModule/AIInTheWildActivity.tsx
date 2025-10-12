@@ -32,8 +32,6 @@ interface CardOption {
   isCorrect: boolean;
 }
 
-const MIN_PASSING_SCORE = 0.70;
-
 export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityProps) {
   const { isDevModeActive } = useDevMode();
   const [showIntroSlides, setShowIntroSlides] = useState(true);
@@ -44,7 +42,6 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
-  const [hasPassed, setHasPassed] = useState(false);
 
   // Define the intro slide
   const introSlides: Slide[] = [
@@ -298,16 +295,12 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
       setSelectedAction(null);
       setShowFeedback(false);
     } else {
-      const percentage = score / scenarios.length;
       setCompleted(true);
-      setHasPassed(percentage >= MIN_PASSING_SCORE);
 
-      // Only auto-complete if passed
-      if (percentage >= MIN_PASSING_SCORE) {
-        setTimeout(() => {
-          onComplete();
-        }, 3000);
-      }
+      // Auto-complete after showing results
+      setTimeout(() => {
+        onComplete();
+      }, 3000);
     }
   };
 
@@ -319,7 +312,6 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
     setShowFeedback(false);
     setScore(0);
     setCompleted(false);
-    setHasPassed(false);
   };
 
   const devAutoComplete = () => {
@@ -387,39 +379,28 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-4xl mx-auto"
       >
-        <Card className={`border-2 ${
-          hasPassed
-            ? 'bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900/20 dark:to-blue-900/20 border-green-300'
-            : 'bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-300'
-        }`}>
+        <Card className="border-2 bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900/20 dark:to-blue-900/20 border-green-300">
           <CardContent className="p-8 text-center space-y-6">
-            {hasPassed ? (
-              <Trophy className="w-16 h-16 text-yellow-500 mx-auto" />
-            ) : (
-              <Sparkles className="w-16 h-16 text-yellow-500 mx-auto" />
-            )}
+            <Trophy className="w-16 h-16 text-yellow-500 mx-auto" />
 
             <div>
               <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                {hasPassed ? 'Activity Complete! 🎉' : 'Almost There!'}
+                Activity Complete! 🎉
               </h2>
-              <div className={`text-6xl font-bold mb-2 ${
-                hasPassed ? 'text-green-600' : 'text-yellow-600'
-              }`}>
+              <div className="text-6xl font-bold mb-2 text-blue-600">
                 {score}/{scenarios.length}
               </div>
               <div className="text-lg font-semibold mb-2">
-                {Math.round((score / scenarios.length) * 100)}% Score
+                {Math.round((score / scenarios.length) * 100)}%
               </div>
             </div>
 
             <p className="text-lg text-gray-800 dark:text-gray-200">
-              {hasPassed
-                ? score === scenarios.length
-                  ? 'Perfect! You mastered the Data → Pattern → Action framework!'
-                  : 'Great job! You understand how AI works in real-world apps.'
-                : `You need at least ${Math.round(MIN_PASSING_SCORE * 100)}% to pass (${Math.ceil(scenarios.length * MIN_PASSING_SCORE)} out of ${scenarios.length}). Review the teaching points and try again!`
-              }
+              {score === scenarios.length
+                ? 'Perfect! You mastered the Data → Pattern → Action framework!'
+                : score >= scenarios.length * 0.7
+                ? 'Great job! You understand how AI works in real-world apps.'
+                : 'Nice work! You explored how AI systems work in everyday apps.'}
             </p>
 
             <div className="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border-2 border-blue-300">
@@ -428,20 +409,9 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
               </p>
             </div>
 
-            {hasPassed ? (
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Moving to next activity in 3 seconds...
-              </p>
-            ) : (
-              <Button
-                onClick={resetActivity}
-                size="lg"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Try Again
-              </Button>
-            )}
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Moving to next activity in 3 seconds...
+            </p>
           </CardContent>
         </Card>
       </motion.div>
