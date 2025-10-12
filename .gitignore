@@ -19,6 +19,12 @@ build
 *secret*
 *SECRET*
 
+# Screenshots - Generated for debugging, not committed
+screenshots/
+*.png
+*.jpg
+*.jpeg
+
 # IDE
 .vscode
 .idea

@@ -441,7 +441,40 @@ All screenshots are saved to:
 /home/runner/workspace/screenshots/
 ```
 
-This directory is **NOT in .gitignore** so screenshots can be committed if needed for documentation, but API keys in scripts are loaded from environment variables.
+**IMPORTANT**: This directory is **IN .gitignore** - screenshots are never committed to git. They are temporary debugging artifacts that are regenerated as needed.
+
+### ⚠️ CRITICAL: Vision Debugging URL Requirements
+
+**MUST USE PRODUCTION URL FOR VISION TESTING**
+
+When using Gemini Vision Inspector or taking screenshots for debugging, you **MUST use the production URL**, not localhost:
+
+✅ **Correct**: `https://AILitStudents.replit.app`
+❌ **Incorrect**: `http://localhost:5000` or `http://localhost:5001`
+
+**Why This Matters**:
+
+1. **School Device Restrictions**: The developer is working on a school device with restricted permissions that prevent installing:
+   - Local tunneling tools (ngrok, localtunnel, etc.)
+   - Network proxy software
+   - Any tools that would expose localhost to the internet
+
+2. **Browserless API Requirements**: The Browserless screenshot API requires publicly accessible URLs. It cannot reach `localhost` URLs because:
+   - Browserless runs on external servers
+   - It needs to fetch the URL over the public internet
+   - Private/local addresses are not accessible to external services
+
+3. **Replit Production is Always Available**: The production URL `https://AILitStudents.replit.app` is:
+   - Automatically deployed and always accessible
+   - Has automatic HTTPS
+   - Publicly accessible for testing
+   - Matches the actual user experience
+
+**What This Means for Testing**:
+- All Gemini Vision testing MUST use the production URL
+- Changes must be deployed/visible on production before vision testing
+- Cannot test local changes with vision until they're deployed
+- For local testing, use browser DevTools and manual inspection instead
 
 ### Troubleshooting
 
@@ -475,7 +508,7 @@ source /home/runner/workspace/.secrets.local
 | `/home/runner/workspace/scripts/gemini-vision-inspector.js` | Main vision analyzer | ✅ Commit |
 | `/home/runner/workspace/scripts/analyze-console-logs.js` | Console log analyzer | ✅ Commit |
 | `/home/runner/workspace/.secrets.local` | API keys storage | ❌ **NEVER COMMIT** |
-| `/home/runner/workspace/screenshots/` | Screenshot storage | ✅ Commit (images only) |
+| `/home/runner/workspace/screenshots/` | Screenshot storage | ❌ **NEVER COMMIT** (gitignored) |
 
 ---
 
@@ -1025,8 +1058,11 @@ With the bridge installed, you can:
 ## 🚦 Quick Status Checks
 
 ```bash
-# Check if app is running
+# Check if LOCAL dev server is running (localhost only, not for vision testing)
 curl -I http://localhost:5001/
+
+# OR check production deployment
+curl -I https://AILitStudents.replit.app/
 
 # Check TypeScript errors
 npx tsc --noEmit 2>&1 | grep "error TS" | wc -l
