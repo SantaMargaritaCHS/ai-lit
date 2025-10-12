@@ -75,13 +75,26 @@ function validateProgressIntegrity(
     }
   }
 
-  // Check 4: Current activity cannot exceed last completed activity
+  // Check 4: Current activity boundary check
+  // Allow current activity to be at most 1 ahead of last completed
+  // This accounts for "currently working on" state where the previous activity
+  // is marked complete but we're now on the next activity
   const lastCompletedIndex = progress.activities.findLastIndex(a => a.completed);
-  const maxAllowedIndex = lastCompletedIndex + 1; // Can be on next activity after last completed
 
-  if (progress.currentActivity > maxAllowedIndex) {
-    console.warn(`⚠️ TAMPERING DETECTED: Current activity (${progress.currentActivity}) exceeds max allowed (${maxAllowedIndex}). Resetting progress.`);
-    return false;
+  // Special case: If no activities completed yet, allow being on activity 0 or 1
+  // (activity 0 is welcome/intro, activity 1 is first real activity)
+  if (lastCompletedIndex === -1) {
+    if (progress.currentActivity > 1) {
+      console.warn(`⚠️ TAMPERING DETECTED: Current activity (${progress.currentActivity}) but no activities completed. Resetting progress.`);
+      return false;
+    }
+  } else {
+    // Normal case: current activity can be at most 1 ahead of last completed
+    const maxAllowedIndex = lastCompletedIndex + 1;
+    if (progress.currentActivity > maxAllowedIndex) {
+      console.warn(`⚠️ TAMPERING DETECTED: Current activity (${progress.currentActivity}) exceeds max allowed (${maxAllowedIndex}). Resetting progress.`);
+      return false;
+    }
   }
 
   console.log('✅ Progress integrity validated');
