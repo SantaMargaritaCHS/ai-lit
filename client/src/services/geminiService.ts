@@ -23,7 +23,7 @@ Provide specific, encouraging feedback that:
 5. Uses encouraging but professional language
 
 Do NOT be generic. Reference their specific example or idea.`,
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
       }),
     });
 

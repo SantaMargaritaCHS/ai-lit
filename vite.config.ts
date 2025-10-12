@@ -4,6 +4,12 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
+  // Expose GEMINI_API_KEY from Replit Secrets to client-side code
+  // Define it under BOTH names for maximum compatibility
+  define: {
+    'import.meta.env.GEMINI_API_KEY': JSON.stringify(process.env.GEMINI_API_KEY),
+    'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(process.env.GEMINI_API_KEY),
+  },
   plugins: [
     react(),
     runtimeErrorOverlay(),

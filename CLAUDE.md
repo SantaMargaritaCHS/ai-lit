@@ -599,11 +599,139 @@ VITE_DEV_MODE_SECRET_KEY=752465Ledezma
    - Memoize expensive computations
    - Handle loading and error states
 
-4. **Accessibility**
-   - Add ARIA labels to interactive elements
-   - Ensure keyboard navigation works
-   - Provide alt text for images
-   - Use semantic HTML elements
+4. **Accessibility & Color Contrast (CRITICAL)**
+
+   **THIS IS AN EDUCATIONAL PLATFORM FOR HIGH SCHOOL STUDENTS** - Some learners may have visual impairments, color blindness, or use the platform in various lighting conditions. Accessibility is not optional.
+
+   ### WCAG 2.1 AA Standards (MANDATORY)
+   - **Minimum contrast ratio**: 4.5:1 for normal text
+   - **Enhanced contrast ratio**: 7:1 for optimal readability
+   - **Large text (18pt+)**: Minimum 3:1 contrast ratio
+
+   ### Critical Rule: Background + Text Color Pairing
+
+   **⚠️ MANDATORY RULE**: When overriding a component's background color with Tailwind utility classes, you MUST ALWAYS specify the text color as well.
+
+   #### ❌ NEVER DO THIS:
+   ```tsx
+   // BAD - Missing text color specification
+   <Button className="bg-blue-600 hover:bg-blue-700">
+     Try Again
+   </Button>
+
+   // This creates poor contrast! The button may have black text on blue background.
+   ```
+
+   #### ✅ ALWAYS DO THIS:
+   ```tsx
+   // GOOD - Background AND text color specified
+   <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+     Try Again
+   </Button>
+
+   // Perfect! White text on blue background has excellent contrast.
+   ```
+
+   ### Tailwind Color Combinations (Safe Patterns)
+
+   **Dark backgrounds** (require light text):
+   ```tsx
+   // Blues
+   className="bg-blue-600 hover:bg-blue-700 text-white"
+   className="bg-blue-500 hover:bg-blue-600 text-white"
+
+   // Greens
+   className="bg-green-600 hover:bg-green-700 text-white"
+   className="bg-green-500 hover:bg-green-600 text-white"
+
+   // Reds
+   className="bg-red-600 hover:bg-red-700 text-white"
+   className="bg-red-500 hover:bg-red-600 text-white"
+
+   // Purples
+   className="bg-purple-600 hover:bg-purple-700 text-white"
+   className="bg-purple-500 hover:bg-purple-600 text-white"
+   ```
+
+   **Light backgrounds** (require dark text):
+   ```tsx
+   className="bg-gray-100 hover:bg-gray-200 text-gray-900"
+   className="bg-blue-100 hover:bg-blue-200 text-blue-900"
+   className="bg-green-100 hover:bg-green-200 text-green-900"
+   ```
+
+   ### When Using shadcn/ui Button Component
+
+   The Button component has built-in variants that handle color contrast correctly:
+   - `variant="default"` - Uses theme colors with proper contrast
+   - `variant="destructive"` - Red with white text
+   - `variant="outline"` - Border with proper text contrast
+   - `variant="secondary"` - Gray with proper text contrast
+   - `variant="ghost"` - Transparent with hover states
+
+   **Prefer using these variants** instead of custom background colors:
+   ```tsx
+   // PREFERRED
+   <Button variant="default">Continue</Button>
+   <Button variant="destructive">Delete</Button>
+
+   // ONLY if you need custom colors
+   <Button className="bg-blue-600 hover:bg-blue-700 text-white">Custom</Button>
+   ```
+
+   ### Testing Color Contrast
+
+   Before committing any UI changes:
+   1. **Visual check**: Can you read the text easily?
+   2. **Browser DevTools**: Use Chrome/Firefox accessibility inspector
+   3. **Online tools**: [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
+   4. **Dark mode**: Test in both light and dark themes
+
+   ### Common Accessibility Patterns
+
+   - **ARIA labels**: Add to interactive elements
+     ```tsx
+     <button aria-label="Close dialog">×</button>
+     ```
+
+   - **Keyboard navigation**: All interactive elements must be keyboard-accessible
+     ```tsx
+     <div role="button" tabIndex={0} onKeyDown={handleKeyDown}>
+     ```
+
+   - **Alt text**: Provide for all meaningful images
+     ```tsx
+     <img src="diagram.png" alt="Neural network architecture diagram" />
+     ```
+
+   - **Semantic HTML**: Use proper element types
+     ```tsx
+     <button> not <div onClick>
+     <nav> for navigation
+     <main> for main content
+     <article> for module content
+     ```
+
+   ### Red Flags to Watch For
+
+   If you see any of these patterns in a code review, **FIX IMMEDIATELY**:
+   - `bg-` without corresponding `text-` class
+   - Dark colors with dark text
+   - Light colors with light text
+   - Colored text on colored backgrounds without checking contrast
+   - Relying on color alone to convey information
+
+   ### Enforcement Checklist
+
+   Before marking any UI task as complete:
+   - [ ] All buttons with custom backgrounds have explicit text colors
+   - [ ] Contrast ratios meet WCAG AA standards (4.5:1 minimum)
+   - [ ] Dark mode variations tested and accessible
+   - [ ] Interactive elements have focus indicators
+   - [ ] Forms have proper labels and error messages
+   - [ ] Color is not the only way to convey information
+
+   **Remember**: Accessibility failures are not minor bugs - they exclude learners from using the platform. This is unacceptable for an educational tool.
 
 ## 🔄 Workflow Improvements with Claude-Gemini Bridge
 

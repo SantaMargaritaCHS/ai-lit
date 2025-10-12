@@ -1,0 +1,23 @@
+# Custom Bash Configuration for Better Terminal Experience
+
+# Source the custom .inputrc for paste shortcuts
+export INPUTRC=~/.inputrc
+
+# Alias for easier clipboard operations (if xclip or xsel is available)
+if command -v xclip &> /dev/null; then
+  alias pbcopy='xclip -selection clipboard'
+  alias pbpaste='xclip -selection clipboard -o'
+elif command -v xsel &> /dev/null; then
+  alias pbcopy='xsel --clipboard --input'
+  alias pbpaste='xsel --clipboard --output'
+fi
+
+# Quick shortcuts
+alias clip='pbcopy'  # Usage: cat file.txt | clip
+alias unclip='pbpaste'  # Usage: unclip > file.txt
+
+echo "✅ Custom terminal config loaded!"
+echo "💡 Tips:"
+echo "   - Ctrl+V now works for paste!"
+echo "   - Use 'clip' command to copy to clipboard"
+echo "   - Use 'unclip' command to paste from clipboard"

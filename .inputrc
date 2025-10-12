@@ -1,0 +1,13 @@
+# .inputrc - Custom Readline Configuration
+# This makes Ctrl+V work for paste in the terminal (instead of Ctrl+Shift+V)
+
+# Enable Ctrl+V for paste (instead of literal-next)
+"\C-v": paste-from-clipboard
+
+# Keep Shift+Insert as alternative paste
+"\e[2~": paste-from-clipboard
+
+# Standard keybindings
+"\C-u": unix-line-discard
+"\C-w": unix-word-rubout
+"\C-y": yank

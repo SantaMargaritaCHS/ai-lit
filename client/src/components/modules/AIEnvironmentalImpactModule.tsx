@@ -689,9 +689,9 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
               
               {/* Add Continue button that appears after feedback */}
               {reflectionFeedback && (
-                <Button 
+                <Button
                   onClick={handleNext}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Continue <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>

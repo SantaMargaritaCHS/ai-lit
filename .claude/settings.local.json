@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(npm run preview:*)"
+      "Bash(npm run preview:*)",
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(echo $XDG_SESSION_TYPE)",
+      "WebSearch",
+      "Bash(nix-env:*)",
+      "Bash(chmod:*)",
+      "Read(//home/runner/**)",
+      "Bash(source:*)",
+      "Bash(echo $GEMINI_API_KEY)",
+      "Bash(echo $REPL_SLUG)"
     ],
     "deny": [],
     "ask": []

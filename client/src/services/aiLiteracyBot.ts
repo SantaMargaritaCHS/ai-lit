@@ -44,11 +44,11 @@ export async function getAILiteracyFeedback(request: AIFeedbackRequest): Promise
     }
 
     const data = await response.json();
-    
+
     return {
       response: data.feedback || 'Thank you for your thoughtful response! AI literacy is an important skill to develop.',
       source: 'gemini',
-      model: 'gemini-1.5-flash'
+      model: 'gemini-2.5-flash'
     };
   } catch (error) {
     console.error('Error getting AI feedback:', error);

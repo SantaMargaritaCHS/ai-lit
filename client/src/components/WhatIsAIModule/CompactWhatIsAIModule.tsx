@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, ArrowRight, Clock, Target, Play, BookOpen, MessageCircle, Brain, Calendar, Trophy, Zap, Lightbulb, Smartphone, Home, Globe, Car } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, Clock, Target, Play, BookOpen, MessageCircle, Brain, Calendar, Trophy, Zap, Lightbulb, Smartphone, Home, Globe, Car, Loader2 } from 'lucide-react';
 // Developer mode is now handled by the UniversalDevModeProvider
 import { ReflectionActivity } from '@/hooks/useReflectionNavigation';
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
@@ -16,10 +16,9 @@ import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
 import { ExitTicket } from '@/components/ExitTicket';
 import { Certificate } from '@/components/Certificate';
 import { initializeRedesignAnalytics } from '@/services/videoAnalyticsRedesign';
-import WhatAIIsNotActivity from './WhatAIIsNotActivity';
-import AIInMyDayActivity from './AIInMyDayActivity';
-import AIPatternSpotterActivity from './AIPatternSpotterActivity';
-import ConnectingTheDotsActivity from './ConnectingTheDotsActivity';
+import EnhancedAIOrNotQuiz from './EnhancedAIOrNotQuiz';
+import AIInTheWildActivity from './AIInTheWildActivity';
+import VideoReflectionActivity from './VideoReflectionActivity';
 
 interface CompactWhatIsAIModuleProps {
   onComplete: () => void;
@@ -48,41 +47,48 @@ export default function CompactWhatIsAIModule({
   // Essential refs and state that need to be defined early
   const videoRef = useRef<HTMLVideoElement>(null);
   
-  // Activity flow state - REDESIGNED for better pedagogical flow
+  // Activity flow state - NEW IMPROVED PEDAGOGICAL FLOW
   const [currentActivity, setCurrentActivity] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [activities, setActivities] = useState<(ActivityState & Partial<ReflectionActivity>)[]>([
     { id: 'welcome', title: 'Welcome', completed: false },
-    { id: 'ai-in-my-day', title: 'AI in My Day', completed: false },
+    { id: 'ai-or-not-quiz', title: 'AI Spotter Challenge', completed: false },
     {
       id: 'video-intro',
-      title: 'Introduction Video',
+      title: 'Introduction Video (0:00-1:16)',
       completed: false,
       type: 'video-with-reflection'
     },
-    { id: 'connecting-dots', title: 'Connecting the Dots', completed: false },
-    { id: 'pattern-spotter', title: 'AI Pattern Spotter', completed: false },
+    { id: 'ai-in-the-wild', title: 'How AI Actually Works', completed: false },
     {
-      id: 'what-ai-is-not',
-      title: 'What AI is NOT',
+      id: 'video-segment-2',
+      title: 'AI as a Tool (2:22-2:58)',
+      completed: false,
+      type: 'video-with-reflection'
+    },
+    {
+      id: 'reflection-2',
+      title: 'Reflection: AI as a Tool',
       completed: false
     },
-    { id: 'exit-ticket', title: 'Exit Ticket', completed: false },
+    {
+      id: 'video-segment-3',
+      title: 'AI Inflection Point (3:00-3:31)',
+      completed: false,
+      type: 'video-with-reflection'
+    },
+    {
+      id: 'reflection-3',
+      title: 'Reflection: Future of AI',
+      completed: false
+    },
     { id: 'certificate', title: 'Certificate', completed: false }
   ]);
   
-  // Activity-specific states
-  const [showAgeReveal, setShowAgeReveal] = useState(false);
-  const [exitTicketResponse, setExitTicketResponse] = useState('');
-  const [exitTicketFeedback, setExitTicketFeedback] = useState('');
-  const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0);
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, boolean>>({});
-  const [showQuizExplanation, setShowQuizExplanation] = useState(false);
-  const [showQuizResults, setShowQuizResults] = useState(false);
-  const [quizScore, setQuizScore] = useState(0);
+  // Activity-specific states (cleaned up - removed unused states from old activities)
   
   // Activity Registry for dev mode
   const {
-    currentActivity: registryCurrentActivity,
     registerActivity,
     setCurrentActivity: setRegistryCurrentActivity,
     markActivityCompleted,
@@ -109,8 +115,6 @@ export default function CompactWhatIsAIModule({
 
   // Developer mode configurations for faster testing
   const waitTime = isDevModeActive ? 100 : 3000; // Reduced wait times in dev mode
-  const devReflectionText = "I used voice assistant for setting alarms, got Netflix recommendations based on viewing history, and used GPS navigation with traffic predictions.";
-  const devExitTicketResponse = "AI is like a smart computer system that can learn patterns from data to make predictions or help with tasks, similar to how humans learn from experience but much faster.";
 
 
   // Load video URLs and initialize analytics - Using direct URLs for fast loading
@@ -136,13 +140,13 @@ export default function CompactWhatIsAIModule({
         id: activity.id,
         type: activity.id === 'certificate' ? 'certificate' as const :
               activity.id.includes('video') ? 'video' as const :
-              activity.id === 'exit-ticket' ? 'reflection' as const :
+              activity.id.includes('reflection') ? 'reflection' as const :
               'interactive' as const,
-        title: activity.title,
+        name: activity.title, // Use 'name' not 'title' for Activity type
         completed: index < currentActivity // Mark as completed if before current
       };
       registerActivity(activityReg);
-      console.log(`  ✅ Registered: ${activityReg.title} (completed: ${activityReg.completed})`);
+      console.log(`  ✅ Registered: ${activityReg.name} (completed: ${activityReg.completed})`);
     });
 
     console.log('🔧 CompactWhatIsAIModule: All activities registered');
@@ -177,43 +181,8 @@ export default function CompactWhatIsAIModule({
     }
   }, [currentActivity, isDevModeActive]);
 
-  // Developer mode auto-fill effects
-  useEffect(() => {
-    if (isDevModeActive) {
-      // Auto-fill exit ticket based on current activity
-      const currentActivityData = activities[currentActivity];
-
-      if (currentActivityData?.id === 'exit-ticket') {
-        // Auto-fill exit ticket response
-        setExitTicketResponse(devExitTicketResponse);
-      }
-    }
-  }, [currentActivity, isDevModeActive]);
 
 
-  // Developer mode quiz auto-answer function
-  const devAutoAnswerQuiz = () => {
-    if (isDevModeActive && activities[currentActivity]?.id === 'ai-spotter-challenge') {
-      const currentQ = aiSpotterQuestions[currentQuizQuestion];
-      const correctAnswer = currentQ.isAI;
-
-      // Auto-select correct answer
-      setQuizAnswers(prev => ({ ...prev, [currentQ.id]: correctAnswer }));
-      setShowQuizExplanation(true);
-      setQuizScore(prev => prev + 1);
-
-      // Auto-advance after reduced time
-      setTimeout(() => {
-        if (currentQuizQuestion < aiSpotterQuestions.length - 1) {
-          setCurrentQuizQuestion(prev => prev + 1);
-          setShowQuizExplanation(false);
-        } else {
-          // Auto-complete quiz
-          setShowQuizResults(true);
-        }
-      }, waitTime);
-    }
-  };
 
 
   const markActivityComplete = (activityId: string) => {
@@ -228,45 +197,26 @@ export default function CompactWhatIsAIModule({
 
   const handleNextActivity = () => {
     const nextIndex = currentActivity + 1;
-    
-    if (nextIndex < activities.length) {
-      setCurrentActivity(nextIndex);
-      // Scroll to top when changing activities
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      // Module is complete
-      onComplete();
-    }
+
+    // Set transitioning state for smooth animation
+    setIsTransitioning(true);
+
+    // Small delay for smooth transition
+    setTimeout(() => {
+      if (nextIndex < activities.length) {
+        setCurrentActivity(nextIndex);
+        setIsTransitioning(false);
+        // Scroll to top when changing activities
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Module is complete
+        setIsTransitioning(false);
+        onComplete();
+      }
+    }, 200);
   };
 
 
-  // AI Spotter Challenge questions - REVISED with graduated difficulty
-  const aiSpotterQuestions = [
-    {
-      id: '1',
-      scenario: 'Your phone\'s keyboard suggests the next word as you type',
-      isAI: true,
-      explanation: 'Yes! It learns from how millions of people write and predicts what you\'ll type next. That\'s pattern recognition!'
-    },
-    {
-      id: '2',
-      scenario: 'A microwave timer counting down from 3 minutes',
-      isAI: false,
-      explanation: 'Correct! This is a simple countdown timer following fixed instructions. No learning or pattern recognition involved.'
-    },
-    {
-      id: '3',
-      scenario: 'Snapchat filters that add dog ears to your face',
-      isAI: true,
-      explanation: 'Yes! It uses AI to recognize where your face is and track it as you move. That\'s complex pattern recognition!'
-    },
-    {
-      id: '4',
-      scenario: 'TikTok\'s "For You" page showing videos you might like',
-      isAI: true,
-      explanation: 'Absolutely! This is AI analyzing your viewing patterns, likes, and watch time to predict what you\'ll enjoy. It\'s constantly learning from your behavior!'
-    }
-  ];
 
   const renderCurrentActivity = () => {
     const activity = activities[currentActivity];
@@ -331,150 +281,30 @@ export default function CompactWhatIsAIModule({
           </div>
         );
 
-      case 'ai-in-my-day':
+      case 'ai-or-not-quiz':
         return (
           <div className="section-content">
-            <AIInMyDayActivity
+            <EnhancedAIOrNotQuiz
               onComplete={() => {
-                markActivityComplete('ai-in-my-day');
+                markActivityComplete('ai-or-not-quiz');
                 handleNextActivity();
               }}
             />
           </div>
         );
 
-      case 'pattern-spotter':
+      case 'ai-in-the-wild':
         return (
           <div className="section-content">
-            <AIPatternSpotterActivity
+            <AIInTheWildActivity
               onComplete={() => {
-                markActivityComplete('pattern-spotter');
+                markActivityComplete('ai-in-the-wild');
                 handleNextActivity();
               }}
             />
           </div>
         );
 
-      case 'connecting-dots':
-        return (
-          <div className="section-content">
-            <ConnectingTheDotsActivity
-              onComplete={() => {
-                markActivityComplete('connecting-dots');
-                handleNextActivity();
-              }}
-            />
-          </div>
-        );
-
-      case 'ai-spotter-challenge':
-        return (
-          <div className="section-content">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Spotter Challenge</h2>
-              <p className="text-gray-600">Apply what you've learned - can you identify AI?</p>
-            </div>
-            
-            {currentQuizQuestion < aiSpotterQuestions.length ? (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Question {currentQuizQuestion + 1} of {aiSpotterQuestions.length}
-                  </CardTitle>
-                  <CardDescription>
-                    {aiSpotterQuestions[currentQuizQuestion].scenario}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {!showQuizExplanation ? (
-                    <div className="space-y-3">
-                      {/* Developer Mode Auto-Answer Button */}
-                      {isDevModeActive && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={devAutoAnswerQuiz}
-                              className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
-                              size="sm"
-                            >
-                              <Zap className="w-3 h-3 mr-1" />
-                              Auto-Answer Correctly
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                // Auto-complete entire quiz
-                                setQuizScore(aiSpotterQuestions.length);
-                                setShowQuizResults(true);
-                                setCurrentQuizQuestion(aiSpotterQuestions.length);
-                              }}
-                              className="bg-red-700 hover:bg-red-800 text-white text-xs px-3 py-1 h-auto"
-                              size="sm"
-                            >
-                              Skip Entire Challenge
-                            </Button>
-                          </div>
-                          <p className="text-xs text-red-600 mt-1">Developer Mode: Testing shortcuts</p>
-                        </div>
-                      )}
-                      
-                      <Button 
-                        onClick={() => handleQuizAnswer(true)}
-                        className="w-full"
-                        variant="outline"
-                      >
-                        This IS AI
-                      </Button>
-                      <Button 
-                        onClick={() => handleQuizAnswer(false)}
-                        className="w-full"
-                        variant="outline"
-                      >
-                        This is NOT AI
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className={`p-4 rounded-lg ${quizAnswers[aiSpotterQuestions[currentQuizQuestion].id] === aiSpotterQuestions[currentQuizQuestion].isAI ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                        <div className="flex items-center gap-2 mb-2">
-                          {quizAnswers[aiSpotterQuestions[currentQuizQuestion].id] === aiSpotterQuestions[currentQuizQuestion].isAI ? (
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                          ) : (
-                            <XCircle className="h-5 w-5 text-red-600" />
-                          )}
-                          <span className="font-semibold">
-                            {quizAnswers[aiSpotterQuestions[currentQuizQuestion].id] === aiSpotterQuestions[currentQuizQuestion].isAI ? 'Correct!' : 'Not quite!'}
-                          </span>
-                        </div>
-                        <p className="text-sm">{aiSpotterQuestions[currentQuizQuestion].explanation}</p>
-                      </div>
-
-                      <Button onClick={handleQuizNext} className="w-full">
-                        {currentQuizQuestion < aiSpotterQuestions.length - 1 ? 'Next Question' : 'See Results'}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="text-center">
-                <div className="bg-blue-50 rounded-lg p-6 mb-6">
-                  <h3 className="text-xl font-bold text-blue-900 mb-2">Challenge Complete!</h3>
-                  <p className="text-lg text-blue-800">Score: {quizScore} out of {aiSpotterQuestions.length}</p>
-                  <p className="text-sm text-blue-600 mt-2">
-                    {quizScore === aiSpotterQuestions.length ? "Perfect! You're great at identifying AI!" :
-                     quizScore >= aiSpotterQuestions.length * 0.75 ? "Excellent work! You understand pattern recognition well." :
-                     quizScore >= aiSpotterQuestions.length * 0.5 ? "Good job! You're getting the hang of this." :
-                     "Keep learning! AI can be tricky to spot."}
-                  </p>
-                </div>
-                <Button onClick={handleNextActivity} className="w-full">
-                  Continue Learning <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-        );
 
       case 'video-intro':
         const introVideoUrl = videoUrls['Videos/1 Introduction to Artificial Intelligence.mp4'];
@@ -527,121 +357,133 @@ export default function CompactWhatIsAIModule({
           </div>
         );
 
-      // REMOVED: 'video-what-ai-isnt' - content now included in intro video (0:00-1:57)
-      // REMOVED: 'simple-age' activity - history question removed per pedagogical review
-      //case 'simple-age':
-      //   return (
-      //     <div className="section-content">
-      //       ... (activity code commented out)
-      //     </div>
-      //   );
-
-
-
-
-      case 'what-ai-is-not':
+      case 'video-segment-2':
+        const segment2VideoUrl = videoUrls['Videos/1 Introduction to Artificial Intelligence.mp4'];
         return (
           <div className="section-content">
-            {/* Developer Mode Shortcut */}
-            {isDevModeActive && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Activity Shortcuts</h3>
-                <Button 
-                  onClick={() => {
-                    markActivityComplete('what-ai-is-not');
-                    handleNextActivity();
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI as a Tool</h2>
+              <p className="text-gray-600">Understanding what AI really is (and isn't)</p>
+            </div>
+
+            {segment2VideoUrl ? (
+              <div className="video-container mb-6">
+                <PremiumVideoPlayer
+                  videoUrl={segment2VideoUrl}
+                  segments={[
+                    {
+                      id: 'segment-2',
+                      title: 'AI as a Tool',
+                      source: 'Videos/1 Introduction to Artificial Intelligence.mp4',
+                      start: 142, // 2:22
+                      end: 178,   // 2:58
+                      mandatory: true,
+                      description: 'Understanding AI as a tool, not a conscious being'
+                    }
+                  ]}
+                  videoId="segment-2-ai-tool"
+                  onSegmentComplete={(segmentId: string) => {
+                    console.log('🎬 Segment 2 completed:', segmentId);
+                    markActivityComplete('video-segment-2');
+                    setTimeout(() => {
+                      console.log('🎬 Auto-advancing to reflection');
+                      handleNextActivity();
+                    }, 500);
                   }}
-                  className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
-                  size="sm"
-                >
-                  <Zap className="w-3 h-3 mr-1" />
-                  Skip What AI Is NOT Activity
-                </Button>
-                <p className="text-xs text-red-600 mt-1">Skips the card-flipping activity entirely</p>
+                  hideSegmentNavigator={true}
+                  allowSeeking={isDevModeActive}
+                  videoRef={videoRef}
+                  interactivePauses={[]}
+                />
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading video...</p>
               </div>
             )}
-            
-            <WhatAIIsNotActivity 
+          </div>
+        );
+
+      case 'reflection-2':
+        return (
+          <div className="section-content">
+            <VideoReflectionActivity
+              question="The video explains that AI doesn't 'feel' or 'understand' like humans do. Why do you think it's important to remember that AI is a tool and not a conscious being?"
+              videoSegmentId="segment-2"
               onComplete={() => {
-                markActivityComplete('what-ai-is-not');
+                markActivityComplete('reflection-2');
                 handleNextActivity();
               }}
             />
           </div>
         );
 
-      case 'exit-ticket':
+      case 'video-segment-3':
+        const segment3VideoUrl = videoUrls['Videos/1 Introduction to Artificial Intelligence.mp4'];
         return (
           <div className="section-content">
-            {/* Developer Mode Exit Ticket Shortcut */}
-            {isDevModeActive && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Exit Ticket Shortcuts</h3>
-                <div className="flex gap-2 mb-2">
-                  <Button 
-                    onClick={() => {
-                      setExitTicketResponse(devExitTicketResponse);
-                      // Auto-generate fake feedback
-                      setExitTicketFeedback("Great understanding! Your explanation shows you've grasped the key concepts of AI as pattern recognition and learning systems.");
-                      markActivityComplete('exit-ticket');
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
-                    size="sm"
-                  >
-                    <Zap className="w-3 h-3 mr-1" />
-                    Auto-Complete Exit Ticket
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      // Just mark as complete without filling
-                      markActivityComplete('exit-ticket');
-                    }}
-                    className="bg-red-700 hover:bg-red-800 text-white text-xs px-3 py-1 h-auto"
-                    size="sm"
-                  >
-                    Skip Exit Ticket
-                  </Button>
-                </div>
-                <p className="text-xs text-red-600">Pre-fills with sample response or skips entirely</p>
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Inflection Point</h2>
+              <p className="text-gray-600">Where AI is taking us next</p>
+            </div>
+
+            {segment3VideoUrl ? (
+              <div className="video-container mb-6">
+                <PremiumVideoPlayer
+                  videoUrl={segment3VideoUrl}
+                  segments={[
+                    {
+                      id: 'segment-3',
+                      title: 'AI Inflection Point',
+                      source: 'Videos/1 Introduction to Artificial Intelligence.mp4',
+                      start: 180, // 3:00
+                      end: 211,   // 3:31
+                      mandatory: true,
+                      description: 'The future of AI and its impact'
+                    }
+                  ]}
+                  videoId="segment-3-inflection-point"
+                  onSegmentComplete={(segmentId: string) => {
+                    console.log('🎬 Segment 3 completed:', segmentId);
+                    markActivityComplete('video-segment-3');
+                    setTimeout(() => {
+                      console.log('🎬 Auto-advancing to final reflection');
+                      handleNextActivity();
+                    }, 500);
+                  }}
+                  hideSegmentNavigator={true}
+                  allowSeeking={isDevModeActive}
+                  videoRef={videoRef}
+                  interactivePauses={[]}
+                />
               </div>
-            )}
-            
-            <ExitTicket
-              activityTitle="What is AI?"
-              questions={[
-                {
-                  id: 'ai-understanding',
-                  text: 'Based on everything you\'ve learned, how would you explain "artificial intelligence" to someone who has never heard the term before?',
-                  placeholder: 'Think about the key concepts: pattern recognition, learning from data, making predictions...'
-                }
-              ]}
-              onComplete={() => {
-                markActivityComplete('exit-ticket');
-              }}
-            />
-            {activities.find(a => a.id === 'exit-ticket')?.completed && (
-              <div className="text-center mt-8">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button 
-                    onClick={handleNextActivity}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 text-xl ring-4 ring-green-200 hover:ring-green-300"
-                    size="lg"
-                  >
-                    <Trophy className="mr-3 h-6 w-6" />
-                    Get Your Completion Certificate
-                    <ArrowRight className="ml-3 h-6 w-6" />
-                  </Button>
-                </motion.div>
-                <p className="text-gray-600 mt-3 text-sm">
-                  Congratulations! You've completed the entire module.
-                </p>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading video...</p>
               </div>
             )}
           </div>
         );
+
+      case 'reflection-3':
+        return (
+          <div className="section-content">
+            <VideoReflectionActivity
+              question="The video says we are at an 'inflection point' with AI. Besides what was mentioned, what is one big change you predict AI will bring to your daily life or schoolwork in the next five years?"
+              videoSegmentId="segment-3"
+              onComplete={() => {
+                markActivityComplete('reflection-3');
+                handleNextActivity();
+              }}
+            />
+          </div>
+        );
+
+      // REMOVED OLD ACTIVITIES:
+      // - 'ai-spotter-challenge' (replaced by AI in the Wild)
+      // - 'what-ai-is-not' (concepts integrated into other activities)
+      // - 'exit-ticket' (replaced by video reflections)
+
 
       case 'certificate':
         return (
@@ -674,25 +516,6 @@ export default function CompactWhatIsAIModule({
     }
   };
 
-  const handleQuizAnswer = (answer: boolean) => {
-    const currentQ = aiSpotterQuestions[currentQuizQuestion];
-    setQuizAnswers(prev => ({ ...prev, [currentQ.id]: answer }));
-    setShowQuizExplanation(true);
-
-    if (answer === currentQ.isAI) {
-      setQuizScore(prev => prev + 1);
-    }
-  };
-
-  const handleQuizNext = () => {
-    if (currentQuizQuestion < aiSpotterQuestions.length - 1) {
-      setCurrentQuizQuestion(prev => prev + 1);
-      setShowQuizExplanation(false);
-    } else {
-      // Quiz completed, stay on quiz activity to show results
-      setCurrentQuizQuestion(aiSpotterQuestions.length);
-    }
-  };
 
   return (
     <>
@@ -713,17 +536,26 @@ export default function CompactWhatIsAIModule({
           </div>
 
           {/* Current Activity Content */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentActivity}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {renderCurrentActivity()}
-            </motion.div>
-          </AnimatePresence>
+          {isTransitioning ? (
+            <div className="section-content flex items-center justify-center py-20">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+                <p className="text-gray-500">Loading next activity...</p>
+              </div>
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentActivity}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {renderCurrentActivity()}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
       </div>
 

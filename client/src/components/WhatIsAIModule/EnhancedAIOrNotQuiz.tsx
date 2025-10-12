@@ -3,7 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, XCircle, ArrowRight, Lightbulb } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, Lightbulb, RotateCcw, Brain } from 'lucide-react';
+import ActivityIntroSlides, { type Slide } from '@/components/ActivityIntroSlides';
+import './WhatIsAIModule.css';
+
+const MIN_PASSING_SCORE = 0.70;
 
 interface EnhancedAIOrNotQuizProps {
   onComplete: () => void;
@@ -19,20 +23,63 @@ interface QuizQuestion {
 }
 
 export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizProps) {
+  const [showIntroSlides, setShowIntroSlides] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [hasPassed, setHasPassed] = useState(false);
+
+  // Define the intro slide
+  const introSlides: Slide[] = [
+    {
+      title: "Test Your Understanding",
+      subtitle: "See if you can identify AI in everyday technology",
+      icon: Brain,
+      content: (
+        <div className="space-y-6 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-700 dark:text-gray-300 text-center">
+            You've seen some examples. Now let's see if you can tell which technologies use AI
+            and which just follow programmed rules.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 p-4 rounded-lg border-2 border-purple-300 dark:border-purple-700">
+              <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">AI = Learning</h3>
+              <p className="text-sm text-purple-800 dark:text-gray-300">
+                Learns from data, finds patterns, adapts over time
+              </p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/20 dark:to-cyan-900/20 p-4 rounded-lg border-2 border-blue-300 dark:border-blue-700">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Traditional = Fixed Rules</h3>
+              <p className="text-sm text-blue-800 dark:text-gray-300">
+                Follows exact instructions, same input = same output
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-lg border-l-4 border-blue-600">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              <strong>Passing score: 70%</strong> (9 out of 12 questions)
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              If you don't pass, you can try again.
+            </p>
+          </div>
+        </div>
+      )
+    }
+  ];
 
   const questions: QuizQuestion[] = [
     {
       id: '1',
-      scenario: 'Smartphone autocorrect suggesting words as you type',
+      scenario: 'TikTok\'s For You page showing videos you\'ll probably like',
       isAI: true,
-      explanation: 'This IS AI! It learns from patterns in how people type and predicts the most likely next word based on context.',
-      teachingPoint: 'AI learns from patterns in data to make predictions',
-      category: 'Communication'
+      explanation: 'This IS AI! It analyzes what you watch, like, and skip to predict what you\'ll enjoy next based on patterns.',
+      teachingPoint: 'AI learns from your behavior patterns to make personalized predictions',
+      category: 'Social Media'
     },
     {
       id: '2',
@@ -52,6 +99,38 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
     },
     {
       id: '4',
+      scenario: 'Snapchat filters that track your face in real-time',
+      isAI: true,
+      explanation: 'This IS AI! It recognizes facial features and movements to apply filters that move with you in real-time.',
+      teachingPoint: 'AI can identify and track objects (like faces) in visual data',
+      category: 'Social Media'
+    },
+    {
+      id: '5',
+      scenario: 'Your phone\'s alarm going off at 7 AM every day',
+      isAI: false,
+      explanation: 'This is NOT AI - it\'s just following a timer you set. No intelligence or learning needed.',
+      teachingPoint: 'Scheduled tasks are automation, not AI',
+      category: 'Technology'
+    },
+    {
+      id: '6',
+      scenario: 'Google Maps predicting how long your drive will take',
+      isAI: true,
+      explanation: 'This IS AI! It analyzes current traffic, typical patterns, and road conditions to predict travel time accurately.',
+      teachingPoint: 'AI combines multiple data sources to make real-time predictions',
+      category: 'Transportation'
+    },
+    {
+      id: '7',
+      scenario: 'Spotify creating your Discover Weekly playlist',
+      isAI: true,
+      explanation: 'This IS AI! It learns from your listening history and finds patterns to recommend new songs you\'ll probably like.',
+      teachingPoint: 'AI discovers patterns in your preferences to make suggestions',
+      category: 'Entertainment'
+    },
+    {
+      id: '8',
       scenario: 'Digital clock displaying the current time',
       isAI: false,
       explanation: 'This is NOT AI - it\'s simply counting seconds and displaying time according to pre-programmed rules.',
@@ -59,23 +138,7 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
       category: 'Technology'
     },
     {
-      id: '5',
-      scenario: 'Google Translate converting text from English to Spanish',
-      isAI: true,
-      explanation: 'This IS AI! Modern translation uses neural networks trained on millions of text pairs to understand language patterns and context.',
-      teachingPoint: 'AI can learn the complex patterns of human language',
-      category: 'Language'
-    },
-    {
-      id: '6',
-      scenario: 'Traffic light changing from red to green on a timer',
-      isAI: false,
-      explanation: 'This is NOT AI - it follows a predetermined schedule or simple sensors, with no learning involved.',
-      teachingPoint: 'Sensors and timers are not AI unless they adapt and learn',
-      category: 'Transportation'
-    },
-    {
-      id: '7',
+      id: '9',
       scenario: 'Spam email filter deciding which messages go to junk folder',
       isAI: true,
       explanation: 'This IS AI! It learns from examples of spam and legitimate emails to recognize patterns and make decisions about new messages.',
@@ -83,7 +146,23 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
       category: 'Communication'
     },
     {
-      id: '8',
+      id: '10',
+      scenario: 'Traffic light changing from red to green on a timer',
+      isAI: false,
+      explanation: 'This is NOT AI - it follows a predetermined schedule or simple sensors, with no learning involved.',
+      teachingPoint: 'Sensors and timers are not AI unless they adapt and learn',
+      category: 'Transportation'
+    },
+    {
+      id: '11',
+      scenario: 'Smartphone autocorrect fixing "teh" to "the" while you type',
+      isAI: true,
+      explanation: 'This IS AI! It learns common typing mistakes and patterns in how people write to predict what word you meant.',
+      teachingPoint: 'AI learns from patterns in data to make predictions',
+      category: 'Communication'
+    },
+    {
+      id: '12',
       scenario: 'Video game character following scripted dialogue trees',
       isAI: false,
       explanation: 'This is NOT AI - it\'s following predetermined responses. No learning or adaptation based on player behavior.',
@@ -109,11 +188,26 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
       setCurrentQuestion(currentQuestion + 1);
       setShowExplanation(false);
     } else {
+      const percentage = score / questions.length;
       setCompleted(true);
-      setTimeout(() => {
-        onComplete();
-      }, 3000);
+      setHasPassed(percentage >= MIN_PASSING_SCORE);
+
+      // Only auto-complete if passed
+      if (percentage >= MIN_PASSING_SCORE) {
+        setTimeout(() => {
+          onComplete();
+        }, 3000);
+      }
     }
+  };
+
+  const resetQuiz = () => {
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowExplanation(false);
+    setScore(0);
+    setCompleted(false);
+    setHasPassed(false);
   };
 
   const isAnswerCorrect = (questionId: string) => {
@@ -121,13 +215,27 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
     return question && answers[questionId] === question.isAI;
   };
 
+  // Show intro slides if not completed yet
+  if (showIntroSlides) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <ActivityIntroSlides
+          slides={introSlides}
+          onComplete={() => setShowIntroSlides(false)}
+          activityName="AI or Not Quiz"
+          allowSkip={true}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              🤖 Enhanced AI or Not? Challenge
+              AI or Not? Challenge
             </CardTitle>
             <div className="flex gap-2">
               <Badge variant="outline">
@@ -200,14 +308,14 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
                       </AlertDescription>
                     </Alert>
 
-                    <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+                    <div className="bg-blue-100 dark:bg-blue-950 p-4 rounded-lg border-l-4 border-blue-600">
                       <div className="flex items-center gap-2 mb-2">
                         <Lightbulb className="h-4 w-4 text-blue-600" />
-                        <span className="font-semibold text-blue-800 dark:text-blue-200">
+                        <span className="font-semibold text-blue-900 dark:text-blue-200">
                           Teaching Point:
                         </span>
                       </div>
-                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                      <p className="text-sm text-blue-800 dark:text-blue-300">
                         {currentQ.teachingPoint}
                       </p>
                     </div>
@@ -229,35 +337,57 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
             </>
           ) : (
             <div className="text-center space-y-6">
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950 p-8 rounded-lg">
-                <h3 className="text-2xl font-bold mb-4">Quiz Complete! 🎉</h3>
-                <div className="text-6xl font-bold text-blue-600 mb-2">
+              <div className={`p-8 rounded-lg border-2 ${
+                hasPassed
+                  ? 'bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-950 dark:to-blue-950 border-green-300'
+                  : 'bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-950 dark:to-orange-950 border-yellow-300'
+              }`}>
+                <h3 className="text-2xl font-bold mb-4">
+                  {hasPassed ? 'Quiz Complete! 🎉' : 'Quiz Complete'}
+                </h3>
+                <div className={`text-6xl font-bold mb-2 ${
+                  hasPassed ? 'text-green-600' : 'text-yellow-600'
+                }`}>
                   {score}/{questions.length}
                 </div>
+                <div className="text-lg font-semibold mb-2">
+                  {Math.round((score / questions.length) * 100)}% Score
+                </div>
                 <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
-                  {score >= questions.length * 0.8 
-                    ? "Excellent! You have a strong understanding of what AI is and isn't."
-                    : score >= questions.length * 0.6
-                    ? "Good work! You're developing a solid understanding of AI."
-                    : "Keep learning! Understanding AI takes practice."
+                  {hasPassed
+                    ? score === questions.length
+                      ? "Perfect score! You have an excellent understanding of what AI is and isn't."
+                      : "Great job! You've passed and demonstrated solid understanding of AI concepts."
+                    : `You need at least ${Math.round(MIN_PASSING_SCORE * 100)}% to pass. Review the teaching points and try again!`
                   }
                 </p>
               </div>
 
-              <div className="bg-yellow-50 dark:bg-yellow-950 p-6 rounded-lg">
-                <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-3">
+              <div className="bg-blue-100 dark:bg-blue-950 p-6 rounded-lg border-l-4 border-blue-600">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">
                   Key Takeaway
                 </h4>
-                <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                  AI systems learn from data and can adapt their behavior, while traditional 
-                  computer programs follow predetermined rules. The key difference is learning 
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  AI systems learn from data and can adapt their behavior, while traditional
+                  computer programs follow predetermined rules. The key difference is learning
                   and pattern recognition from examples.
                 </p>
               </div>
 
-              <p className="text-sm text-gray-500">
-                Moving to the next activity in 3 seconds...
-              </p>
+              {hasPassed ? (
+                <p className="text-sm text-gray-500">
+                  Moving to the next activity in 3 seconds...
+                </p>
+              ) : (
+                <Button
+                  onClick={resetQuiz}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Try Again
+                </Button>
+              )}
             </div>
           )}
         </CardContent>

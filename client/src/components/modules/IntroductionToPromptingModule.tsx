@@ -503,7 +503,7 @@ const SimplePromptRater: React.FC<{
 
               <Button
                 onClick={handleNext}
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {currentPromptIndex < simplePrompts.length - 1 ? 'Next Prompt' : 'Continue Video'}
                 <ArrowRight className="ml-2 h-4 w-4" />
