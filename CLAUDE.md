@@ -5,25 +5,38 @@
 **CRITICAL**: This project uses API keys that must NEVER be committed to GitHub.
 
 ### Secrets Location
-All secrets are stored in:
-- **Replit Secrets** (accessible via lock icon in Replit sidebar)
-- **Local file**: `/home/runner/workspace/.secrets.local` (gitignored)
+All secrets are stored in **Replit Secrets** (NOT in `.env` or code files):
+- **Primary Source**: Replit Secrets (accessible via lock icon in Replit sidebar)
+- **Local Mirror**: `/home/runner/workspace/.secrets.local` (gitignored, synced from Replit Secrets)
+- **Never Commit**: Any file containing actual API key values
 
-### Required Secrets
+### Required Secrets in Replit
+**IMPORTANT**: All API keys below are already configured in this Replit project's Secrets:
+
 ```bash
-GEMINI_API_KEY=your_gemini_api_key_here
-BROWSERLESS_API_KEY=your_browserless_api_key_here
-AI_LITERACY_BOT_API_KEY=your_ai_literacy_bot_api_key_here
-VITE_GOOGLE_API_KEY=your_google_api_key_here
+GEMINI_API_KEY=<configured in Replit Secrets>
+BROWSERLESS_API_KEY=<configured in Replit Secrets>
+AI_LITERACY_BOT_API_KEY=<configured in Replit Secrets>
+VITE_GOOGLE_API_KEY=<configured in Replit Secrets>
 ```
+
+**How Replit Secrets Work**:
+- Keys are stored securely in Replit's encrypted vault
+- Automatically available as environment variables in the shell
+- Not visible in the codebase or git history
+- Can be accessed via the lock icon (🔒) in the Replit sidebar
+- Each Replit project has its own isolated Secrets
 
 ### Accessing Secrets in Scripts
 ```bash
-# Load from local secrets file
+# Replit Secrets are automatically available as environment variables
+echo $GEMINI_API_KEY
+
+# The .secrets.local file mirrors Replit Secrets for convenience
 source /home/runner/workspace/.secrets.local
 
-# Or access directly from environment (Replit Secrets)
-echo $GEMINI_API_KEY
+# Then use in scripts
+node scripts/gemini-vision-inspector.js
 ```
 
 **NEVER**:
@@ -41,6 +54,11 @@ echo $GEMINI_API_KEY
 ---
 
 ## 🎯 Project Overview
+
+### Live Application
+- **Production URL**: https://AILitStudents.replit.app
+- **Environment**: Replit deployment with automatic HTTPS
+- **Status**: Live and publicly accessible
 
 ### Core Purpose
 This is an educational web application designed to teach **AI literacy to high school students**. The platform provides comprehensive, accessible education about artificial intelligence through interactive, video-based learning modules.
