@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Brain, Sparkles, Video, MessageSquare, Award, ChevronRight, Shuffle, CheckCircle2, X, Lightbulb, Target } from 'lucide-react';
+import { Brain, Sparkles, Video, MessageSquare, Award, ChevronRight, Shuffle, CheckCircle2, X, Lightbulb, Target, Copy, Check, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumVideoPlayer } from '../PremiumVideoPlayer';
 // Simple inline MultipleChoiceQuestion component - no import needed
@@ -15,6 +15,7 @@ import { useDevMode } from '@/context/DevModeContext';
 // Developer mode props will be passed from activity wrapper
 import { saveProgress, loadProgress, clearProgress, getProgressSummary } from '@/lib/progressPersistence';
 import ResumeProgressDialog from '../WhatIsAIModule/ResumeProgressDialog';
+import { isNonsensical, generateEducationFeedback } from '@/utils/aiEducationFeedback';
 
 const MODULE_ID = 'intro-to-gen-ai';
 
@@ -23,9 +24,8 @@ interface IntroToGenAIModuleProps {
   userName?: string;
 }
 
-type Phase = 
+type Phase =
   | 'introduction'
-  | 'opening-activity'
   | 'video-segment-1'
   | 'reflection-1'
   | 'video-segment-2'
@@ -35,52 +35,6 @@ type Phase =
   | 'video-segment-3'
   | 'exit-activity'
   | 'certificate';
-
-interface SortingItem {
-  id: string;
-  text: string;
-  category: 'traditional' | 'generative';
-  explanation: string;
-}
-
-const SORTING_ITEMS: SortingItem[] = [
-  {
-    id: '1',
-    text: 'Spam filter detecting unwanted emails',
-    category: 'traditional',
-    explanation: 'This analyzes and classifies existing content, not creating new content.'
-  },
-  {
-    id: '2',
-    text: 'ChatGPT writing a story',
-    category: 'generative',
-    explanation: 'ChatGPT creates brand new text that didn\'t exist before!'
-  },
-  {
-    id: '3',
-    text: 'Face recognition unlocking your phone',
-    category: 'traditional',
-    explanation: 'This identifies patterns in existing data, not generating new faces.'
-  },
-  {
-    id: '4',
-    text: 'DALL-E creating artwork from a description',
-    category: 'generative',
-    explanation: 'DALL-E generates completely new images based on text prompts!'
-  },
-  {
-    id: '5',
-    text: 'Netflix recommending movies',
-    category: 'traditional',
-    explanation: 'This analyzes your preferences to suggest existing movies.'
-  },
-  {
-    id: '6',
-    text: 'AI composing original music',
-    category: 'generative',
-    explanation: 'This creates brand new musical compositions!'
-  }
-];
 
 const VIDEO_CONFIG = {
   url: 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2F2%20Introduction%20to%20Generative%20AI.mp4?alt=media&token=3a232dcb-8b6c-43c7-a427-127a0458cfa4',
@@ -140,7 +94,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
   // Define phases for navigation
   const phases: Phase[] = [
-    'introduction', 'opening-activity', 'video-segment-1', 'reflection-1',
+    'introduction', 'video-segment-1', 'reflection-1',
     'video-segment-2', 'question-1', 'interactive-activity', 'explore-tools',
     'video-segment-3', 'exit-activity', 'certificate'
   ];
@@ -152,25 +106,17 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     title: phaseId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
     completed: completedPhases.has(phaseId)
   }));
-  const [sortingGameScore, setSortingGameScore] = useState(0);
   const [reflectionResponse, setReflectionResponse] = useState('');
   const [aiFeedback, setAIFeedback] = useState('');
+  const [reflectionShowFeedback, setReflectionShowFeedback] = useState(false);
+  const [reflectionNeedsRetry, setReflectionNeedsRetry] = useState(false);
   const [exitResponse, setExitResponse] = useState('');
   const [exitFeedback, setExitFeedback] = useState('');
-  const [isGettingFeedback, setIsGettingFeedback] = useState(false);
+  const [exitShowFeedback, setExitShowFeedback] = useState(false);
+  const [exitNeedsRetry, setExitNeedsRetry] = useState(false);
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
   const [interactiveStep, setInteractiveStep] = useState(0);
   const [videoUrl, setVideoUrl] = useState('');
-
-  
-  // Opening activity state
-  const [currentItemIndex, setCurrentItemIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<Record<string, 'traditional' | 'generative'>>({});
-  const [openingShowFeedback, setOpeningShowFeedback] = useState(false);
-  const [gameCompleted, setGameCompleted] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [score, setScore] = useState(0);
-  const [shuffledItems, setShuffledItems] = useState<SortingItem[]>([]);
   
   // Question state  
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -178,12 +124,10 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   
   // Reflection state
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [playgroundReflection, setPlaygroundReflection] = useState('');
-  
+  const [validationError, setValidationError] = useState('');
+
   // Interactive Activity state (moved from renderInteractiveActivity to fix hooks violation)
-  const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
-  const [showInstructions, setShowInstructions] = useState(true);
-  const [hasCopied, setHasCopied] = useState<Record<string, boolean>>({});
+  const [copiedPrompts, setCopiedPrompts] = useState<Record<string, boolean>>({});
 
   const isMountedRef = useRef(true);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
@@ -260,10 +204,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   }, [phases]);
 
   useEffect(() => {
-    // Shuffle items for opening activity
-    const shuffled = [...SORTING_ITEMS].sort(() => Math.random() - 0.5);
-    setShuffledItems(shuffled);
-
     return () => {
       isMountedRef.current = false;
       if (debounceTimerRef.current) {
@@ -284,9 +224,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     markPhaseComplete(phase);
     
     const nextPhase: Record<Phase, Phase | null> = {
-      'introduction': 'opening-activity',
-      'opening-activity': 'video-segment-1',
-      'video-segment-1': 'reflection-1', 
+      'introduction': 'video-segment-1',
+      'video-segment-1': 'reflection-1',
       'reflection-1': 'question-1',
       'question-1': 'video-segment-2',
       'video-segment-2': 'interactive-activity',
@@ -408,35 +347,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       moduleId="intro-to-gen-ai"
     >
       <div className="space-y-6">
-      {/* Connection to Previous Module */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-purple-300 dark:border-purple-700"
-      >
-        <div className="flex items-start">
-          <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded-full mr-4">
-            <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-300" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Building on Your AI Journey
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-3">
-              Great job completing "What is AI?" You've learned how AI evolved from analyzing 
-              data in the 1950s to creating brand new content today. You discovered that 
-              ChatGPT represents a revolutionary type of AI - generative AI!
-            </p>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-600">
-              <p className="text-sm text-purple-700 dark:text-purple-300">
-                <strong>Quick Recap:</strong> Traditional AI (like spam filters) analyzes existing things. 
-                Generative AI (like ChatGPT) creates new things. Now let's dive deeper! 🚀
-              </p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
       {/* Main Introduction */}
       <div className="bg-glass-light rounded-2xl p-8 border border-primary">
         <div className="text-center mb-8">
@@ -450,11 +360,12 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
           </motion.div>
           
           <h2 className="text-3xl font-bold text-primary mb-4">
-            Deep Dive: Introduction to Generative AI
+            Introduction to Generative AI
           </h2>
           <p className="text-secondary text-lg max-w-2xl mx-auto">
-            You've seen the timeline, witnessed the revolution. Now let's truly understand 
-            what makes generative AI so special and how to use it effectively!
+            Welcome to the world of Generative AI - the revolutionary technology that doesn't
+            just analyze data, but actually creates brand new content! Let's discover what makes
+            it so special and how to use it effectively.
           </p>
         </div>
 
@@ -519,266 +430,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     </div>
     </ModuleActivityWrapper>
   );
-
-  const renderOpeningActivity = () => {
-    const currentItem = shuffledItems[currentItemIndex];
-    
-    const handleAnswer = (answer: 'traditional' | 'generative') => {
-      const currentItem = shuffledItems[currentItemIndex];
-      const correct = answer === currentItem.category;
-      
-      setIsCorrect(correct);
-      setOpeningShowFeedback(true);
-      
-      if (correct) {
-        setScore(prev => prev + 1);
-      }
-      
-      // Update user answers
-      setUserAnswers(prev => ({
-        ...prev,
-        [currentItem.id]: answer
-      }));
-    };
-
-    const handleNext = () => {
-      if (currentItemIndex < shuffledItems.length - 1) {
-        setCurrentItemIndex(prev => prev + 1);
-        setOpeningShowFeedback(false);
-        setIsCorrect(false);
-      } else {
-        // Calculate final score
-        const finalScore = Math.round((score / shuffledItems.length) * 100);
-        setSortingGameScore(finalScore);
-        setGameCompleted(true);
-      }
-    };
-
-    const handleCompleteActivity = () => {
-      setCompletedPhases(prev => new Set([...prev, 'opening-activity']));
-      setPhase('video-segment-1');
-    };
-    
-    if (!gameCompleted && currentItem) {
-      return (
-        <ModuleActivityWrapper
-          activityId="intro-gen-ai-sorting-game"
-          activityType="interactive"
-          activityName="Traditional vs Generative AI Sorting"
-          moduleId="intro-to-gen-ai"
-          onComplete={() => handlePhaseComplete()}
-        >
-          <div className="max-w-4xl mx-auto p-6">
-          {/* Activity Header with Context */}
-          <Card className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-purple-300">
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-3 flex items-center">
-                <Shuffle className="mr-3 h-6 w-6 text-purple-600" />
-                Practice: Traditional AI vs Generative AI
-              </h2>
-              
-              {/* Clear Instructions */}
-              <div className="bg-white rounded-lg p-4 mb-4">
-                <p className="text-gray-700 mb-3">
-                  Let's make sure you can spot the difference! For each AI example, decide:
-                </p>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                    <h4 className="font-semibold text-blue-800 mb-1">
-                      🔍 Traditional AI
-                    </h4>
-                    <p className="text-sm text-blue-700">
-                      Analyzes, recognizes, or classifies existing things
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      Examples: Spam filters, face recognition, recommendations
-                    </p>
-                  </div>
-                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                    <h4 className="font-semibold text-purple-800 mb-1">
-                      ✨ Generative AI
-                    </h4>
-                    <p className="text-sm text-purple-700">
-                      Creates brand new content that didn't exist before
-                    </p>
-                    <p className="text-xs text-purple-600 mt-1">
-                      Examples: ChatGPT, DALL-E, AI music composers
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Progress Indicator */}
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-gray-600">
-                  Question {currentItemIndex + 1} of {shuffledItems.length}
-                </p>
-                <div className="flex gap-1">
-                  {shuffledItems.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full ${
-                        index < currentItemIndex
-                          ? 'bg-purple-500'
-                          : index === currentItemIndex
-                          ? 'bg-purple-700'
-                          : 'bg-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-            </CardContent>
-          </Card>
-
-          {/* Current Question */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentItem.id}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-            >
-              <Card className="mb-6 bg-white">
-                <CardContent className="p-8 text-center">
-                  <div className="bg-gray-100 rounded-lg p-6 mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {currentItem.text}
-                    </h3>
-                  </div>
-                  
-                  {!openingShowFeedback ? (
-                    <div className="flex gap-4 justify-center">
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button
-                          onClick={() => handleAnswer('traditional')}
-                          size="lg"
-                          variant="outline"
-                          className="border-blue-500 text-blue-700 hover:bg-blue-50 px-8"
-                        >
-                          <Brain className="mr-2 h-5 w-5" />
-                          Traditional AI
-                        </Button>
-                      </motion.div>
-                      
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button
-                          onClick={() => handleAnswer('generative')}
-                          size="lg"
-                          variant="outline"
-                          className="border-purple-500 text-purple-700 hover:bg-purple-50 px-8"
-                        >
-                          <Sparkles className="mr-2 h-5 w-5" />
-                          Generative AI
-                        </Button>
-                      </motion.div>
-                    </div>
-                  ) : (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      <div className={`rounded-lg p-6 mb-4 ${
-                        isCorrect
-                          ? 'bg-green-50 border border-green-300'
-                          : 'bg-red-50 border border-red-300'
-                      }`}>
-                        <div className="flex items-center justify-center mb-3">
-                          {isCorrect ? (
-                            <CheckCircle2 className="h-8 w-8 text-green-600" />
-                          ) : (
-                            <X className="h-8 w-8 text-red-600" />
-                          )}
-                        </div>
-                        <p className={`font-semibold mb-2 ${
-                          isCorrect ? 'text-green-800' : 'text-red-800'
-                        }`}>
-                          {isCorrect ? 'Correct!' : 'Not quite!'}
-                        </p>
-                        <p className="text-gray-700">
-                          {currentItem.explanation}
-                        </p>
-                      </div>
-                      
-                      <Button
-                        onClick={handleNext}
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
-                      >
-                        {currentItemIndex < shuffledItems.length - 1 ? 'Next Question' : 'See Results'}
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </motion.div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Helpful Reminder */}
-          <Card className="bg-yellow-50 border-yellow-300">
-            <CardContent className="p-4">
-              <p className="text-sm text-yellow-800 text-center">
-                💡 <strong>Remember:</strong> Ask yourself - "Is this AI creating something new, 
-                or is it working with something that already exists?"
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        </ModuleActivityWrapper>
-      );
-    }
-    
-    // Game completed - show results
-    return (
-      <ModuleActivityWrapper
-        activityId="intro-gen-ai-sorting-results"
-        activityType="interactive"
-        activityName="Sorting Game Results"
-        moduleId="intro-to-gen-ai"
-      >
-        <div className="max-w-3xl mx-auto p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">
-              Great Job! You Can Spot the Difference! 🎉
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center mb-6">
-              <div className="text-4xl font-bold text-purple-600 mb-2">
-                {score}/{shuffledItems.length} Correct
-              </div>
-              <p className="text-gray-600">
-                You scored {sortingGameScore}%
-              </p>
-            </div>
-            
-            <div className="bg-purple-50 rounded-lg p-4 mb-6">
-              <h4 className="font-semibold text-purple-800 mb-2">
-                Key Takeaway:
-              </h4>
-              <p className="text-purple-700">
-                Traditional AI is like a detective 🔍 - it analyzes clues and recognizes patterns. 
-                Generative AI is like an artist 🎨 - it creates something entirely new!
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <Button
-                onClick={handleCompleteActivity}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                Continue to Video
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      </ModuleActivityWrapper>
-    );
-  };
 
   const renderVideoSegment = (segmentIndex: number) => {
     const segment = VIDEO_CONFIG.segments[segmentIndex];
@@ -913,59 +564,62 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
   const renderReflection = () => {
     const EXAMPLE_USES = [
-      'ChatGPT to help write an email',
-      'Gemini to answer a question',
-      'Copilot to get coding help',
-      'DALL-E to create an image',
-      'Claude to brainstorm ideas'
+      'Microsoft Copilot (ages 13+) for homework help',
+      'Copilot to help write an email or essay',
+      'School AI tools to answer questions',
+      'AI image generators (with permission)',
+      'AI chatbots to brainstorm ideas'
     ];
 
+    const minResponseLength = 100;
+    const isResponseValid = reflectionResponse.trim().length >= minResponseLength;
+
     const handleSubmit = async () => {
-      if (!reflectionResponse.trim() || isLoadingFeedback) return;
-      
-      setIsLoadingFeedback(true);
-      setHasSubmitted(true);
-      
-      console.log('🤖 Requesting AI feedback for reflection');
-      
-      try {
-        const prompt = `
-          A student learning about generative AI was asked: 
-          "Think of one way you've used generative AI this week. What did it create for you?"
-          
-          Their response: "${reflectionResponse}"
-          
-          Provide encouraging, educational feedback (2-3 sentences) that:
-          1. Acknowledges their example positively
-          2. Briefly explains how that demonstrates generative AI creating new content
-          3. Suggests one other generative AI tool they might enjoy trying
-          
-          If they say they haven't used any, encourage them to try one of these: ChatGPT, Gemini, Copilot.
-          Keep the tone friendly and encouraging for a beginner.
-        `;
+      if (!reflectionShowFeedback) {
+        // Layer 1: Pre-validation for gibberish/nonsense
+        const isInvalid = isNonsensical(reflectionResponse);
 
-        const apiResponse = await fetch('/api/gemini/feedback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
+        // Layer 2: Get AI feedback
+        setIsLoadingFeedback(true);
+        try {
+          const question = "Have you ever used generative AI before? If yes, what did it create for you? If no, which tool would you like to try first and why? Remember: Microsoft Copilot is available for students ages 13-17 through your school, and there are other school AI tools you may have access to.";
 
-        const data = await apiResponse.json();
-        console.log('✅ AI feedback received');
-        
-        if (isMountedRef.current) {
-          setAIFeedback(data.feedback || 'Great reflection! You\'re already seeing how generative AI creates new content in our daily lives.');
-        }
-      } catch (error) {
-        console.error('❌ Error getting AI feedback:', error);
-        if (isMountedRef.current) {
-          setAIFeedback('Excellent observation! Generative AI is becoming part of our everyday tools, creating content that helps us work and learn more effectively.');
-        }
-      } finally {
-        if (isMountedRef.current) {
+          const feedback = await generateEducationFeedback(reflectionResponse, question);
+          setAIFeedback(feedback);
+          setReflectionShowFeedback(true);
           setIsLoadingFeedback(false);
+
+          // Check if AI feedback indicates response needs improvement (strict rejection only)
+          const feedbackIndicatesRetry =
+            feedback.toLowerCase().includes('does not address') ||
+            feedback.toLowerCase().includes('please re-read') ||
+            feedback.toLowerCase().includes('inappropriate language') ||
+            feedback.toLowerCase().includes('off-topic') ||
+            feedback.toLowerCase().includes('must elaborate') ||
+            feedback.toLowerCase().includes('insufficient') ||
+            feedback.toLowerCase().includes('monitored for inappropriate') ||
+            feedback.toLowerCase().includes('answer the original question');
+
+          // Require retry if EITHER validation failed
+          setReflectionNeedsRetry(isInvalid || feedbackIndicatesRetry);
+        } catch (error) {
+          console.error('Failed to get AI feedback:', error);
+          setAIFeedback('Thank you for your reflection! Your insights about generative AI will help you use these tools more effectively.');
+          setReflectionShowFeedback(true);
+          setIsLoadingFeedback(false);
+          setReflectionNeedsRetry(false); // Don't block on API errors
         }
+      } else {
+        // Feedback already shown - continue to next activity
+        handlePhaseComplete();
       }
+    };
+
+    const handleTryAgain = () => {
+      setReflectionShowFeedback(false);
+      setAIFeedback('');
+      setReflectionNeedsRetry(false);
+      // IMPORTANT: Keep the response so student can edit it
     };
 
     return (
@@ -994,12 +648,12 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
             <div className="bg-green-soft p-4 rounded-lg">
               <h3 className="font-semibold mb-3">Reflection Question:</h3>
               <p className="text-lg">
-                "Think of one way you've used generative AI this week. What did it create for you?"
+                "Have you ever used generative AI before? If yes, what did it create for you? If no, which tool would you like to try first and why?"
               </p>
             </div>
 
             <div className="bg-blue-soft p-4 rounded-lg">
-              <h4 className="font-medium mb-2">Need inspiration? Try thinking about:</h4>
+              <h4 className="font-medium mb-2">Some examples of generative AI tools:</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {EXAMPLE_USES.map((example, index) => (
                   <div key={index} className="text-sm flex items-center gap-2">
@@ -1008,54 +662,103 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                   </div>
                 ))}
               </div>
+              <p className="text-sm mt-3 text-blue-700 dark:text-blue-300 font-medium">
+                💡 Tip: Microsoft Copilot is available for ages 13-17 through your school!
+              </p>
             </div>
 
             <Textarea
               value={reflectionResponse}
               onChange={(e) => setReflectionResponse(e.target.value)}
-              placeholder="Share your experience with generative AI... (e.g., 'I used ChatGPT to help write a cover letter for a job application')"
-              className="min-h-[120px] bg-card border-primary placeholder:text-muted"
+              placeholder="Share your thoughts... Be specific and thoughtful."
+              className="w-full min-h-[150px] text-base"
+              disabled={reflectionShowFeedback}
             />
 
-            {!hasSubmitted && reflectionResponse.trim() && (
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-500">
+                {reflectionResponse.length} characters
+                {minResponseLength && ` (minimum: ${minResponseLength})`}
+              </div>
+              {isResponseValid && (
+                <div className="text-green-600 text-sm font-medium flex items-center gap-1">
+                  <span className="text-green-500">✓</span>
+                  Ready to submit
+                </div>
+              )}
+            </div>
+
+            {/* Display AI Feedback */}
+            {reflectionShowFeedback && aiFeedback && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`border-2 rounded-lg p-6 ${
+                  reflectionNeedsRetry
+                    ? 'bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 border-blue-300 dark:border-blue-700'
+                    : 'bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border-purple-300 dark:border-purple-700'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`rounded-full p-2 flex-shrink-0 ${
+                    reflectionNeedsRetry
+                      ? 'bg-blue-200 dark:bg-blue-800'
+                      : 'bg-purple-200 dark:bg-purple-800'
+                  }`}>
+                    <Sparkles className={`w-5 h-5 ${
+                      reflectionNeedsRetry
+                        ? 'text-blue-700 dark:text-blue-300'
+                        : 'text-purple-700 dark:text-purple-300'
+                    }`} />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className={`font-semibold mb-3 ${
+                      reflectionNeedsRetry
+                        ? 'text-blue-900 dark:text-blue-100'
+                        : 'text-purple-900 dark:text-purple-100'
+                    }`}>
+                      AI Feedback
+                    </h4>
+                    <p className={`leading-relaxed ${
+                      reflectionNeedsRetry
+                        ? 'text-blue-900 dark:text-blue-200'
+                        : 'text-purple-900 dark:text-purple-200'
+                    }`}>
+                      {aiFeedback}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Show appropriate buttons based on state */}
+            {reflectionNeedsRetry ? (
+              <Button
+                onClick={handleTryAgain}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                size="lg"
+              >
+                Try Again
+              </Button>
+            ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={isLoadingFeedback}
-                className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                disabled={isLoadingFeedback || !isResponseValid}
+                className="w-full"
+                size="lg"
               >
-                {isLoadingFeedback ? 'Getting AI Feedback...' : 'Submit Reflection'}
+                {isLoadingFeedback ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Getting AI Feedback...
+                  </>
+                ) : reflectionShowFeedback ? (
+                  'Continue Learning'
+                ) : (
+                  'Submit Reflection'
+                )}
               </Button>
             )}
-
-            {isLoadingFeedback && (
-              <div className="text-center text-green-600 dark:text-green-400 animate-pulse">
-                Getting personalized AI feedback...
-              </div>
-            )}
-
-            <AnimatePresence>
-              {aiFeedback && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-purple-soft p-4 rounded-lg"
-                >
-                  <h4 className="font-semibold mb-2 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    AI Feedback:
-                  </h4>
-                  <p>{aiFeedback}</p>
-                  
-                  <Button
-                    onClick={handlePhaseComplete}
-                    className="w-full mt-4 bg-purple-600 hover:bg-purple-700"
-                  >
-                    Continue to Next Video
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </CardContent>
         </Card>
       </motion.div>
@@ -1155,34 +858,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       exitTicket: "What surprised me most about generative AI is learning the clear distinction between traditional AI and generative AI through the chef vs. food critic analogy. I didn't realize that tools like Netflix recommendations and spam filters are traditional AI that analyze existing content, while tools like ChatGPT and DALL-E actually create entirely new content that never existed before. This distinction helps me understand why generative AI feels so revolutionary - it's not just processing what's already there, it's creating something completely new. As an educator, this makes me excited about the creative possibilities for both my teaching and my students' learning."
     };
 
-    const CREATIVE_PROMPTS = [
-      { id: '1', text: 'Write a haiku about artificial intelligence', icon: '📝' },
-      { id: '2', text: 'Create a short story opening about a robot chef', icon: '📖' },
-      { id: '3', text: 'Generate an image of a futuristic classroom', icon: '🎨' },
-      { id: '4', text: 'Compose a jingle for an AI literacy course', icon: '🎵' },
-      { id: '5', text: 'Design a logo for "AI Explorers Club"', icon: '🎯' },
-      { id: '6', text: 'Write a recipe for "Algorithm Soup"', icon: '🍲' }
-    ];
-
-    const GENERATIVE_AI_TOOLS = [
-      { name: 'Suno', url: 'https://suno.com', description: 'Create original music', icon: '🎵' },
-      { name: 'Copilot', url: 'https://copilot.microsoft.com', description: 'Text generation & more', icon: '💬' },
-      { name: 'Midjourney', url: 'https://midjourney.com', description: 'Create stunning images', icon: '🎨' },
-      { name: 'Veo', url: 'https://deepmind.google/technologies/veo/', description: 'Generate videos', icon: '🎬' },
-      { name: 'Rosebud.ai', url: 'https://rosebud.ai', description: 'Create video games', icon: '🎮' },
-      { name: 'Cursor', url: 'https://cursor.sh', description: 'AI-powered coding', icon: '💻' }
-    ];
-
-    const copyPrompt = (prompt: { id: string; text: string }) => {
-      navigator.clipboard.writeText(prompt.text);
-      setSelectedPrompts(prev => [...prev, prompt.text]);
-      setHasCopied(prev => ({ ...prev, [prompt.id]: true }));
-      
-      // Reset copied state after 2 seconds
-      setTimeout(() => {
-        setHasCopied(prev => ({ ...prev, [prompt.id]: false }));
-      }, 2000);
-    };
 
     return (
       <InteractiveActivity
@@ -1212,14 +887,14 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
               <CardContent className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
                   <Sparkles className="h-5 w-5 text-purple-600 mr-2" />
-                  Have Some Fun!
+                  Explore Multi-Modal AI!
                 </h3>
                 <p className="text-gray-700">
-                  This is your playground! Chat with the AI above - ask it anything, 
-                  request images, tell it jokes, or see what creative things it can make.
+                  This chatbot can generate text, create images, analyze documents, and more!
+                  Try the suggested prompts below, or experiment with your own ideas.
                 </p>
                 <p className="text-purple-700 mt-2 font-medium">
-                  After exploring, share your experience below to continue.
+                  Click any prompt below to copy it, then paste into the chat and see what happens!
                 </p>
               </CardContent>
             </Card>
@@ -1247,66 +922,201 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
               </div>
             </div>
 
-            {/* Fixed Reflection Section */}
-            <Card className="mt-8 bg-white border-2 border-purple-300">
-              <CardHeader className="bg-purple-50">
-                <CardTitle className="text-xl text-gray-900 flex items-center">
-                  <MessageSquare className="mr-2 h-5 w-5 text-purple-600" />
-                  Quick Reflection
+            {/* Suggested Prompts Section */}
+            <Card className="mt-8 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-300">
+              <CardHeader className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
+                <CardTitle className="text-xl text-gray-900 dark:text-white flex items-center">
+                  <Sparkles className="mr-2 h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  Try These Multi-Modal Prompts!
                 </CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  Click the copy icon to copy any prompt, then paste it into the chatbot above
+                </p>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    What did you create with the AI chatbot?
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Share what you learned or created... (minimum 50 characters)
-                  </p>
-                </div>
-                
-                {/* ACTUAL TEXTAREA INPUT */}
-                <Textarea
-                  value={playgroundReflection}
-                  onChange={(e) => setPlaygroundReflection(e.target.value)}
-                  placeholder="Type your reflection here..."
-                  className="w-full min-h-[120px] p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 bg-white text-gray-900"
-                />
-                
-                {/* Character counter */}
-                <div className="flex justify-between items-center mt-2 mb-4">
-                  <span className={`text-sm ${playgroundReflection.length >= 50 ? 'text-green-600' : 'text-gray-500'}`}>
-                    {playgroundReflection.length}/50 characters minimum {playgroundReflection.length >= 50 && '✓'}
-                  </span>
+              <CardContent className="p-6 space-y-6">
+                {/* Text Generation */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-lg mr-2">📝</span> Text Generation
+                  </h4>
+                  <div className="space-y-2">
+                    {[
+                      "Write a break-up letter to my procrastination habits",
+                      "Explain [topic from class] in a way that's actually interesting"
+                    ].map((prompt, idx) => (
+                      <button
+                        key={`text-${idx}`}
+                        onClick={() => {
+                          navigator.clipboard.writeText(prompt);
+                          setCopiedPrompts(prev => ({ ...prev, [`text-${idx}`]: true }));
+                          setTimeout(() => {
+                            setCopiedPrompts(prev => ({ ...prev, [`text-${idx}`]: false }));
+                          }, 2000);
+                        }}
+                        className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-left group"
+                      >
+                        <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{prompt}</span>
+                        {copiedPrompts[`text-${idx}`] ? (
+                          <Check className="w-4 h-4 text-green-600 ml-2 flex-shrink-0" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-gray-400 group-hover:text-purple-600 ml-2 flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Submit button - only enabled when 50+ characters */}
-                {playgroundReflection.length >= 50 && (
-                  <Button
-                    onClick={() => {
-                      // Move to next activity
-                      setCompletedPhases(prev => new Set([...prev, 'interactive-activity']));
-                      setPhase('explore-tools');
-                    }}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
-                  >
-                    Continue to Next Activity
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
-                
-                {/* Helper text */}
-                {playgroundReflection.length < 50 && playgroundReflection.length > 0 && (
-                  <p className="text-sm text-gray-500 text-center mt-2">
-                    Keep writing! {50 - playgroundReflection.length} more characters needed.
-                  </p>
-                )}
+                {/* Image Creation */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-lg mr-2">🎨</span> Image Creation
+                  </h4>
+                  <div className="space-y-2">
+                    {[
+                      "Create a movie poster for my life as a [comedy/horror/action] film called '[Your Name]: Finals Week'",
+                      "Design an aesthetic mood board for [your favorite song/movie/book]"
+                    ].map((prompt, idx) => (
+                      <button
+                        key={`image-${idx}`}
+                        onClick={() => {
+                          navigator.clipboard.writeText(prompt);
+                          setCopiedPrompts(prev => ({ ...prev, [`image-${idx}`]: true }));
+                          setTimeout(() => {
+                            setCopiedPrompts(prev => ({ ...prev, [`image-${idx}`]: false }));
+                          }, 2000);
+                        }}
+                        className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-left group"
+                      >
+                        <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{prompt}</span>
+                        {copiedPrompts[`image-${idx}`] ? (
+                          <Check className="w-4 h-4 text-green-600 ml-2 flex-shrink-0" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-gray-400 group-hover:text-purple-600 ml-2 flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Image Analysis */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-lg mr-2">📸</span> Image Analysis
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded ml-2">Upload photo first!</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {[
+                      "Turn these messy notes into organized study points",
+                      "Explain this homework problem step-by-step"
+                    ].map((prompt, idx) => (
+                      <button
+                        key={`analyze-${idx}`}
+                        onClick={() => {
+                          navigator.clipboard.writeText(prompt);
+                          setCopiedPrompts(prev => ({ ...prev, [`analyze-${idx}`]: true }));
+                          setTimeout(() => {
+                            setCopiedPrompts(prev => ({ ...prev, [`analyze-${idx}`]: false }));
+                          }, 2000);
+                        }}
+                        className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-left group"
+                      >
+                        <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">
+                          <span className="mr-1">📎</span>{prompt}
+                        </span>
+                        {copiedPrompts[`analyze-${idx}`] ? (
+                          <Check className="w-4 h-4 text-green-600 ml-2 flex-shrink-0" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-gray-400 group-hover:text-purple-600 ml-2 flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Document Analysis */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-lg mr-2">📄</span> Document Analysis
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded ml-2">Upload document first!</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {[
+                      "Summarize this in 3 key points I can actually remember",
+                      "What are the main arguments and counterarguments?"
+                    ].map((prompt, idx) => (
+                      <button
+                        key={`doc-${idx}`}
+                        onClick={() => {
+                          navigator.clipboard.writeText(prompt);
+                          setCopiedPrompts(prev => ({ ...prev, [`doc-${idx}`]: true }));
+                          setTimeout(() => {
+                            setCopiedPrompts(prev => ({ ...prev, [`doc-${idx}`]: false }));
+                          }, 2000);
+                        }}
+                        className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-left group"
+                      >
+                        <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">
+                          <span className="mr-1">📎</span>{prompt}
+                        </span>
+                        {copiedPrompts[`doc-${idx}`] ? (
+                          <Check className="w-4 h-4 text-green-600 ml-2 flex-shrink-0" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-gray-400 group-hover:text-purple-600 ml-2 flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Creative Fun */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="text-lg mr-2">🎲</span> Creative & Fun
+                  </h4>
+                  <div className="space-y-2">
+                    {[
+                      "Generate the most ridiculous excuse for [situation] that might actually make someone laugh"
+                    ].map((prompt, idx) => (
+                      <button
+                        key={`fun-${idx}`}
+                        onClick={() => {
+                          navigator.clipboard.writeText(prompt);
+                          setCopiedPrompts(prev => ({ ...prev, [`fun-${idx}`]: true }));
+                          setTimeout(() => {
+                            setCopiedPrompts(prev => ({ ...prev, [`fun-${idx}`]: false }));
+                          }, 2000);
+                        }}
+                        className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-left group"
+                      >
+                        <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{prompt}</span>
+                        {copiedPrompts[`fun-${idx}`] ? (
+                          <Check className="w-4 h-4 text-green-600 ml-2 flex-shrink-0" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-gray-400 group-hover:text-purple-600 ml-2 flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <p className="text-center mt-4 font-semibold text-sm">
-              Explore the playground above, then share your thoughts to continue
-            </p>
+            {/* Continue Button */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Try the suggested prompts above, or create your own! When you're ready, continue to discover more AI tools.
+              </p>
+              <Button
+                onClick={() => {
+                  setCompletedPhases(prev => new Set([...prev, 'interactive-activity']));
+                  setPhase('explore-tools');
+                }}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
+              >
+                Continue to Explore More Tools
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </motion.div>
@@ -1314,113 +1124,191 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
     );
   };
 
-  const renderExitActivity = () => (
-    <ModuleActivityWrapper
-      activityId="intro-gen-ai-exit-ticket"
-      activityType="exit-ticket"
-      activityName="Exit Ticket"
-      moduleId="intro-to-gen-ai"
-      onComplete={() => handlePhaseComplete()}
-    >
-      <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="bg-card rounded-2xl p-8 border border-primary"
-    >
-      <div className="text-center mb-6">
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-          <MessageSquare className="w-8 h-8 text-white" />
-        </div>
-        <h2 className="text-2xl font-bold mb-2">Exit Ticket</h2>
-        <p className="text-muted">Share what you've learned</p>
-      </div>
+  const renderExitActivity = () => {
+    const minExitLength = 100;
+    const isExitValid = exitResponse.trim().length >= minExitLength;
 
-      <div className="space-y-6">
+    const handleExitSubmit = async () => {
+      if (!exitShowFeedback) {
+        // Layer 1: Pre-validation for gibberish/nonsense
+        const isInvalid = isNonsensical(exitResponse);
 
-        <div className="bg-orange-soft p-4 rounded-lg">
-          <h3 className="font-semibold mb-2">Final Question:</h3>
-          <p>"What's one new thing you learned about generative AI that surprised you?"</p>
-        </div>
+        // Layer 2: Get AI feedback
+        setIsLoadingFeedback(true);
+        try {
+          const question = "You just discovered that generative AI can CREATE original content, not just analyze existing stuff. Pick ONE thing you do regularly (homework, social media, hobbies, art, music - whatever!) and explain how you'd use generative AI as your 'creative partner' vs just using it to Google answers. Be specific about what you'd create together.";
 
-        <div className="space-y-2">
-          <Textarea
-            value={exitResponse}
-            onChange={(e) => setExitResponse(e.target.value)}
-            placeholder="Share your biggest learning moment... (minimum 50 characters)"
-            className="min-h-[120px] bg-card border-primary placeholder:text-muted"
-          />
-          <div className="text-right text-sm text-muted">
-            {exitResponse.length}/50 characters {exitResponse.length < 50 ? '(minimum required)' : '✓'}
-          </div>
-        </div>
+          const feedback = await generateEducationFeedback(exitResponse, question);
+          setExitFeedback(feedback);
+          setExitShowFeedback(true);
+          setIsLoadingFeedback(false);
 
-        <Button
-          onClick={async () => {
-            if (exitResponse.length < 50) return;
-            
-            setIsGettingFeedback(true);
-            try {
-              const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  messages: [
-                    {
-                      role: 'system',
-                      content: 'You are an encouraging AI literacy educator. The user just completed the generative AI module and shared their reflection. Give brief, specific, encouraging feedback about their learning. Keep it under 100 words and highlight what they understood well.'
-                    },
-                    {
-                      role: 'user',
-                      content: `Here's my reflection on what I learned about generative AI: "${exitResponse}"`
-                    }
-                  ]
-                })
-              });
-              
-              const data = await res.json();
-              setExitFeedback(data.message || "Great reflection! You really understood the key concepts!");
-            } catch {
-              setExitFeedback("Excellent insights! You've mastered the difference between traditional and generative AI!");
-            }
-            setIsGettingFeedback(false);
-          }}
-          disabled={exitResponse.length < 50 || isGettingFeedback || !!exitFeedback}
-          className="bg-purple-600 hover:bg-purple-700 text-white"
+          // Check if AI feedback indicates response needs improvement (strict rejection only)
+          const feedbackIndicatesRetry =
+            feedback.toLowerCase().includes('does not address') ||
+            feedback.toLowerCase().includes('please re-read') ||
+            feedback.toLowerCase().includes('inappropriate language') ||
+            feedback.toLowerCase().includes('off-topic') ||
+            feedback.toLowerCase().includes('must elaborate') ||
+            feedback.toLowerCase().includes('insufficient') ||
+            feedback.toLowerCase().includes('monitored for inappropriate') ||
+            feedback.toLowerCase().includes('answer the original question');
+
+          // Require retry if EITHER validation failed
+          setExitNeedsRetry(isInvalid || feedbackIndicatesRetry);
+        } catch (error) {
+          console.error('Failed to get AI feedback:', error);
+          setExitFeedback('Excellent insights! You understand how generative AI can be a creative partner in your activities.');
+          setExitShowFeedback(true);
+          setIsLoadingFeedback(false);
+          setExitNeedsRetry(false); // Don't block on API errors
+        }
+      } else {
+        // Feedback already shown - continue to certificate
+        handlePhaseComplete();
+      }
+    };
+
+    const handleExitTryAgain = () => {
+      setExitShowFeedback(false);
+      setExitFeedback('');
+      setExitNeedsRetry(false);
+      // IMPORTANT: Keep the response so student can edit it
+    };
+
+    return (
+      <ModuleActivityWrapper
+        activityId="intro-gen-ai-exit-ticket"
+        activityType="exit-ticket"
+        activityName="Exit Ticket"
+        moduleId="intro-to-gen-ai"
+        onComplete={() => handlePhaseComplete()}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-2xl mx-auto"
         >
-          {isGettingFeedback ? 'Getting feedback...' : 'Submit'}
-        </Button>
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 border-b-2 border-orange-300">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <MessageSquare className="w-6 h-6 text-orange-600" />
+                Exit Ticket
+              </CardTitle>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">Show your understanding of generative AI as a creative tool</p>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="bg-orange-100 dark:bg-orange-900/20 p-4 rounded-lg border-l-4 border-orange-600">
+                <p className="text-lg text-gray-800 dark:text-gray-200">
+                  "You just discovered that generative AI can CREATE original content, not just analyze existing stuff. Pick ONE thing you do regularly (homework, social media, hobbies, art, music - whatever!) and explain how you'd use generative AI as your 'creative partner' vs just using it to Google answers. Be specific about what you'd create together."
+                </p>
+              </div>
 
-        {exitFeedback && (
-          <div className="mt-4 p-4 bg-purple-soft rounded-lg">
-            <p>
-              <strong>AI Feedback:</strong> {exitFeedback}
-            </p>
-          </div>
-        )}
+              <Textarea
+                value={exitResponse}
+                onChange={(e) => setExitResponse(e.target.value)}
+                placeholder="Share your specific idea... Be creative and detailed!"
+                className="w-full min-h-[150px] text-base"
+                disabled={exitShowFeedback}
+              />
 
-        {exitFeedback && (
-          <Button
-            onClick={() => {
-              setCompletedPhases(prev => new Set([...prev, 'exit-activity']));
-              setPhase('certificate');
-            }}
-            className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
-          >
-            Get Certificate!
-          </Button>
-        )}
-      </div>
-    </motion.div>
-    </ModuleActivityWrapper>
-  );
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-500">
+                  {exitResponse.length} characters
+                  {minExitLength && ` (minimum: ${minExitLength})`}
+                </div>
+                {isExitValid && (
+                  <div className="text-green-600 text-sm font-medium flex items-center gap-1">
+                    <span className="text-green-500">✓</span>
+                    Ready to submit
+                  </div>
+                )}
+              </div>
+
+              {/* Display AI Feedback */}
+              {exitShowFeedback && exitFeedback && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={`border-2 rounded-lg p-6 ${
+                    exitNeedsRetry
+                      ? 'bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 border-blue-300 dark:border-blue-700'
+                      : 'bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border-purple-300 dark:border-purple-700'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`rounded-full p-2 flex-shrink-0 ${
+                      exitNeedsRetry
+                        ? 'bg-blue-200 dark:bg-blue-800'
+                        : 'bg-purple-200 dark:bg-purple-800'
+                    }`}>
+                      <Sparkles className={`w-5 h-5 ${
+                        exitNeedsRetry
+                          ? 'text-blue-700 dark:text-blue-300'
+                          : 'text-purple-700 dark:text-purple-300'
+                      }`} />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className={`font-semibold mb-3 ${
+                        exitNeedsRetry
+                          ? 'text-blue-900 dark:text-blue-100'
+                          : 'text-purple-900 dark:text-purple-100'
+                      }`}>
+                        AI Feedback
+                      </h4>
+                      <p className={`leading-relaxed ${
+                        exitNeedsRetry
+                          ? 'text-blue-900 dark:text-blue-200'
+                          : 'text-purple-900 dark:text-purple-200'
+                      }`}>
+                        {exitFeedback}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Show appropriate buttons based on state */}
+              {exitNeedsRetry ? (
+                <Button
+                  onClick={handleExitTryAgain}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  size="lg"
+                >
+                  Try Again
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleExitSubmit}
+                  disabled={isLoadingFeedback || !isExitValid}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isLoadingFeedback ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Getting AI Feedback...
+                    </>
+                  ) : exitShowFeedback ? (
+                    'Get Your Certificate!'
+                  ) : (
+                    'Submit Exit Ticket'
+                  )}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      </ModuleActivityWrapper>
+    );
+  };
 
   const renderCertificate = () => {
-    // Calculate achievement score based on multiple factors
+    // Calculate achievement score based on reflection engagement
     const completionScore = Math.round(
-      (sortingGameScore * 0.4) + // 40% from sorting game
-      (reflectionResponse.length > 20 ? 30 : 15) + // 30% for thoughtful reflection
-      (exitResponse.length > 20 ? 30 : 15) // 30% for meaningful exit response
+      (reflectionResponse.length > 50 ? 50 : 25) + // 50% for thoughtful reflection
+      (exitResponse.length > 50 ? 50 : 25) // 50% for meaningful exit response
     );
 
     return (
@@ -1472,66 +1360,38 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   };
 
   const renderExploreTools = () => {
-    const DETAILED_TOOLS = [
-      {
-        name: 'Suno',
-        url: 'https://suno.com',
-        icon: '🎵',
-        category: 'Music Generation',
-        description: 'Create original music and songs from text prompts',
-        features: ['Text-to-music generation', 'Custom lyrics creation', 'Various music styles', 'High-quality audio output'],
-        useCase: 'Perfect for creating background music, jingles, or exploring musical creativity',
-        accessibility: 'Free tier available, subscription for advanced features'
-      },
+    const SIMPLE_TOOLS = [
       {
         name: 'Microsoft Copilot',
         url: 'https://copilot.microsoft.com',
         icon: '💬',
         category: 'Multi-Modal Assistant',
-        description: 'Comprehensive AI assistant for text, images, and productivity',
-        features: ['Text generation', 'Image creation', 'Code assistance', 'Web search integration'],
-        useCase: 'Great for research, writing assistance, and general productivity tasks',
-        accessibility: 'Free with Microsoft account, enhanced features with subscription'
+        description: 'AI assistant for text, images, and homework help',
+        cost: 'Free with Microsoft account (ages 13+)'
       },
       {
         name: 'Midjourney',
         url: 'https://midjourney.com',
         icon: '🎨',
         category: 'Image Generation',
-        description: 'Create stunning, artistic images from text descriptions',
-        features: ['High-quality image generation', 'Artistic styles', 'Image variations', 'Upscaling capabilities'],
-        useCase: 'Ideal for concept art, illustrations, and creative visual content',
-        accessibility: 'Subscription-based service with different tiers'
+        description: 'Creates stunning art from text descriptions',
+        cost: 'Subscription required'
       },
       {
-        name: 'Veo (by Google)',
-        url: 'https://deepmind.google/technologies/veo/',
-        icon: '🎬',
-        category: 'Video Generation',
-        description: 'Generate realistic videos from text prompts',
-        features: ['Text-to-video generation', 'High-resolution output', 'Various video styles', 'Motion control'],
-        useCase: 'Perfect for creating promotional videos, animations, and video content',
-        accessibility: 'Currently in limited access/beta testing'
+        name: 'Suno',
+        url: 'https://suno.com',
+        icon: '🎵',
+        category: 'Music Generation',
+        description: 'Generates original music and songs',
+        cost: 'Free trial, then subscription'
       },
       {
-        name: 'Rosebud.ai',
-        url: 'https://rosebud.ai',
-        icon: '🎮',
-        category: 'Game Development',
-        description: 'Create video games using AI assistance',
-        features: ['Game asset generation', 'Code assistance', 'Visual scripting', 'Character creation'],
-        useCase: 'Great for indie developers and game design exploration',
-        accessibility: 'Free tier with premium features available'
-      },
-      {
-        name: 'Cursor',
-        url: 'https://cursor.sh',
-        icon: '💻',
-        category: 'Code Generation',
-        description: 'AI-powered code editor and programming assistant',
-        features: ['Code completion', 'Bug fixing', 'Code explanation', 'Multi-language support'],
-        useCase: 'Excellent for learning programming and boosting coding productivity',
-        accessibility: 'Free for individuals, paid plans for teams'
+        name: 'Claude',
+        url: 'https://claude.ai',
+        icon: '🤖',
+        category: 'AI Assistant',
+        description: 'Helpful AI for writing, analysis, and learning',
+        cost: 'Free tier available'
       }
     ];
 
@@ -1549,91 +1409,86 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
           transition={{ duration: 0.6 }}
           className="space-y-6"
         >
-        <Card className="bg-blue-soft">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl flex items-center justify-center gap-3">
-              <Sparkles className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-              Explore More Generative AI Tools
-            </CardTitle>
-            <p className="text-lg mt-2">
-              Discover the amazing variety of content AI can create across different domains
-            </p>
-          </CardHeader>
-        </Card>
-
-        {/* Continue Button - Moved to Top for Better UX */}
-        <Card className="bg-orange-soft">
-          <CardContent className="p-6 text-center">
-            <h3 className="text-xl font-bold mb-3">Ready for the Final Video?</h3>
-            <p className="mb-6">
-              Explore the tools below, then continue to learn about benefits and limitations of generative AI.
+        {/* Continue Button - Prominent at Top */}
+        <Card className="bg-gradient-to-r from-orange-500 to-red-500 border-none">
+          <CardContent className="p-8 text-center">
+            <h3 className="text-2xl font-bold text-white mb-3">Ready for the Final Video?</h3>
+            <p className="text-orange-50 mb-6 text-lg">
+              Learn about AI's benefits and limitations
             </p>
             <Button
               onClick={handlePhaseComplete}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
+              className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-6 text-lg font-semibold"
+              size="lg"
             >
               Continue to Final Video
-              <ChevronRight className="w-5 h-5 ml-2" />
+              <ChevronRight className="w-6 h-6 ml-2" />
             </Button>
           </CardContent>
         </Card>
 
-        <div className="grid gap-6">
-          {DETAILED_TOOLS.map((tool, index) => (
-            <motion.div
-              key={tool.name}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="bg-card hover:bg-card-hover transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="text-4xl">{tool.icon}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold">{tool.name}</h3>
-                        <span className="px-2 py-1 bg-blue-soft text-xs rounded-full">
-                          {tool.category}
-                        </span>
-                      </div>
-                      <p className="text-secondary mb-4">{tool.description}</p>
-                      
-                      <div className="grid md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2">Key Features:</h4>
-                          <ul className="text-sm text-muted space-y-1">
-                            {tool.features.map((feature, idx) => (
-                              <li key={idx} className="flex items-center gap-2">
-                                <CheckCircle2 className="w-3 h-3 text-green-600 dark:text-green-400" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
+        {/* Optional Tools Section */}
+        <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-600 pt-6">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Optional: Other AI Tools You Can Try
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Check these out on your own time!
+            </p>
+          </div>
+
+          {/* Parent Permission Notice */}
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 mb-6">
+            <CardContent className="p-4 flex items-start gap-3">
+              <Lightbulb className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <strong>Heads up:</strong> Some tools need accounts or parent permission!
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Simplified Tool Cards - 2x2 Grid */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {SIMPLE_TOOLS.map((tool, index) => (
+              <motion.div
+                key={tool.name}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <Card className="bg-card hover:shadow-lg transition-shadow h-full">
+                  <CardContent className="p-5">
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className="text-3xl">{tool.icon}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-bold text-base">{tool.name}</h4>
+                          <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">
+                            {tool.category}
+                          </span>
                         </div>
-                        <div>
-                          <h4 className="text-sm font-semibold text-green-600 dark:text-green-400 mb-2">Best Use Case:</h4>
-                          <p className="text-sm text-muted">{tool.useCase}</p>
-                          
-                          <h4 className="text-sm font-semibold text-yellow-600 dark:text-yellow-400 mb-1 mt-3">Accessibility:</h4>
-                          <p className="text-sm text-muted">{tool.accessibility}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-3">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          {tool.description}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">
+                          💰 {tool.cost}
+                        </p>
                         <Button
                           onClick={() => window.open(tool.url, '_blank')}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2"
+                          variant="outline"
+                          size="sm"
+                          className="w-full text-xs"
                         >
-                          Visit {tool.name}
+                          Visit {tool.name} →
                         </Button>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </motion.div>
       </ModuleActivityWrapper>
@@ -1710,7 +1565,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       <div className="max-w-4xl mx-auto p-6">
         <AnimatePresence mode="wait">
           {phase === 'introduction' && renderIntroduction()}
-          {phase === 'opening-activity' && renderOpeningActivity()}
           {phase === 'video-segment-1' && renderVideoSegment(0)}
           {phase === 'reflection-1' && renderReflection()}
           {phase === 'video-segment-2' && renderVideoSegment(1)}

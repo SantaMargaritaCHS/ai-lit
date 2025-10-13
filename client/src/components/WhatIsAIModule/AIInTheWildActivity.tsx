@@ -51,7 +51,7 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
       subtitle: "The pattern behind every AI system",
       icon: Brain,
       content: (
-        <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="space-y-6 max-w-2xl mx-auto pb-24">
           <p className="text-lg text-gray-700 dark:text-gray-300 text-center">
             Now let's see HOW AI works. Every AI system follows the same three-step process.
           </p>
@@ -109,23 +109,23 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
       emoji: '📱',
       color: 'pink',
       dataCards: [
-        { id: 'd1', text: 'Videos you like, watch completely, and share', isCorrect: true },
+        { id: 'd1', text: 'Videos you watch completely, rewatch, and how long you spend on each', isCorrect: true },
         { id: 'd2', text: 'Only videos from people you follow', isCorrect: false },
         { id: 'd3', text: 'Random trending videos from your region', isCorrect: false }
       ],
       patternCards: [
-        { id: 'p1', text: 'People with similar interests watch similar content', isCorrect: true },
+        { id: 'p1', text: 'Videos that go viral spread rapidly through similar audiences', isCorrect: true },
         { id: 'p2', text: 'Everyone in the same location likes the same videos', isCorrect: false },
         { id: 'p3', text: 'Older videos are always more popular', isCorrect: false }
       ],
       actionCards: [
-        { id: 'a1', text: 'Shows you videos that match your interests', isCorrect: true },
+        { id: 'a1', text: 'Prioritizes videos likely to keep you watching and scrolling', isCorrect: true },
         { id: 'a2', text: 'Only shows videos with the most likes', isCorrect: false },
         { id: 'a3', text: 'Shows you every video your friends watched', isCorrect: false }
       ],
-      correctData: 'Videos you like, watch completely, and share',
-      correctPattern: 'People with similar interests watch similar content',
-      correctAction: 'Shows you videos that match your interests'
+      correctData: 'Videos you watch completely, rewatch, and how long you spend on each',
+      correctPattern: 'Videos that go viral spread rapidly through similar audiences',
+      correctAction: 'Prioritizes videos likely to keep you watching and scrolling'
     },
     {
       id: 'spotify',
@@ -134,23 +134,23 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
       emoji: '🎵',
       color: 'blue',
       dataCards: [
-        { id: 'd1', text: 'Songs you listen to, skip, and add to playlists', isCorrect: true },
+        { id: 'd1', text: 'Songs you replay, save, skip within 30 seconds, and genres you explore', isCorrect: true },
         { id: 'd2', text: 'Only songs from your favorite artists', isCorrect: false },
         { id: 'd3', text: 'The most popular songs this week', isCorrect: false }
       ],
       patternCards: [
-        { id: 'p1', text: 'Listeners with similar taste enjoy similar songs', isCorrect: true },
+        { id: 'p1', text: 'Listeners who enjoy similar genres discover similar new artists together', isCorrect: true },
         { id: 'p2', text: 'Everyone likes the same new releases', isCorrect: false },
         { id: 'p3', text: 'Older songs are always better', isCorrect: false }
       ],
       actionCards: [
-        { id: 'a1', text: 'Recommends new songs matching your music taste', isCorrect: true },
+        { id: 'a1', text: 'Introduces you to new artists and songs you haven\'t discovered yet', isCorrect: true },
         { id: 'a2', text: 'Shows you the global top 50 songs', isCorrect: false },
         { id: 'a3', text: 'Plays every song your friends listened to', isCorrect: false }
       ],
-      correctData: 'Songs you listen to, skip, and add to playlists',
-      correctPattern: 'Listeners with similar taste enjoy similar songs',
-      correctAction: 'Recommends new songs matching your music taste'
+      correctData: 'Songs you replay, save, skip within 30 seconds, and genres you explore',
+      correctPattern: 'Listeners who enjoy similar genres discover similar new artists together',
+      correctAction: 'Introduces you to new artists and songs you haven\'t discovered yet'
     },
     {
       id: 'youtube',

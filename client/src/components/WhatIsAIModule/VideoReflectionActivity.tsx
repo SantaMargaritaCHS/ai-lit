@@ -62,16 +62,16 @@ export default function VideoReflectionActivity({
 
         // Determine if retry is needed based on:
         // 1. Pre-validation (gibberish/too short)
-        // 2. Gemini's feedback indicating the response is inadequate
+        // 2. Gemini's feedback indicating the response is inadequate (strict rejection only)
         const feedbackIndicatesRetry =
           feedback.toLowerCase().includes('does not address') ||
           feedback.toLowerCase().includes('please re-read') ||
           feedback.toLowerCase().includes('inappropriate language') ||
           feedback.toLowerCase().includes('off-topic') ||
-          feedback.toLowerCase().includes('lacks depth') ||
-          feedback.toLowerCase().includes('could you elaborate') ||
-          feedback.toLowerCase().includes('needs more depth') ||
-          feedback.toLowerCase().includes('monitored for inappropriate');
+          feedback.toLowerCase().includes('must elaborate') ||
+          feedback.toLowerCase().includes('insufficient') ||
+          feedback.toLowerCase().includes('monitored for inappropriate') ||
+          feedback.toLowerCase().includes('answer the original question');
 
         // Require retry if EITHER pre-validation failed OR Gemini says response is inadequate
         setNeedsRetry(isInvalid || feedbackIndicatesRetry);

@@ -35,7 +35,7 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
       subtitle: "A fun icebreaker to discover AI around you",
       icon: Brain,
       content: (
-        <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="space-y-6 max-w-2xl mx-auto pb-24">
           <p className="text-lg text-gray-700 dark:text-gray-300 text-center">
             Before we dive deep into AI, let's explore where it shows up in your daily life!
             You'll look at 12 different technologies and discover which ones use AI and which don't.
