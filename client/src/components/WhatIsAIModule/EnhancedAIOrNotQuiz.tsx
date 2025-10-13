@@ -151,8 +151,8 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
       id: '11',
       scenario: 'Smartphone autocorrect fixing "teh" to "the" while you type',
       isAI: true,
-      explanation: 'This IS AI! It learns common typing mistakes and patterns in how people write to predict what word you meant.',
-      teachingPoint: 'AI learns from patterns in data to make predictions',
+      explanation: 'This IS AI! The system analyzes common typing mistakes and patterns in text data to predict the intended word.',
+      teachingPoint: 'AI analyzes patterns in data to make predictions',
       category: 'Communication'
     },
     {

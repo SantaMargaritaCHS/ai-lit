@@ -406,8 +406,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         <Card className="bg-yellow-soft border-accent mb-6">
           <CardContent className="p-4 text-center">
             <p>
-              <strong>💡 By the end of this module:</strong> You'll confidently identify generative AI, 
-              understand how it works, and be ready to use it as a creative partner!
+              <strong>💡 By the end of this module:</strong> You'll confidently identify generative AI,
+              understand how it works, and be ready to use it as a creative tool!
             </p>
           </CardContent>
         </Card>
@@ -564,11 +564,11 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
   const renderReflection = () => {
     const EXAMPLE_USES = [
-      'Microsoft Copilot (ages 13+) for homework help',
-      'Copilot to help write an email or essay',
-      'School AI tools to answer questions',
-      'AI image generators (with permission)',
-      'AI chatbots to brainstorm ideas'
+      'Microsoft Copilot (ages 13+) to understand concepts and practice skills',
+      'Copilot to explore writing techniques and get feedback on drafts',
+      'School AI tools to learn about topics',
+      'AI image generators (with permission) to explore visual ideas',
+      'AI chatbots to brainstorm creative projects'
     ];
 
     const minResponseLength = 100;
@@ -853,7 +853,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
     // Developer mode constants
     const DEV_RESPONSES = {
-      reflection: "As an educator, I've actually used generative AI quite a bit this week! I used ChatGPT to help brainstorm discussion questions for my lesson on ecosystems, and it created a really thoughtful list of questions that got my students thinking critically. I also used Gemini to help me write personalized feedback comments for student essays - it helped me articulate constructive feedback while maintaining an encouraging tone. This experience really shows me how generative AI doesn't just analyze existing content like traditional AI - it actually creates new, original content that I couldn't have thought of on my own.",
+      reflection: "As an educator, I've actually used generative AI quite a bit this week! I used ChatGPT to help brainstorm discussion questions for my lesson on ecosystems, and it created a really thoughtful list of questions that got my students thinking critically. I also used Gemini to help me brainstorm feedback approaches for student essays - it helped me think through different ways to provide constructive feedback while maintaining an encouraging tone. This experience really shows me how generative AI doesn't just analyze existing content like traditional AI - it actually creates new, original content that I couldn't have thought of on my own.",
       exitTicket: "What surprised me most about generative AI is learning the clear distinction between traditional AI and generative AI through the chef vs. food critic analogy. I didn't realize that tools like Netflix recommendations and spam filters are traditional AI that analyze existing content, while tools like ChatGPT and DALL-E actually create entirely new content that never existed before. This distinction helps me understand why generative AI feels so revolutionary - it's not just processing what's already there, it's creating something completely new. As an educator, this makes me excited about the creative possibilities for both my teaching and my students' learning."
     };
 
@@ -1006,7 +1006,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                   <div className="space-y-2">
                     {[
                       "Turn these messy notes into organized study points",
-                      "Explain this homework problem step-by-step"
+                      "Explain this practice problem step-by-step"
                     ].map((prompt, idx) => (
                       <button
                         key={`analyze-${idx}`}
@@ -1135,7 +1135,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         // Layer 2: Get AI feedback
         setIsLoadingFeedback(true);
         try {
-          const question = "You just discovered that generative AI can CREATE original content, not just analyze existing stuff. Pick ONE thing you do regularly (homework, social media, hobbies, art, music - whatever!) and explain how you'd use generative AI as your 'creative partner' vs just using it to Google answers. Be specific about what you'd create together.";
+          const question = "You just discovered that generative AI can CREATE original content, not just analyze existing stuff. Pick ONE thing you do regularly (hobbies, art, music, creative projects - whatever!) and explain how you'd use generative AI as a creative tool vs just using it to Google answers. Be specific about what you'd create with this technology.";
 
           const feedback = await generateEducationFeedback(exitResponse, question);
           setExitFeedback(feedback);
@@ -1156,7 +1156,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
           setExitNeedsRetry(isInvalid || feedbackIndicatesRetry);
         } catch (error) {
           console.error('Failed to get AI feedback:', error);
-          setExitFeedback('Excellent insights! You understand how generative AI can be a creative partner in your activities.');
+          setExitFeedback('Excellent insights! You understand how generative AI can be a powerful creative tool in your activities.');
           setExitShowFeedback(true);
           setIsLoadingFeedback(false);
           setExitNeedsRetry(false); // Don't block on API errors
@@ -1199,7 +1199,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
             <CardContent className="p-6 space-y-6">
               <div className="bg-orange-100 dark:bg-orange-900/20 p-4 rounded-lg border-l-4 border-orange-600">
                 <p className="text-lg text-gray-800 dark:text-gray-200">
-                  "You just discovered that generative AI can CREATE original content, not just analyze existing stuff. Pick ONE thing you do regularly (homework, social media, hobbies, art, music - whatever!) and explain how you'd use generative AI as your 'creative partner' vs just using it to Google answers. Be specific about what you'd create together."
+                  "You just discovered that generative AI can CREATE original content, not just analyze existing stuff. Pick ONE thing you do regularly (hobbies, art, music, creative projects - whatever!) and explain how you'd use generative AI as a creative tool vs just using it to Google answers. Be specific about what you'd create with this technology."
                 </p>
               </div>
 
@@ -1363,8 +1363,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         name: 'Microsoft Copilot',
         url: 'https://copilot.microsoft.com',
         icon: '💬',
-        category: 'Multi-Modal Assistant',
-        description: 'AI assistant for text, images, and homework help',
+        category: 'Multi-Modal Tool',
+        description: 'AI tool for text creation, image generation, and concept explanation',
         cost: 'Free with Microsoft account (ages 13+)'
       },
       {
@@ -1387,8 +1387,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         name: 'Claude',
         url: 'https://claude.ai',
         icon: '🤖',
-        category: 'AI Assistant',
-        description: 'Helpful AI for writing, analysis, and learning',
+        category: 'AI Tool',
+        description: 'AI tool for writing practice, text analysis, and learning support',
         cost: 'Free tier available'
       }
     ];

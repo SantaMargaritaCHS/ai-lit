@@ -417,7 +417,7 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
             <div className="bg-white/70 dark:bg-gray-800/70 p-6 rounded-lg border-2 border-blue-300">
               <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Key Insight</h4>
               <p className="text-sm text-gray-800 dark:text-gray-200">
-                <strong>Every AI system</strong> collects data, finds patterns, and takes action based on those patterns. This three-step process is at the heart of how AI works!
+                <strong>Every AI system</strong> collects data, finds patterns, and executes programmed responses based on those patterns. This three-step process is at the heart of how AI works!
               </p>
             </div>
 

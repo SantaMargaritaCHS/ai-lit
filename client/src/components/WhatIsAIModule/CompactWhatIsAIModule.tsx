@@ -489,8 +489,8 @@ export default function CompactWhatIsAIModule({
         return (
           <div className="section-content">
             <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Inflection Point</h2>
-              <p className="text-gray-600">Where AI is taking us next</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Turning Point</h2>
+              <p className="text-gray-600">Where AI is taking us next - a major moment of change</p>
             </div>
 
             {segment3VideoUrl ? (
