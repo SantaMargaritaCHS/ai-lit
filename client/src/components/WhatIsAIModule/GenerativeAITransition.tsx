@@ -91,7 +91,7 @@ export const GenerativeAITransition: React.FC<GenerativeAITransitionProps> = ({ 
           <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300 mb-6">
             <CardContent className="p-4">
               <p className="text-center text-lg text-yellow-900">
-                <strong>Remember:</strong> Traditional AI is like a <strong>librarian</strong> 📚 who finds information.
+                <strong>Remember:</strong> Analytical AI is like a <strong>librarian</strong> 📚 who finds information.
                 <br />
                 Generative AI is like an <strong>author</strong> ✍️ who writes new stories!
               </p>

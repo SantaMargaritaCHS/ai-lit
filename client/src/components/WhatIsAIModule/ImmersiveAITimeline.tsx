@@ -29,7 +29,7 @@ const timelineEvents: TimelineEvent[] = [
   {
     id: 'traditional-era',
     year: '1950-2017' as any,
-    title: 'Traditional AI: The Analyzing Era',
+    title: 'Analytical AI: The Analyzing Era',
     narration: "For nearly 70 years, AI got better at one thing: analyzing what already exists. It could recognize faces, filter spam, and beat humans at chess.",
     icon: Brain,
     category: 'traditional',

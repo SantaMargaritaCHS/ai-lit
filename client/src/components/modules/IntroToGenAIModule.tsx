@@ -64,15 +64,15 @@ const VIDEO_CONFIG = {
 };
 
 const COMPREHENSION_QUESTION = {
-  question: "According to the video, what's the key difference between traditional AI and generative AI?",
+  question: "According to the video, what's the key difference between analytical AI and generative AI?",
   options: [
-    "Traditional AI is newer than generative AI",
-    "Traditional AI analyzes and classifies existing data, while generative AI creates brand new content",
-    "Generative AI is only used for text, while traditional AI handles images",
+    "Analytical AI is newer than generative AI",
+    "Analytical AI analyzes and classifies existing data, while generative AI creates brand new content",
+    "Generative AI is only used for text, while analytical AI handles images",
     "There is no real difference between them"
   ],
   correctAnswer: 1,
-  explanation: "Exactly right! As the video explained with the chef vs food critic analogy - traditional AI is like a food critic that analyzes existing dishes, while generative AI is like a chef that creates entirely new recipes and dishes."
+  explanation: "Exactly right! As the video explained with the chef vs food critic analogy - analytical AI is like a food critic that analyzes existing dishes, while generative AI is like a chef that creates entirely new recipes and dishes."
 };
 
 // SortableItem component removed - now using enhanced individual item presentation
@@ -853,8 +853,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
     // Developer mode constants
     const DEV_RESPONSES = {
-      reflection: "As an educator, I've actually used generative AI quite a bit this week! I used ChatGPT to help brainstorm discussion questions for my lesson on ecosystems, and it created a really thoughtful list of questions that got my students thinking critically. I also used Gemini to help me brainstorm feedback approaches for student essays - it helped me think through different ways to provide constructive feedback while maintaining an encouraging tone. This experience really shows me how generative AI doesn't just analyze existing content like traditional AI - it actually creates new, original content that I couldn't have thought of on my own.",
-      exitTicket: "What surprised me most about generative AI is learning the clear distinction between traditional AI and generative AI through the chef vs. food critic analogy. I didn't realize that tools like Netflix recommendations and spam filters are traditional AI that analyze existing content, while tools like ChatGPT and DALL-E actually create entirely new content that never existed before. This distinction helps me understand why generative AI feels so revolutionary - it's not just processing what's already there, it's creating something completely new. As an educator, this makes me excited about the creative possibilities for both my teaching and my students' learning."
+      reflection: "As an educator, I've actually used generative AI quite a bit this week! I used ChatGPT to help brainstorm discussion questions for my lesson on ecosystems, and it created a really thoughtful list of questions that got my students thinking critically. I also used Gemini to help me brainstorm feedback approaches for student essays - it helped me think through different ways to provide constructive feedback while maintaining an encouraging tone. This experience really shows me how generative AI doesn't just analyze existing content like analytical AI - it actually creates new, original content that I couldn't have thought of on my own.",
+      exitTicket: "What surprised me most about generative AI is learning the clear distinction between analytical AI and generative AI through the chef vs. food critic analogy. I didn't realize that tools like Netflix recommendations and spam filters are analytical AI that analyze existing content, while tools like ChatGPT and DALL-E actually create entirely new content that never existed before. This distinction helps me understand why generative AI feels so revolutionary - it's not just processing what's already there, it's creating something completely new. As an educator, this makes me excited about the creative possibilities for both my teaching and my students' learning."
     };
 
 

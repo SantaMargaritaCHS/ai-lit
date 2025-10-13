@@ -49,7 +49,7 @@ export default function EnhancedAIOrNotQuiz({ onComplete }: EnhancedAIOrNotQuizP
               </p>
             </div>
             <div className="bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/20 dark:to-cyan-900/20 p-4 rounded-lg border-2 border-blue-300 dark:border-blue-700">
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Traditional = Fixed Rules</h3>
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Non-AI = Fixed Rules</h3>
               <p className="text-sm text-blue-800 dark:text-gray-300">
                 Follows exact instructions, same input = same output
               </p>
