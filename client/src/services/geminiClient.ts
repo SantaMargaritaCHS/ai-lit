@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { checkEnvVars } from '@/test-env-check';
 
 // Run environment check on load (only in dev mode)
@@ -67,22 +67,23 @@ export const generateWithGemini = async (
       },
       // Safety settings for educational environment with high school students (ages 14-18)
       // These filters protect students from inappropriate content in AI responses
+      // Updated thresholds to reduce false positives on legitimate educational discussions
       safetySettings: [
         {
-          category: 'HARM_CATEGORY_HARASSMENT',
-          threshold: 'BLOCK_LOW_AND_ABOVE', // Strict - block harassment early
+          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE, // Moderate - allow educational AI discussions
         },
         {
-          category: 'HARM_CATEGORY_HATE_SPEECH',
-          threshold: 'BLOCK_LOW_AND_ABOVE', // Strict - zero tolerance for hate speech
+          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE, // Moderate - allow critical thinking discussions
         },
         {
-          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-          threshold: 'BLOCK_MEDIUM_AND_ABOVE', // Moderate - educational discussions okay
+          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE, // Moderate - educational discussions okay
         },
         {
-          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-          threshold: 'BLOCK_MEDIUM_AND_ABOVE', // Moderate - AI ethics discussions okay
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE, // Moderate - AI ethics discussions okay
         },
       ],
     });

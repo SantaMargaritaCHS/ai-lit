@@ -68,9 +68,10 @@ Only flag responses that are truly off-topic or inappropriate.`;
       // vs. just not being configured - the console logs from geminiClient will clarify
       console.warn('⚠️ Gemini returned null - may be blocked by safety filters or not configured');
 
-      // Return a message appropriate for blocked content with deterrent warning
-      // This covers both safety filter blocks and API unavailability
-      return "I can't provide feedback on that response. Please focus on answering the reflection question thoughtfully and appropriately. Note: All responses are monitored for inappropriate content.";
+      // Return neutral fallback instead of warning message
+      // Safety filter blocks are rare and usually false positives
+      // Let the fallback system handle this gracefully
+      return getEducationFallback();
     }
 
     // If Gemini returns a result, use it

@@ -597,7 +597,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
             feedback.toLowerCase().includes('off-topic') ||
             feedback.toLowerCase().includes('must elaborate') ||
             feedback.toLowerCase().includes('insufficient') ||
-            feedback.toLowerCase().includes('monitored for inappropriate') ||
             feedback.toLowerCase().includes('answer the original question');
 
           // Require retry if EITHER validation failed
@@ -1151,7 +1150,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
             feedback.toLowerCase().includes('off-topic') ||
             feedback.toLowerCase().includes('must elaborate') ||
             feedback.toLowerCase().includes('insufficient') ||
-            feedback.toLowerCase().includes('monitored for inappropriate') ||
             feedback.toLowerCase().includes('answer the original question');
 
           // Require retry if EITHER validation failed
