@@ -767,35 +767,57 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   };
 
   const renderIngredientsActivity = () => {
-    const ingredients = [
-      {
-        icon: '⚡',
-        title: 'Computing Power',
-        description: 'Specialized computer chips that can process massive amounts of data incredibly fast',
-        example: 'GPUs and TPUs that train AI models'
-      },
-      {
-        icon: '📊',
-        title: 'Massive Datasets',
-        description: 'Enormous collections of data from books, websites, images - a giant chunk of the public internet',
-        example: 'Billions of web pages, images, and text'
-      },
-      {
-        icon: '💬',
-        title: 'Simple Interfaces',
-        description: 'Easy-to-use text boxes that hide all the complexity, making AI accessible to everyone',
-        example: 'ChatGPT, Copilot, Gemini chat interfaces'
-      }
-    ];
+    const INGREDIENTS_QUESTION = {
+      question: "What three key ingredients came together to make generative AI accessible to everyone?",
+      options: [
+        {
+          text: "⚡ Computing Power - Specialized chips (GPUs/TPUs) that process massive data incredibly fast",
+          isCorrect: true,
+          explanation: "Correct! Powerful computing hardware was essential to train and run these massive AI models."
+        },
+        {
+          text: "📊 Massive Datasets - Enormous collections from the public internet (billions of web pages, images, text)",
+          isCorrect: true,
+          explanation: "Exactly! AI models learn from huge amounts of human-created content to recognize patterns."
+        },
+        {
+          text: "💬 Simple Interfaces - Easy text boxes that hide complexity and make AI accessible to everyone",
+          isCorrect: true,
+          explanation: "Perfect! User-friendly interfaces like ChatGPT made AI tools available to anyone, not just experts."
+        },
+        {
+          text: "🤖 Human-like consciousness - AI became self-aware and can think independently",
+          isCorrect: false,
+          explanation: "No! AI doesn't have consciousness or independent thought - it's pattern matching, not thinking."
+        },
+        {
+          text: "💰 Free access for everyone - All AI tools are completely free with no limitations",
+          isCorrect: false,
+          explanation: "Not quite. While some tools offer free tiers, this isn't what made the breakthrough possible."
+        }
+      ]
+    };
 
-    const allClicked = ingredients.every(ing =>
-      sortedItems[ing.title] !== null && sortedItems[ing.title] !== undefined
-    );
+    const [ingredientsSelections, setIngredientsSelections] = useState<Record<number, boolean>>({});
+    const allAnswered = INGREDIENTS_QUESTION.options.every((_, idx) => ingredientsSelections[idx] !== undefined);
+    const allCorrectSelected = INGREDIENTS_QUESTION.options
+      .filter(opt => opt.isCorrect)
+      .every((opt, originalIdx) => {
+        const optIdx = INGREDIENTS_QUESTION.options.indexOf(opt);
+        return ingredientsSelections[optIdx] === true;
+      });
+    const noIncorrectSelected = INGREDIENTS_QUESTION.options
+      .filter(opt => !opt.isCorrect)
+      .every((opt, originalIdx) => {
+        const optIdx = INGREDIENTS_QUESTION.options.indexOf(opt);
+        return ingredientsSelections[optIdx] !== true;
+      });
+    const canContinue = allCorrectSelected && noIncorrectSelected;
 
     return (
       <InteractiveActivity
         id="intro-gen-ai-ingredients"
-        name="Three Key Ingredients"
+        name="Three Key Ingredients Knowledge Check"
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
@@ -809,54 +831,62 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-3">
                 <Zap className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
-                The Perfect Storm: Three Key Ingredients
+                Knowledge Check: The Perfect Storm
               </CardTitle>
               <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-                Click each card to learn what makes generative AI possible
+                Select ALL three ingredients that made generative AI accessible to everyone
               </p>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-3 gap-4">
-                {ingredients.map((ingredient, index) => (
-                  <motion.button
-                    key={ingredient.title}
-                    onClick={() => setSortedItems({...sortedItems, [ingredient.title]: 'clicked' as any})}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="text-left"
-                  >
-                    <Card className={`h-full transition-all duration-300 ${
-                      sortedItems[ingredient.title]
-                        ? 'bg-white dark:bg-gray-800 border-2 border-green-500'
-                        : 'bg-white dark:bg-gray-800 border border-gray-300 hover:border-yellow-400'
-                    }`}>
-                      <CardContent className="p-5">
-                        <div className="text-center mb-3">
-                          <div className="text-4xl mb-2">{ingredient.icon}</div>
-                          <h3 className="font-bold text-lg text-gray-900 dark:text-white">{ingredient.title}</h3>
-                        </div>
+              <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg">
+                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-4">{INGREDIENTS_QUESTION.question}</h3>
+              </div>
 
-                        {sortedItems[ingredient.title] && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="space-y-2"
-                          >
-                            <p className="text-sm text-gray-700 dark:text-gray-300">{ingredient.description}</p>
-                            <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                              <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Example:</p>
-                              <p className="text-xs text-gray-800 dark:text-gray-200">{ingredient.example}</p>
-                            </div>
-                          </motion.div>
+              <div className="space-y-3">
+                {INGREDIENTS_QUESTION.options.map((option, index) => (
+                  <div key={index} className="space-y-2">
+                    <button
+                      onClick={() => setIngredientsSelections({...ingredientsSelections, [index]: !ingredientsSelections[index]})}
+                      className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-300 ${
+                        ingredientsSelections[index] === true
+                          ? option.isCorrect
+                            ? 'border-green-500 bg-green-soft'
+                            : 'border-red-500 bg-red-soft'
+                          : 'border-primary bg-card hover:bg-card-hover'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-800 dark:text-gray-200">{option.text}</span>
+                        {ingredientsSelections[index] === true && (
+                          <span className="ml-2 flex-shrink-0">
+                            {option.isCorrect ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <X className="w-5 h-5 text-red-600" />
+                            )}
+                          </span>
                         )}
-                      </CardContent>
-                    </Card>
-                  </motion.button>
+                      </div>
+                    </button>
+                    {ingredientsSelections[index] === true && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={`p-3 rounded-lg text-sm ${
+                          option.isCorrect
+                            ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200'
+                            : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200'
+                        }`}
+                      >
+                        {option.explanation}
+                      </motion.div>
+                    )}
+                  </div>
                 ))}
               </div>
 
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-400 p-4 rounded-lg mt-6">
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-400 p-4 rounded-lg mt-4">
                 <p className="text-sm text-gray-800 dark:text-gray-200">
                   <strong>The Perfect Storm:</strong> When these three ingredients came together, they made AI accessible to everyone - not just researchers and tech companies!
                 </p>
@@ -864,11 +894,11 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
               <Button
                 onClick={handlePhaseComplete}
-                disabled={!allClicked}
-                className="w-full bg-yellow-600 hover:bg-yellow-700 text-white mt-4"
+                disabled={!canContinue}
+                className="w-full bg-yellow-600 hover:bg-yellow-700 text-white mt-6"
                 size="lg"
               >
-                {allClicked ? 'Continue' : 'Click all three ingredients to continue'}
+                {!allAnswered ? 'Select all answers to continue' : !canContinue ? 'Select the three correct ingredients to continue' : 'Continue'}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>

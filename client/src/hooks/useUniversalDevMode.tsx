@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useActivityRegistry } from '../context/ActivityRegistryContext';
 
 // Get secret key from environment variable or use fallback
-const SECRET_KEY = import.meta.env.VITE_DEV_MODE_SECRET_KEY || '752465Ledezma';
+// Support multiple valid passwords for dev mode access
+const VALID_PASSWORDS = [
+  import.meta.env.VITE_DEV_MODE_SECRET_KEY || '752465Ledezma',
+  'X9mK#7pL2wQ8nR5t' // Additional generated password
+];
 
 // Types for module activities
 export interface ModuleActivity {
@@ -31,7 +35,7 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
   // Log initialization
   useEffect(() => {
     console.log('🔧🔧🔧 Universal Dev Mode Hook Initialized!');
-    console.log('🔧 Secret Key:', SECRET_KEY);
+    console.log('🔧 Valid Passwords:', VALID_PASSWORDS.length, 'configured');
     console.log('🔧 Press Ctrl+Alt+D (or Cmd+Alt+D on Mac) to activate');
 
     // Test if event listeners work at all
@@ -180,11 +184,9 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
   // Handle secret key submission
   const handleSecretKeySubmit = useCallback((key: string) => {
     console.log('🔧 Universal Dev Mode: Checking key...');
-    console.log('🔧 Universal Dev Mode: Provided:', key);
-    console.log('🔧 Universal Dev Mode: Expected:', SECRET_KEY);
-    console.log('🔧 Universal Dev Mode: Match:', key === SECRET_KEY);
+    console.log('🔧 Universal Dev Mode: Match:', VALID_PASSWORDS.includes(key));
 
-    if (key === SECRET_KEY) {
+    if (VALID_PASSWORDS.includes(key)) {
       console.log('🔧 Universal Dev Mode: ✅ Key correct! Activating dev mode...');
       setIsDevModeActive(true);
       setShowDevPanel(true);
