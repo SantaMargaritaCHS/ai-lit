@@ -21,6 +21,7 @@ import AIInTheWildActivity from './AIInTheWildActivity';
 import VideoReflectionActivity from './VideoReflectionActivity';
 import ResumeProgressDialog from './ResumeProgressDialog';
 import { saveProgress, loadProgress, clearProgress, getProgressSummary } from '@/lib/progressPersistence';
+import { WHAT_IS_AI_ACTIVITIES } from '@/data/moduleActivityDefinitions';
 
 interface CompactWhatIsAIModuleProps {
   onComplete: () => void;
@@ -59,40 +60,13 @@ export default function CompactWhatIsAIModule({
   // Activity flow state - NEW IMPROVED PEDAGOGICAL FLOW
   const [currentActivity, setCurrentActivity] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [activities, setActivities] = useState<(ActivityState & Partial<ReflectionActivity>)[]>([
-    { id: 'welcome', title: 'Welcome', completed: false },
-    { id: 'ai-or-not-quiz', title: 'AI Spotter Challenge', completed: false },
-    {
-      id: 'video-intro',
-      title: 'Introduction Video (0:00-1:16)',
-      completed: false,
-      type: 'video-with-reflection'
-    },
-    { id: 'ai-in-the-wild', title: 'How AI Actually Works', completed: false },
-    {
-      id: 'video-segment-2',
-      title: 'AI as a Tool (2:22-2:58)',
-      completed: false,
-      type: 'video-with-reflection'
-    },
-    {
-      id: 'reflection-2',
-      title: 'Reflection: AI as a Tool',
+  // Use imported activity definitions (single source of truth)
+  const [activities, setActivities] = useState<(ActivityState & Partial<ReflectionActivity>)[]>(
+    WHAT_IS_AI_ACTIVITIES.map(activity => ({
+      ...activity,
       completed: false
-    },
-    {
-      id: 'video-segment-3',
-      title: 'AI Inflection Point (3:00-3:31)',
-      completed: false,
-      type: 'video-with-reflection'
-    },
-    {
-      id: 'reflection-3',
-      title: 'Reflection: Future of AI',
-      completed: false
-    },
-    { id: 'certificate', title: 'Certificate', completed: false }
-  ]);
+    }))
+  );
   
   // Activity-specific states (cleaned up - removed unused states from old activities)
   

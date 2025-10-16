@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink } from 'lucide-react';
+import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { ModuleOutline } from '../components/ModuleOutline';
 
 const modules = [
   {
@@ -82,6 +83,7 @@ export default function HomePage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [sortOrder, setSortOrder] = useState<'default' | 'alphabetical' | 'level'>('default');
+  const [outlineModuleId, setOutlineModuleId] = useState<string | null>(null);
   const { userName, clearUserName, clearModuleName } = useUser();
 
   const copyModuleUrl = (e: React.MouseEvent, moduleId: string) => {
@@ -108,6 +110,12 @@ export default function HomePage() {
     setTimeout(() => {
       setCopiedId(null);
     }, 2000);
+  };
+
+  const openModuleOutline = (e: React.MouseEvent, moduleId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOutlineModuleId(moduleId);
   };
 
   const getSortedModules = () => {
@@ -219,6 +227,13 @@ export default function HomePage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <button
+                            onClick={(e) => openModuleOutline(e, module.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-purple-100 rounded-lg"
+                            title="View activity outline"
+                          >
+                            <FileText className="w-4 h-4 text-purple-600" />
+                          </button>
+                          <button
                             onClick={(e) => copyModuleUrl(e, module.id)}
                             className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-100 rounded-lg"
                             title="Copy local link"
@@ -294,6 +309,15 @@ export default function HomePage() {
             )}
           </div>
         </div>
+
+        {/* Module Outline Modal */}
+        {outlineModuleId && (
+          <ModuleOutline
+            moduleId={outlineModuleId}
+            isOpen={!!outlineModuleId}
+            onClose={() => setOutlineModuleId(null)}
+          />
+        )}
       </div>
     </div>
   );
