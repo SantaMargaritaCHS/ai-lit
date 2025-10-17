@@ -151,6 +151,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   const [sortedItems, setSortedItems] = useState<Record<string, 'opportunity' | 'risk' | null>>({});
   const [factCheckSelections, setFactCheckSelections] = useState<Record<number, boolean>>({});
   const [integritySelections, setIntegritySelections] = useState<Record<number, string>>({});
+  const [scenarioSelections, setScenarioSelections] = useState<Record<number, boolean>>({});
+  const [ingredientsSelections, setIngredientsSelections] = useState<Record<number, boolean>>({});
 
   const isMountedRef = useRef(true);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
@@ -668,7 +670,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       ]
     };
 
-    const [scenarioSelections, setScenarioSelections] = useState<Record<number, boolean>>({});
     const allAnswered = SCENARIO_QUESTION.options.every((_, idx) => scenarioSelections[idx] !== undefined);
     const hasCorrectAnswer = SCENARIO_QUESTION.options.some((opt, idx) => opt.isCorrect && scenarioSelections[idx] === true);
 
@@ -798,7 +799,6 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       ]
     };
 
-    const [ingredientsSelections, setIngredientsSelections] = useState<Record<number, boolean>>({});
     const allAnswered = INGREDIENTS_QUESTION.options.every((_, idx) => ingredientsSelections[idx] !== undefined);
     const allCorrectSelected = INGREDIENTS_QUESTION.options
       .filter(opt => opt.isCorrect)
