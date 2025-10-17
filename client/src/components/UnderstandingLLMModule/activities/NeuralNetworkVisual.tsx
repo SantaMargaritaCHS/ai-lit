@@ -150,8 +150,8 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
 
             <div className="bg-black/20 rounded-lg p-4">
               <p className="text-white text-center">
-                <strong>The Recipe:</strong> The network "tastes" millions of sentences during training, 
-                learning that after "The cat" often comes words like "sits", "runs", or "sleeps"!
+                <strong>The Recipe:</strong> The network processes millions of sentences during training,
+                calculating that after "The cat" words like "sits", "runs", or "sleeps" frequently appeared!
               </p>
             </div>
           </div>
@@ -236,8 +236,8 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
                 It's Just a Recipe!
               </h3>
               <p className="text-gray-200">
-                Neural networks follow a "recipe" learned from millions of examples. 
-                They don't think—they just know which "ingredients" (words) usually go together.
+                Neural networks follow a "recipe" calculated from millions of examples.
+                They don't think—they just match which "ingredients" (words) appeared together in training data.
               </p>
             </motion.div>
 
@@ -277,9 +277,9 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
           <div className="bg-blue-900/20 border border-blue-400/30 rounded-lg p-6 mb-6 text-center">
             <Lightbulb className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
             <p className="text-blue-200 text-lg">
-              <strong>Remember:</strong> Neural networks are pattern-finding "chefs" that have 
-              memorized millions of "recipes" for combining words. They're amazing at their job, 
-              but they don't actually understand what they're "cooking"!
+              <strong>Remember:</strong> Neural networks are pattern-matching systems that have
+              calculated statistical probabilities from millions of word combinations. They're powerful tools,
+              but they don't actually understand what they're processing!
             </p>
           </div>
 

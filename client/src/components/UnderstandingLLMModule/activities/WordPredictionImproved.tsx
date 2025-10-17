@@ -301,8 +301,8 @@ export default function WordPredictionImproved({ onComplete }: Props) {
             <div className="bg-gradient-to-r from-red-900/30 to-purple-900/30 rounded-lg p-6">
               <h3 className="text-xl font-semibold text-white mb-3">❓ Low Confidence (0-30%)</h3>
               <p className="text-gray-200">
-                Words that could grammatically fit but rarely appear in this context get 
-                low probabilities. The AI "knows" they're unlikely.
+                Words that could grammatically fit but rarely appear in this context get
+                low probabilities. The AI assigns them low probability because these patterns rarely appeared in training data.
               </p>
             </div>
           </div>

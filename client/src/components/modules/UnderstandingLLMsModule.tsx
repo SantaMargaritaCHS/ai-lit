@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Brain } from 'lucide-react';
-import { useGame } from '../../context/GameContext';
 import PremiumVideoPlayer from '../PremiumVideoPlayer';
 import { useDevMode } from '@/context/DevModeContext';
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
@@ -22,7 +21,7 @@ import NLPDefinition from '@/components/UnderstandingLLMModule/activities/NLPDef
 import NeuralNetworkVisual from '@/components/UnderstandingLLMModule/activities/NeuralNetworkVisual';
 import ReflectionQuiz from '@/components/UnderstandingLLMModule/activities/ReflectionQuiz';
 import ExitTicketLLM from '@/components/UnderstandingLLMModule/activities/ExitTicketLLM';
-
+import RealityCheck from '@/components/UnderstandingLLMModule/activities/RealityCheck';
 
 import { Certificate } from '../Certificate';
 
@@ -38,8 +37,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
   const [currentPhase, setCurrentPhase] = useState(0);
   const [videoUrl, setVideoUrl] = useState('');
   const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
-  const { userProgress } = useGame();
-  const playerName = userName || userProgress?.name || 'Student';
+  const playerName = userName || 'Student';
   
   // Developer Mode
   const { isDevModeActive: isDevMode } = useDevMode();
@@ -49,26 +47,30 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
   const setShowKeyPrompt = () => {};
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Define phases - Updated to remove problematic "complete-sentence" activity
+  // RESTRUCTURED: Consolidated from 19 to 13 phases, 7 to 3 video segments
+  // Based on agent feedback to improve pacing and reduce interruptions
   const phases = [
     { id: 'welcome', title: 'Welcome', duration: '1 minute' },
-    { id: 'video-1', title: 'What are LLMs?', duration: '1:08' },
-    { id: 'nlp-definition', title: 'What is NLP?', duration: '3 minutes' },
-    { id: 'video-2', title: 'LLMs and NLP', duration: '0:32' },
+
+    // Consolidated Video 1: Core Concepts (0-100s = 1:40)
+    { id: 'video-core-concepts', title: 'What Are LLMs & Pattern Recognition', duration: '1:40' },
+    { id: 'reality-check-1', title: 'Reality Check: Understanding vs. Processing', duration: '2 minutes' },
+    { id: 'nlp-definition', title: 'What is NLP?', duration: '2 minutes' },
     { id: 'word-prediction', title: 'Word Prediction Game', duration: '3 minutes' },
     { id: 'pattern-reflection', title: 'Pattern Recognition Reflection', duration: '3 minutes' },
-    { id: 'video-3', title: 'Training Process', duration: '0:36' },
-    { id: 'training-data-info', title: 'What\'s in Training Data?', duration: '3 minutes' },
-    { id: 'video-4', title: 'Tokenization Intro', duration: '0:15' },
-    { id: 'token-definition', title: 'Understanding Tokens', duration: '2 minutes' },
-    { id: 'token-visualization', title: 'Token Visualization Demo', duration: '3 minutes' },
-    { id: 'video-5', title: 'More on Tokenization', duration: '0:25' },
-    { id: 'training-quiz', title: 'Training Data Quiz', duration: '5 minutes' },
-    { id: 'training-data-details', title: 'Training Data Details', duration: '3 minutes' },
-    { id: 'video-6', title: 'Neural Networks', duration: '1:09' },
-    { id: 'training-simulation', title: 'Training Simulation', duration: '3 minutes' },
-    { id: 'video-7', title: 'Summary', duration: '0:25' },
-    { id: 'exit-ticket', title: 'Exit Ticket', duration: '2 minutes' },
+
+    // Consolidated Video 2: Training & Tokenization (100-176s = 1:16)
+    { id: 'video-training-tokenization', title: 'Training Data & Tokenization', duration: '1:16' },
+    { id: 'reality-check-2', title: 'Reality Check: Learning vs. Calculating', duration: '2 minutes' },
+    { id: 'training-data-info', title: 'Understanding Training Data', duration: '3 minutes' },
+    { id: 'token-demo', title: 'Tokenization Demo & Quiz', duration: '4 minutes' },
+
+    // Consolidated Video 3: Neural Networks (176-252s = 1:16)
+    { id: 'video-neural-networks', title: 'Neural Networks & Summary', duration: '1:16' },
+    { id: 'reality-check-3', title: 'Reality Check: Networks Calculate, Not Think', duration: '2 minutes' },
+    { id: 'training-simulation', title: 'Neural Network Visualization', duration: '3 minutes' },
+
+    { id: 'exit-ticket', title: 'Exit Ticket', duration: '3 minutes' },
     { id: 'certificate', title: 'Certificate', duration: '1 minute' }
   ];
 
@@ -114,49 +116,29 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     };
   }, [phases]);
 
-  // Video segments configuration for single video approach
+  // CONSOLIDATED: 3 video segments instead of 7
+  // Reduces interruptions while maintaining pedagogical clarity
   const videoSegments = {
-    'video-1': { 
-      start: 0, 
-      end: 68, 
-      title: 'What are LLMs?',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt'
+    'video-core-concepts': {
+      start: 0,
+      end: 100,
+      title: 'What Are LLMs & Pattern Recognition',
+      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt',
+      description: 'LLM definition, examples, NLP overview, and pattern recognition basics'
     },
-    'video-2': { 
-      start: 68, 
-      end: 100, 
-      title: 'LLMs and NLP',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt'
+    'video-training-tokenization': {
+      start: 100,
+      end: 176,
+      title: 'Training Data & Tokenization',
+      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt',
+      description: 'Data collection, cleaning, and tokenization process'
     },
-    'video-3': { 
-      start: 100, 
-      end: 136, 
-      title: 'Training Process',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt'
-    },
-    'video-4': { 
-      start: 136, 
-      end: 151, 
-      title: 'Tokenization Intro',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt'
-    },
-    'video-5': { 
-      start: 151, 
-      end: 176, 
-      title: 'More on Tokenization',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt'
-    },
-    'video-6': { 
-      start: 176, 
-      end: 245, 
-      title: 'Neural Networks',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt'
-    },
-    'video-7': { 
-      start: 245, 
-      end: 270, 
-      title: 'Summary',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt'
+    'video-neural-networks': {
+      start: 176,
+      end: 252,
+      title: 'Neural Networks & Summary',
+      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt',
+      description: 'Transformer architecture, learning process, and module summary'
     }
   };
 
@@ -480,53 +462,57 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
           />
         )}
 
-        {/* Activity phases - Following Integration Guide */}
+        {/* Activity phases - RESTRUCTURED for better flow */}
         {!isVideoPhase && (
           <>
+            {/* Welcome */}
             {phases[currentPhase].id === 'welcome' && (
               <GenAIBridge onComplete={handleNextPhase} />
             )}
-            
-            {phases[currentPhase].id === 'word-prediction' && (
-              <WordPredictionImproved onComplete={handleNextPhase} />
+
+            {/* Reality Checks - De-anthropomorphization */}
+            {phases[currentPhase].id === 'reality-check-1' && (
+              <RealityCheck segment="core-concepts" onComplete={handleNextPhase} />
             )}
-            
-            {phases[currentPhase].id === 'pattern-reflection' && (
-              <ReflectionQuiz onComplete={handleNextPhase} />
+            {phases[currentPhase].id === 'reality-check-2' && (
+              <RealityCheck segment="training" onComplete={handleNextPhase} />
             )}
-            
+            {phases[currentPhase].id === 'reality-check-3' && (
+              <RealityCheck segment="neural-networks" onComplete={handleNextPhase} />
+            )}
+
+            {/* Core Concepts Activities */}
             {phases[currentPhase].id === 'nlp-definition' && (
               <NLPDefinition onComplete={handleNextPhase} />
             )}
-            
-            {phases[currentPhase].id === 'training-quiz' && (
-              <TrainingDataQuiz onComplete={handleNextPhase} />
+            {phases[currentPhase].id === 'word-prediction' && (
+              <WordPredictionImproved onComplete={handleNextPhase} />
             )}
-            
+            {phases[currentPhase].id === 'pattern-reflection' && (
+              <ReflectionQuiz onComplete={handleNextPhase} />
+            )}
+
+            {/* Training & Tokenization Activities */}
             {phases[currentPhase].id === 'training-data-info' && (
               <GenericTrainingDataInfo onComplete={handleNextPhase} />
             )}
-            
-            {phases[currentPhase].id === 'token-definition' && (
-              <TokenDefinition onComplete={handleNextPhase} />
+            {phases[currentPhase].id === 'token-demo' && (
+              <>
+                <TokenDefinition onComplete={() => {}} />
+                <div className="my-6" />
+                <TokenizationDemo onComplete={handleNextPhase} />
+              </>
             )}
-            
-            {phases[currentPhase].id === 'training-data-details' && (
-              <GenericTrainingDataInfo onComplete={handleNextPhase} />
-            )}
-            
-            {phases[currentPhase].id === 'token-visualization' && (
-              <TokenizationDemo onComplete={handleNextPhase} />
-            )}
-            
+
+            {/* Neural Network Activities */}
             {phases[currentPhase].id === 'training-simulation' && (
               <NeuralNetworkVisual onComplete={handleNextPhase} />
             )}
-            
+
+            {/* Exit & Certificate */}
             {phases[currentPhase].id === 'exit-ticket' && (
               <ExitTicketLLM onComplete={handleNextPhase} />
             )}
-            
             {phases[currentPhase].id === 'certificate' && (
               <Certificate
                 courseName="Understanding Large Language Models"

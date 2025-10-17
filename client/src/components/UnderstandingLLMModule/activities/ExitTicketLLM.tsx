@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Sparkles, Loader, AlertCircle } from 'lucide-react';
+import { isNonsensical, generateEducationFeedback } from '@/utils/aiEducationFeedback';
 
 interface Props {
   onComplete: () => void;
@@ -17,20 +18,25 @@ export default function ExitTicketLLM({ onComplete }: Props) {
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [feedbackError, setFeedbackError] = useState(false);
   const [apiHealthy, setApiHealthy] = useState(true);
+  const [needsRetry, setNeedsRetry] = useState<boolean[]>([false, false]);
+  const [validationErrors, setValidationErrors] = useState<string[]>(['', '']);
+
+  const minResponseLength = 100; // Per CLAUDE.md guidelines
+  const minWords = 15; // Minimum word count
 
   const questions = [
     {
       id: 'perspective',
       question: "How does understanding how LLMs work (pattern matching, not true understanding) change your perspective on using AI tools like ChatGPT?",
       placeholder: "Think about how this knowledge affects your expectations and usage...",
-      minLength: 50,
+      minLength: minResponseLength,
       focusArea: "LLM understanding and perspective"
     },
     {
       id: 'students',
       question: "Why do you think it's important for students to understand how LLMs actually work, not just how to use them?",
       placeholder: "Consider digital literacy, critical thinking, and responsible AI use...",
-      minLength: 50,
+      minLength: minResponseLength,
       focusArea: "Educational importance and digital literacy"
     }
   ];
@@ -149,39 +155,106 @@ export default function ExitTicketLLM({ onComplete }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (responses.every(r => r.trim().length >= questions[0].minLength)) {
-      setIsSubmitting(true);
-      setIsGeneratingFeedback(true);
-      setFeedbackError(false);
-      
-      try {
-        console.log('[Exit Ticket] Starting feedback generation for', responses.length, 'responses');
-        
-        // Generate feedback for both responses
-        const feedback = await Promise.all(
-          responses.map((response, index) => 
-            generateFeedback(response, questions[index].focusArea)
-          )
-        );
-        
-        console.log('[Exit Ticket] All feedback generated successfully');
-        setAiFeedback(feedback);
+    setIsSubmitting(true);
+    setIsGeneratingFeedback(true);
+    setFeedbackError(false);
+
+    try {
+      console.log('[Exit Ticket] Starting validation and feedback generation');
+
+      // Two-layer validation for each response
+      const validationResults = await Promise.all(
+        responses.map(async (response, index) => {
+          const trimmedResponse = response.trim();
+          const wordCount = trimmedResponse.split(/\s+/).filter(w => w.length > 0).length;
+
+          // Layer 1: Pre-filter (gibberish, too short)
+          const isInvalid = isNonsensical(trimmedResponse);
+
+          if (isInvalid) {
+            return {
+              needsRetry: true,
+              error: 'Please provide a thoughtful response. Keyboard mashing or gibberish is not accepted.',
+              feedback: ''
+            };
+          }
+
+          if (trimmedResponse.length < minResponseLength) {
+            return {
+              needsRetry: true,
+              error: `Please write at least ${minResponseLength} characters (currently ${trimmedResponse.length}).`,
+              feedback: ''
+            };
+          }
+
+          if (wordCount < minWords) {
+            return {
+              needsRetry: true,
+              error: `Please write at least ${minWords} words (currently ${wordCount}).`,
+              feedback: ''
+            };
+          }
+
+          // Layer 2: AI feedback quality check
+          const feedback = await generateEducationFeedback(
+            trimmedResponse,
+            questions[index].question
+          );
+
+          // Check for strict rejection phrases
+          const feedbackIndicatesRetry =
+            feedback.toLowerCase().includes('does not address') ||
+            feedback.toLowerCase().includes('please re-read') ||
+            feedback.toLowerCase().includes('inappropriate language') ||
+            feedback.toLowerCase().includes('off-topic') ||
+            feedback.toLowerCase().includes('must elaborate') ||
+            feedback.toLowerCase().includes('insufficient') ||
+            feedback.toLowerCase().includes('monitored for inappropriate') ||
+            feedback.toLowerCase().includes('answer the original question');
+
+          if (feedbackIndicatesRetry) {
+            return {
+              needsRetry: true,
+              error: 'Your response needs improvement. Please read the AI feedback and try again.',
+              feedback
+            };
+          }
+
+          return {
+            needsRetry: false,
+            error: '',
+            feedback
+          };
+        })
+      );
+
+      // Check if any responses need retry
+      const hasRetry = validationResults.some(r => r.needsRetry);
+
+      if (hasRetry) {
+        setNeedsRetry(validationResults.map(r => r.needsRetry));
+        setValidationErrors(validationResults.map(r => r.error));
+        setAiFeedback(validationResults.map(r => r.feedback));
+      } else {
+        // All responses valid - show success
+        setAiFeedback(validationResults.map(r => r.feedback));
         setShowFeedback(true);
-      } catch (error) {
-        console.error('[Exit Ticket] Error in handleSubmit:', error);
-        setFeedbackError(true);
-        
-        // Use improved fallback responses
-        const fallbackFeedback = responses.map((response, index) => 
-          getEducationFallback(response, questions[index].focusArea)
-        );
-        
-        setAiFeedback(fallbackFeedback);
-        setShowFeedback(true);
-      } finally {
-        setIsSubmitting(false);
-        setIsGeneratingFeedback(false);
       }
+
+    } catch (error) {
+      console.error('[Exit Ticket] Error in handleSubmit:', error);
+      setFeedbackError(true);
+
+      // Use improved fallback responses
+      const fallbackFeedback = responses.map((response, index) =>
+        getEducationFallback(response, questions[index].focusArea)
+      );
+
+      setAiFeedback(fallbackFeedback);
+      setShowFeedback(true);
+    } finally {
+      setIsSubmitting(false);
+      setIsGeneratingFeedback(false);
     }
   };
 
@@ -308,17 +381,32 @@ export default function ExitTicketLLM({ onComplete }: Props) {
               
               <div className="flex justify-between text-sm">
                 <span className={`${
-                  responses[index].length >= question.minLength 
-                    ? 'text-green-400' 
+                  responses[index].length >= question.minLength
+                    ? 'text-green-400'
                     : 'text-gray-400'
                 }`}>
-                  {responses[index].length >= question.minLength ? '✓' : '•'} 
-                  Minimum {question.minLength} characters
+                  {responses[index].length >= question.minLength ? '✓' : '•'}
+                  Minimum {question.minLength} characters ({minWords} words)
                 </span>
                 <span className="text-gray-400">
                   {responses[index].length}/{question.minLength}
                 </span>
               </div>
+
+              {/* Validation Error Display */}
+              {needsRetry[index] && validationErrors[index] && (
+                <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mt-2">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <p className="text-red-300 font-medium">{validationErrors[index]}</p>
+                      {aiFeedback[index] && (
+                        <p className="text-red-200 text-sm">{aiFeedback[index]}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -348,14 +436,16 @@ export default function ExitTicketLLM({ onComplete }: Props) {
           
           <button
             onClick={handleSubmit}
-            disabled={!responses.every(r => r.trim().length >= questions[0].minLength) || isSubmitting}
+            disabled={!responses.every(r => r.trim().length >= minResponseLength) || isSubmitting}
             className={`w-full py-3 rounded-lg font-medium transition-all ${
-              responses.every(r => r.trim().length >= questions[0].minLength) && !isSubmitting
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              responses.every(r => r.trim().length >= minResponseLength) && !isSubmitting
+                ? needsRetry.some(r => r)
+                  ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
                 : 'bg-gray-700 text-gray-400 cursor-not-allowed'
             }`}
           >
-            {isSubmitting ? 'Generating Feedback...' : 'Submit Reflections'}
+            {isSubmitting ? 'Validating...' : needsRetry.some(r => r) ? 'Try Again' : 'Submit Reflections'}
           </button>
         </div>
       </div>
