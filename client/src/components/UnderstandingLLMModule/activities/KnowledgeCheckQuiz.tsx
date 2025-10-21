@@ -91,12 +91,30 @@ export default function KnowledgeCheckQuiz({ onComplete }: Props) {
         animate={{ opacity: 1, x: 0 }}
         className="max-w-3xl w-full"
       >
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 md:p-12">
+          {/* Header Context */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-8"
+          >
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Knowledge Check
+            </h1>
+            <p className="text-white/70 text-lg">
+              Let's see what you learned from the video. These questions help you spot-check your understanding.
+            </p>
+          </motion.div>
+
           {/* Progress */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-3">
               <span className="text-white/70 text-sm font-medium">
                 Question {currentQuestion + 1} of {questions.length}
+              </span>
+              <span className="text-white/50 text-xs font-medium">
+                {Math.round(((currentQuestion + 1) / questions.length) * 100)}% complete
               </span>
             </div>
             <div className="bg-white/20 rounded-full h-2 overflow-hidden">
@@ -110,12 +128,21 @@ export default function KnowledgeCheckQuiz({ onComplete }: Props) {
           </div>
 
           {/* Question */}
-          <h2 className="text-2xl font-bold text-white mb-8">
+          <motion.h2
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="text-2xl md:text-3xl font-bold text-white mb-8"
+          >
             {questions[currentQuestion].question}
-          </h2>
+          </motion.h2>
 
           {/* Options */}
-          <div className="space-y-3 mb-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-3 mb-8">
             {questions[currentQuestion].options.map((option, index) => {
               const isSelected = selectedAnswer === index;
               const isCorrectAnswer = index === questions[currentQuestion].correctIndex;
@@ -161,7 +188,7 @@ export default function KnowledgeCheckQuiz({ onComplete }: Props) {
                 </button>
               );
             })}
-          </div>
+          </motion.div>
 
           {/* Feedback */}
           {showFeedback && (

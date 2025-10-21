@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Sparkles, Trophy, AlertCircle, Loader, ArrowRight, Check } from 'lucide-react';
+import { Brain, Sparkles, AlertCircle, Loader, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateWithGemini } from '@/services/geminiClient';
 
@@ -12,6 +12,8 @@ interface PredictionResult {
   userPrediction: string;
   aiPredictions: Array<{word: string; probability: number}>;
   isMatch: boolean;
+  matchedProbability?: number; // Probability if user's answer matched AI
+  sentencePrompt: string; // Store the prompt for reflection
 }
 
 interface Sentence {
@@ -20,6 +22,7 @@ interface Sentence {
   context: string;
   reflectionQuestion: string;
   reflectionAnswer: string;
+  fallbackPredictions: Array<{word: string; probability: number}>;
 }
 
 const sentences: Sentence[] = [
@@ -28,21 +31,42 @@ const sentences: Sentence[] = [
     prompt: "My favorite animal is",
     context: "common pets and animals",
     reflectionQuestion: "Why do you think the AI predicted these specific animals?",
-    reflectionAnswer: "The AI predicted common pets like 'dog' and 'cat' because these words appear most frequently in its training data after 'My favorite animal is.' It's showing you what's STATISTICALLY COMMON, not what's objectively 'correct' or 'better.'"
+    reflectionAnswer: "The AI predicted common pets like 'dog' and 'cat' because these words appear most frequently in its training data after 'My favorite animal is.' It's showing you what's STATISTICALLY COMMON, not what's objectively 'correct' or 'better.'",
+    fallbackPredictions: [
+      {word: "dog", probability: 35},
+      {word: "cat", probability: 28},
+      {word: "elephant", probability: 15},
+      {word: "lion", probability: 12},
+      {word: "panda", probability: 10}
+    ]
   },
   {
     id: 2,
     prompt: "The best thing about summer is",
     context: "summer activities",
     reflectionQuestion: "What patterns in training data influenced these predictions?",
-    reflectionAnswer: "The AI learned patterns from millions of texts about summer. Words like 'beach,' 'vacation,' and 'sunshine' appear frequently, so it predicts those. YOUR unique experiences might be completely different—and that's what makes you human!"
+    reflectionAnswer: "The AI learned patterns from millions of texts about summer. Words like 'beach,' 'vacation,' and 'sunshine' appear frequently, so it predicts those. YOUR unique experiences might be completely different—and that's what makes you human!",
+    fallbackPredictions: [
+      {word: "the beach", probability: 32},
+      {word: "vacation", probability: 26},
+      {word: "sunshine", probability: 18},
+      {word: "swimming", probability: 14},
+      {word: "no school", probability: 10}
+    ]
   },
   {
     id: 3,
     prompt: "When I grow up I want to be",
     context: "career aspirations",
     reflectionQuestion: "How does the AI's training data shape these career predictions?",
-    reflectionAnswer: "The AI predicts common careers that appear often in text (doctor, teacher, engineer). But it has NO IDEA what YOU specifically want! It can't understand your unique dreams, talents, or circumstances—only you can determine that."
+    reflectionAnswer: "The AI predicts common careers that appear often in text (doctor, teacher, engineer). But it has NO IDEA what YOU specifically want! It can't understand your unique dreams, talents, or circumstances—only you can determine that.",
+    fallbackPredictions: [
+      {word: "a doctor", probability: 30},
+      {word: "a teacher", probability: 25},
+      {word: "an engineer", probability: 20},
+      {word: "a scientist", probability: 15},
+      {word: "an artist", probability: 10}
+    ]
   }
 ];
 
@@ -50,10 +74,13 @@ export default function BeatThePredictorGame({ onComplete }: Props) {
   const [currentSentence, setCurrentSentence] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [result, setResult] = useState<PredictionResult | null>(null);
+  const [allResults, setAllResults] = useState<PredictionResult[]>([]); // Track all 3 rounds
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showReflection, setShowReflection] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [showFinalReflection, setShowFinalReflection] = useState(false); // After all 3 rounds
+  const [reflectionAnswers, setReflectionAnswers] = useState<string[]>(['', '', '']); // 3 reflection questions
 
   // Developer Mode: Auto-complete
   useEffect(() => {
@@ -93,10 +120,11 @@ export default function BeatThePredictorGame({ onComplete }: Props) {
     setIsLoading(true);
     setError(null);
 
-    try {
-      const sentence = sentences[currentSentence];
+    const sentence = sentences[currentSentence];
+    let aiPredictions = sentence.fallbackPredictions; // Default to fallback
 
-      // Call Gemini API to generate predictions
+    try {
+      // Try to call Gemini API to generate predictions
       const prompt = `You are helping students understand how language models predict text.
 
 Given the sentence fragment: "${sentence.prompt}"
@@ -129,64 +157,66 @@ Return the JSON now:`;
         temperature: 0.3
       });
 
-      // Handle null response from API
-      if (!response) {
-        throw new Error('No response from AI');
-      }
+      // Try to parse response if we got one
+      if (response) {
+        try {
+          const jsonMatch = response.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsedResponse = JSON.parse(jsonMatch[0]);
+            const apiPredictions = parsedResponse.predictions || [];
 
-      // Parse the response
-      let parsedResponse;
-      try {
-        // Try to extract JSON from response
-        const jsonMatch = response.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          parsedResponse = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error('No JSON found in response');
+            // Only use API predictions if they look valid
+            if (apiPredictions.length === 5 && apiPredictions[0].word !== "a") {
+              aiPredictions = apiPredictions;
+              console.log('✅ Using Gemini API predictions');
+            } else {
+              console.log('⚠️ API predictions invalid, using fallback');
+            }
+          }
+        } catch (parseError) {
+          console.log('⚠️ Failed to parse Gemini response, using fallback');
         }
-      } catch (parseError) {
-        console.error('Failed to parse Gemini response:', response);
-        // Fallback to generic predictions if parsing fails
-        parsedResponse = {
-          predictions: [
-            {word: "a", probability: 30},
-            {word: "the", probability: 25},
-            {word: "something", probability: 20},
-            {word: "it", probability: 15},
-            {word: "that", probability: 10}
-          ]
-        };
       }
-
-      const aiPredictions = parsedResponse.predictions || [];
-
-      // Check if user's prediction matches any AI predictions
-      const isMatch = aiPredictions.some(
-        (pred: {word: string}) => pred.word.toLowerCase() === userInput.toLowerCase().trim()
-      );
-
-      setResult({
-        userPrediction: userInput.trim(),
-        aiPredictions,
-        isMatch
-      });
-
     } catch (err) {
-      console.error('Error getting AI predictions:', err);
-      setError("Couldn't get AI predictions. Let's try again!");
-    } finally {
-      setIsLoading(false);
+      console.log('⚠️ Gemini API error, using fallback predictions');
     }
+
+    // Check if user's prediction matches any AI predictions (case-insensitive)
+    const userAnswer = userInput.toLowerCase().trim();
+    const matchedPred = aiPredictions.find(
+      (pred: {word: string}) => pred.word.toLowerCase() === userAnswer
+    );
+    const isMatch = !!matchedPred;
+    const matchedProbability = matchedPred?.probability;
+
+    // Create result object
+    const newResult: PredictionResult = {
+      userPrediction: userInput.trim(),
+      aiPredictions,
+      isMatch,
+      matchedProbability,
+      sentencePrompt: sentences[currentSentence].prompt
+    };
+
+    setResult(newResult);
+    setIsLoading(false);
   };
 
   const handleNextSentence = () => {
+    // Save current result before moving on
+    if (result) {
+      setAllResults([...allResults, result]);
+    }
+
     if (currentSentence < sentences.length - 1) {
+      // Move to next sentence
       setCurrentSentence(currentSentence + 1);
       setUserInput('');
       setResult(null);
       setShowReflection(false);
     } else {
-      onComplete();
+      // After 3rd round, show final reflection
+      setShowFinalReflection(true);
     }
   };
 
@@ -214,7 +244,7 @@ Return the JSON now:`;
             >
               <Brain className="h-20 w-20 text-purple-400 mx-auto mb-4" />
               <h1 className="text-4xl font-bold text-white mb-4">
-                Beat the Predictor
+                Exploring AI Predictions
               </h1>
             </motion.div>
 
@@ -227,7 +257,7 @@ Return the JSON now:`;
               <div className="bg-blue-900/40 border-2 border-blue-400 rounded-xl p-6">
                 <h2 className="text-2xl font-bold text-white mb-3">What You'll Do:</h2>
                 <p className="text-lg text-white/90 mb-4">
-                  You'll compete with a real AI to predict what word comes next in a sentence. This shows you firsthand how LLMs work!
+                  Complete 3 sentences with your own words, then see how an AI would complete them based on its training data. You'll discover how statistical patterns shape AI predictions.
                 </p>
               </div>
 
@@ -268,10 +298,83 @@ Return the JSON now:`;
                 onClick={handleStartGame}
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-6 text-xl rounded-xl"
               >
-                Start the Game
+                Start Exploring
                 <ArrowRight className="ml-2 h-6 w-6" />
               </Button>
             </motion.div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Final Reflection Screen (after all 3 rounds)
+  if (showFinalReflection) {
+    const completedRounds = [...allResults, result].filter(r => r !== null);
+    const highConfidenceMatches = completedRounds.filter(r => r?.matchedProbability && r.matchedProbability >= 20).length;
+    const uniqueAnswers = completedRounds.filter(r => !r?.matchedProbability || r.matchedProbability < 5).length;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-4xl w-full"
+        >
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 border-2 border-white/20">
+            <h1 className="text-4xl font-bold text-white mb-6 text-center">
+              Reflection Time
+            </h1>
+
+            {/* Summary Stats */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="bg-blue-900/40 border-2 border-blue-400 rounded-xl p-6 text-center">
+                <p className="text-4xl font-bold text-white mb-2">{highConfidenceMatches}/3</p>
+                <p className="text-white/80">Matched AI's common predictions (20%+)</p>
+              </div>
+              <div className="bg-purple-900/40 border-2 border-purple-400 rounded-xl p-6 text-center">
+                <p className="text-4xl font-bold text-white mb-2">{uniqueAnswers}/3</p>
+                <p className="text-white/80">Unique answers (less than 5%)</p>
+              </div>
+            </div>
+
+            {/* Summary of answers */}
+            <div className="bg-gray-900/40 border-2 border-gray-400 rounded-xl p-6 mb-8">
+              <h3 className="text-xl font-bold text-white mb-4">Your Answers:</h3>
+              <div className="space-y-3">
+                {completedRounds.map((round, idx) => (
+                  <div key={idx} className="flex justify-between items-center">
+                    <p className="text-white/90">"{sentences[idx].prompt} <strong className="text-yellow-300">{round?.userPrediction}</strong>"</p>
+                    <span className={`text-sm font-semibold ${
+                      (round?.matchedProbability && round.matchedProbability >= 20) ? 'text-green-400' : 'text-purple-400'
+                    }`}>
+                      {round?.matchedProbability ? `${round.matchedProbability}%` : '~0.5%'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Reflection Question */}
+            <div className="bg-yellow-900/30 border-2 border-yellow-400 rounded-xl p-6 mb-6">
+              <h3 className="text-xl font-bold text-white mb-4">
+                Think About It:
+              </h3>
+              <p className="text-white/90 mb-4 text-lg">
+                Why do you think the AI predicted certain answers more than others? What does this tell us about how AI systems learn from data, and what might be the implications when AI only knows what's "statistically common"?
+              </p>
+              <p className="text-white/70 text-sm">
+                (Think about representation, diversity, cultural differences, and how training data shapes what AI considers "normal")
+              </p>
+            </div>
+
+            <Button
+              onClick={onComplete}
+              className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white py-6 text-xl rounded-xl"
+            >
+              Continue
+              <ArrowRight className="ml-2 h-6 w-6" />
+            </Button>
           </div>
         </motion.div>
       </div>
@@ -374,35 +477,52 @@ Return the JSON now:`;
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                {/* Your Prediction */}
-                <div className="bg-blue-900/40 border-2 border-blue-400 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-3">Your Prediction:</h3>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-600 px-6 py-3 rounded-lg">
-                      <p className="text-2xl font-bold text-white">{result.userPrediction}</p>
-                    </div>
-                    {result.isMatch && (
-                      <div className="flex items-center gap-2 text-green-400">
-                        <Trophy className="w-6 h-6" />
-                        <span className="font-semibold">Match!</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* AI Predictions */}
+                {/* Combined Predictions View */}
                 <div className="bg-purple-900/40 border-2 border-purple-400 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">AI's Top Predictions:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">How the AI Sees Your Answer:</h3>
+                  <p className="text-white/70 text-sm mb-4">Each bar shows the probability the AI assigns based on its training data.</p>
+
                   <div className="space-y-3">
+                    {/* User's Prediction First */}
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="bg-blue-600 px-4 py-2 rounded-lg min-w-[140px] border-2 border-yellow-300">
+                        <p className="text-sm text-yellow-200 font-semibold">Your Answer</p>
+                        <p className="text-lg font-bold text-white">{result.userPrediction}</p>
+                      </div>
+                      <div className="flex-1">
+                        <div className="bg-white/20 rounded-full h-8 overflow-hidden">
+                          <motion.div
+                            className="bg-gradient-to-r from-blue-400 to-cyan-400 h-full flex items-center justify-end pr-2"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${result.matchedProbability || 0.5}%` }}
+                            transition={{ duration: 0.8 }}
+                          >
+                            <span className="text-white text-sm font-bold">
+                              {result.matchedProbability ? `${result.matchedProbability}%` : '~0.5%'}
+                            </span>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Divider */}
+                    <div className="border-t border-white/20 my-4" />
+
+                    {/* AI's Top Predictions */}
+                    <p className="text-white/70 text-sm mb-2">AI's Most Common Predictions:</p>
                     {result.aiPredictions.map((pred, index) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        transition={{ delay: index * 0.1 + 0.2 }}
                         className="flex items-center gap-4"
                       >
-                        <div className="bg-purple-600 px-4 py-2 rounded-lg min-w-[120px]">
+                        <div className="bg-purple-600 px-4 py-2 rounded-lg min-w-[140px]">
                           <p className="text-lg font-bold text-white">{pred.word}</p>
                         </div>
                         <div className="flex-1">
@@ -411,7 +531,7 @@ Return the JSON now:`;
                               className="bg-gradient-to-r from-purple-400 to-pink-400 h-full flex items-center justify-end pr-2"
                               initial={{ width: 0 }}
                               animate={{ width: `${pred.probability}%` }}
-                              transition={{ delay: index * 0.1 + 0.3, duration: 0.5 }}
+                              transition={{ delay: index * 0.1 + 0.4, duration: 0.5 }}
                             >
                               <span className="text-white text-sm font-bold">{pred.probability}%</span>
                             </motion.div>
@@ -422,22 +542,25 @@ Return the JSON now:`;
                   </div>
                 </div>
 
-                {/* Key Insight */}
-                {!result.isMatch && (
-                  <div className="bg-yellow-900/30 border-2 border-yellow-400 rounded-xl p-6">
-                    <div className="flex items-start gap-3">
-                      <Sparkles className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
-                      <div>
-                        <h4 className="font-bold text-white mb-2">Different predictions!</h4>
-                        <p className="text-white/90">
-                          Your guess was unique—but that doesn't mean the AI is "right" and you're "wrong."
-                          The AI just predicted what words appear most often in its training data. It's all about
-                          <strong className="text-yellow-300"> statistical patterns</strong>, not truth!
-                        </p>
-                      </div>
+                {/* Educational Insight */}
+                <div className="bg-yellow-900/30 border-2 border-yellow-400 rounded-xl p-6">
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <h4 className="font-bold text-white mb-2">What This Tells Us:</h4>
+                      <p className="text-white/90 mb-2">
+                        {result.matchedProbability ? (
+                          <>Your answer "{result.userPrediction}" appears <strong className="text-yellow-300">{result.matchedProbability}%</strong> of the time in the AI's training data. This shows it's a relatively common response!</>
+                        ) : (
+                          <>Your answer "{result.userPrediction}" appears very rarely (less than 1%) in the AI's training data. But that doesn't make it wrong—it makes it <strong className="text-yellow-300">uniquely yours</strong>!</>
+                        )}
+                      </p>
+                      <p className="text-white/90">
+                        The AI predicts based on <strong className="text-yellow-300">statistical patterns</strong> from millions of texts, not truth or correctness. Your unique perspective is just as valid!
+                      </p>
                     </div>
                   </div>
-                )}
+                </div>
 
                 {/* Reflection Section */}
                 {!showReflection ? (

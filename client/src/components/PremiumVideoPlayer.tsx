@@ -74,6 +74,7 @@ export function PremiumVideoPlayer({
   const [currentPause, setCurrentPause] = useState<InteractivePause | null>(null);
   const [showPauseActivity, setShowPauseActivity] = useState(false);
   const [maxWatchedProgress, setMaxWatchedProgress] = useState(0);
+  const [videoFadedIn, setVideoFadedIn] = useState(false);
   
   // Subtitle states
   const [subtitlesEnabled, setSubtitlesEnabled] = useState(false); // Always start with subtitles disabled
@@ -224,6 +225,7 @@ export function PremiumVideoPlayer({
     const loadVideo = async () => {
       try {
         setLoading(true);
+        setVideoFadedIn(false); // Reset fade for new video/segment
         // Reset autoplay flag when loading a new video
         hasTriedAutoPlay.current = false;
         
@@ -304,13 +306,16 @@ export function PremiumVideoPlayer({
 
     const handleLoadedMetadata = () => {
       console.log(`🎬 Video loaded: "${currentSegment.id}" duration=${video.duration}s`);
-      
+
       // For full-length videos or segments that play to end (-1), use actual video duration
       if (currentSegment.end >= 100000 || currentSegment.end === -1) {
         setDuration(video.duration);
       } else {
         setDuration(currentSegment.end - currentSegment.start);
       }
+
+      // Trigger fade-in effect
+      setTimeout(() => setVideoFadedIn(true), 50);
     };
 
     const handleTimeUpdate = () => {
@@ -767,8 +772,8 @@ export function PremiumVideoPlayer({
       <div className="video-wrapper">
         <video
           ref={videoRef}
-          className={`main-video transition-opacity duration-1000 ${
-            isCrossfading ? 'opacity-0' : 'opacity-100'
+          className={`main-video transition-opacity ${
+            isCrossfading ? 'opacity-0 duration-1000' : videoFadedIn ? 'opacity-100 duration-500' : 'opacity-0'
           }`}
           autoPlay={autoPlay}
           preload="auto"
