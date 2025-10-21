@@ -52,10 +52,10 @@ export default function GenAIBridge({ onComplete }: Props) {
           <div className="bg-blue-900/40 border border-blue-400 rounded-lg p-6 mb-8">
             <h3 className="text-lg font-semibold text-white mb-3">In this module, you'll discover:</h3>
             <ul className="text-left text-white space-y-2 max-w-xl mx-auto">
-              <li>• What an LLM really is (and why "large" is an understatement)</li>
-              <li>• The one simple function that powers everything these chatbots do</li>
-              <li>• How a mind-boggling amount of data becomes useful predictions</li>
-              <li>• Why understanding how it works puts YOU in the driver's seat</li>
+              <li>• Why ChatGPT isn't "thinking"—it's just really good at spotting patterns</li>
+              <li>• How "predict the next word" is the one function that powers everything</li>
+              <li>• What tokens, neural networks, and training loops actually do</li>
+              <li>• Why understanding this puts YOU in control of the tool</li>
             </ul>
           </div>
 

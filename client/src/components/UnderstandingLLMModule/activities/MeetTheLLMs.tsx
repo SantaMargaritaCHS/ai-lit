@@ -105,8 +105,8 @@ export default function MeetTheLLMs({ onComplete }: Props) {
           </motion.p>
         </div>
 
-        {/* LLM Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        {/* LLM Gallery Grid - 3 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {llms.map((llm, index) => (
             <motion.div
               key={llm.name}
@@ -115,10 +115,10 @@ export default function MeetTheLLMs({ onComplete }: Props) {
               transition={{ delay: 0.5 + index * 0.1 }}
               className="group"
             >
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border-2 border-white/20 hover:border-white/40 transition-all duration-300 h-full flex flex-col">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border-2 border-white/20 hover:border-white/40 transition-all duration-300 h-full flex flex-col">
                 {/* Logo */}
-                <div className="mb-4">
-                  <div className="w-24 h-24 rounded-2xl bg-white flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300 p-3">
+                <div className="mb-3">
+                  <div className="w-16 h-16 rounded-xl bg-white flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300 p-2">
                     <img
                       src={llm.logoUrl}
                       alt={`${llm.name} logo`}
@@ -128,17 +128,17 @@ export default function MeetTheLLMs({ onComplete }: Props) {
                 </div>
 
                 {/* Name & Company */}
-                <div className="mb-3">
-                  <h3 className="text-2xl font-bold text-white mb-1">
+                <div className="mb-2">
+                  <h3 className="text-lg font-bold text-white mb-1">
                     {llm.name}
                   </h3>
-                  <p className="text-sm text-white/60 font-medium">
+                  <p className="text-xs text-white/60 font-medium">
                     by {llm.company}
                   </p>
                 </div>
 
                 {/* Description */}
-                <p className="text-white/80 text-base leading-relaxed">
+                <p className="text-white/80 text-sm leading-relaxed">
                   {llm.description}
                 </p>
               </div>

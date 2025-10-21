@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Layers, RefreshCw, Users } from 'lucide-react';
+import { ArrowRight, Layers, Globe, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -18,23 +18,23 @@ interface ConceptCard {
 export default function WeavingItTogether({ onComplete }: Props) {
   const concepts: ConceptCard[] = [
     {
-      icon: <Layers className="h-8 w-8" />,
-      title: "1. Tokenization",
-      description: "Instead of letters, the AI 'sees' text broken into tokens (pieces of words). This helps it understand word roots and build new words it hasn't seen before.",
+      icon: <Globe className="h-8 w-8" />,
+      title: "1. Massive Training Data",
+      description: "Instead of just training on Shakespeare, ChatGPT looks at all the information you can find on the internet—including all the articles on Wikipedia and all the code on GitHub.",
       color: "from-blue-500 to-cyan-500",
       delay: 0.4
     },
     {
-      icon: <RefreshCw className="h-8 w-8" />,
-      title: "2. Training Loop",
-      description: "The AI 'learns' by adjusting its web of connections over and over—billions of times! Predict → compare → adjust → repeat.",
+      icon: <Layers className="h-8 w-8" />,
+      title: "2. Tokens (Not Letters)",
+      description: "Instead of learning and predicting letters from just the 26 choices in the alphabet, it looks at tokens—which are either full words, word parts, or even code.",
       color: "from-purple-500 to-pink-500",
       delay: 0.6
     },
     {
       icon: <Users className="h-8 w-8" />,
       title: "3. Human Tuning",
-      description: "Finally, humans help fine-tune the AI's responses to make sure it produces reasonable, helpful, and safe results in all kinds of situations.",
+      description: "A system of this complexity needs a lot of human tuning to make sure it produces reasonable results in a wide variety of situations, while also protecting against problems like producing highly biased or even dangerous content.",
       color: "from-orange-500 to-amber-500",
       delay: 0.8
     }
@@ -58,7 +58,7 @@ export default function WeavingItTogether({ onComplete }: Props) {
             Weaving It All Together
           </h1>
           <p className="text-xl text-white/80 max-w-2xl mx-auto">
-            That video covered three big ideas that make LLMs work. Let's break them down:
+            ChatGPT uses a similar approach to the Shakespeare example, but with three very important additions:
           </p>
         </motion.div>
 
@@ -102,7 +102,7 @@ export default function WeavingItTogether({ onComplete }: Props) {
           className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 backdrop-blur-md rounded-xl p-6 border-2 border-indigo-400 mb-8"
         >
           <p className="text-white/90 text-lg leading-relaxed text-center">
-            <span className="font-bold text-indigo-300">Put it all together:</span> Tokens give the AI building blocks, the training loop helps it learn patterns, and human tuning makes sure it's helpful and safe.
+            <span className="font-bold text-indigo-300">Put it all together:</span> These three additions—massive internet data, tokens instead of letters, and human tuning—transform the simple Shakespeare predictor into the powerful tool we know as ChatGPT.
           </p>
         </motion.div>
 

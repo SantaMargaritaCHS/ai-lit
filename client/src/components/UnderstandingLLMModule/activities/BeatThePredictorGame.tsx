@@ -1,95 +1,284 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, TrendingUp, ArrowRight, Sparkles, Lightbulb, CheckCircle, XCircle, Target } from 'lucide-react';
+import { Brain, Sparkles, Trophy, AlertCircle, Loader, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { generateWithGemini } from '@/services/geminiClient';
 
 interface Props {
   onComplete: () => void;
 }
 
-interface Prediction {
-  word: string;
-  probability: number;
-  color: string;
+interface PredictionResult {
+  userPrediction: string;
+  aiPredictions: Array<{word: string; probability: number}>;
+  isMatch: boolean;
 }
 
-export default function BeatThePredictorGame({ onComplete }: Props) {
-  const [currentScreen, setCurrentScreen] = useState(0); // 0 = quiz, 1 = interactive game
-  const [selectedQuizAnswer, setSelectedQuizAnswer] = useState<number | null>(null);
-  const [showQuizFeedback, setShowQuizFeedback] = useState(false);
-  const [userGuess, setUserGuess] = useState('');
-  const [showPredictions, setShowPredictions] = useState(false);
-  const [showComparison, setShowComparison] = useState(false);
+interface Sentence {
+  id: number;
+  prompt: string;
+  context: string;
+  reflectionQuestion: string;
+  reflectionAnswer: string;
+}
 
-  // Check-in quiz
-  const checkInQuestion = {
-    question: "If you remember one single thing from this entire explainer, make it this:",
-    options: [
-      "An LLM's only function is to predict what word should come next",
-      "An LLM's job is to understand what you're asking",
-      "An LLM uses beliefs and reasoning to answer questions",
-      "An LLM thinks like a human brain"
-    ],
-    correctIndex: 0,
-    explanation: "Exactly! An LLM's main, core, and ONLY function is to predict what word should come next. It's not understanding, believing, or reasoning—just predicting based on statistical patterns."
-  };
-
-  // Interactive prediction example: "My favorite animal is ___"
-  const predictionExample = {
+const sentences: Sentence[] = [
+  {
+    id: 1,
     prompt: "My favorite animal is",
-    predictions: [
-      { word: 'dog', probability: 45, color: 'bg-amber-500' },
-      { word: 'cat', probability: 30, color: 'bg-orange-500' },
-      { word: 'elephant', probability: 15, color: 'bg-gray-500' },
-      { word: 'lion', probability: 6, color: 'bg-yellow-600' },
-      { word: 'panda', probability: 4, color: 'bg-green-600' }
-    ]
-  };
+    context: "common pets and animals",
+    reflectionQuestion: "Why do you think the AI predicted these specific animals?",
+    reflectionAnswer: "The AI predicted common pets like 'dog' and 'cat' because these words appear most frequently in its training data after 'My favorite animal is.' It's showing you what's STATISTICALLY COMMON, not what's objectively 'correct' or 'better.'"
+  },
+  {
+    id: 2,
+    prompt: "The best thing about summer is",
+    context: "summer activities",
+    reflectionQuestion: "What patterns in training data influenced these predictions?",
+    reflectionAnswer: "The AI learned patterns from millions of texts about summer. Words like 'beach,' 'vacation,' and 'sunshine' appear frequently, so it predicts those. YOUR unique experiences might be completely different—and that's what makes you human!"
+  },
+  {
+    id: 3,
+    prompt: "When I grow up I want to be",
+    context: "career aspirations",
+    reflectionQuestion: "How does the AI's training data shape these career predictions?",
+    reflectionAnswer: "The AI predicts common careers that appear often in text (doctor, teacher, engineer). But it has NO IDEA what YOU specifically want! It can't understand your unique dreams, talents, or circumstances—only you can determine that."
+  }
+];
+
+export default function BeatThePredictorGame({ onComplete }: Props) {
+  const [currentSentence, setCurrentSentence] = useState(0);
+  const [userInput, setUserInput] = useState('');
+  const [result, setResult] = useState<PredictionResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showReflection, setShowReflection] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   // Developer Mode: Auto-complete
   useEffect(() => {
-    const handleAutoComplete = (event: CustomEvent) => {
-      if (event.detail.moduleId === 'understanding-llms') {
-        console.log('🔧 Developer mode: Auto-completing Prediction Game');
+    const handleDevAutoComplete = (event: CustomEvent) => {
+      if (event.detail?.moduleId === 'understanding-llms') {
+        console.log('🔧 Developer mode: Skipping Beat the Predictor');
         onComplete();
       }
     };
 
-    window.addEventListener('dev-auto-complete-activity', handleAutoComplete as EventListener);
-    return () => window.removeEventListener('dev-auto-complete-activity', handleAutoComplete as EventListener);
+    window.addEventListener('dev-auto-complete-activity', handleDevAutoComplete as EventListener);
+    return () => window.removeEventListener('dev-auto-complete-activity', handleDevAutoComplete as EventListener);
   }, [onComplete]);
 
-  const handleQuizAnswer = (index: number) => {
-    if (showQuizFeedback) return;
-    setSelectedQuizAnswer(index);
-    setShowQuizFeedback(true);
+  const handleStartGame = () => {
+    setShowIntro(false);
   };
 
-  const handleQuizNext = () => {
-    if (selectedQuizAnswer === checkInQuestion.correctIndex) {
-      setCurrentScreen(1);
-    } else {
-      // Reset for try again
-      setSelectedQuizAnswer(null);
-      setShowQuizFeedback(false);
+  const handleSubmit = async () => {
+    if (!userInput.trim()) return;
+
+    // Content safety check - block inappropriate content
+    const lowerInput = userInput.toLowerCase().trim();
+    const inappropriateTerms = ['hate', 'violence', 'offensive', 'explicit']; // Add more as needed
+    const containsInappropriate = inappropriateTerms.some(term => lowerInput.includes(term));
+
+    if (containsInappropriate) {
+      setError("Please keep your responses appropriate for an educational setting.");
+      return;
+    }
+
+    if (userInput.length > 50) {
+      setError("Please enter just one or two words to complete the sentence.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const sentence = sentences[currentSentence];
+
+      // Call Gemini API to generate predictions
+      const prompt = `You are helping students understand how language models predict text.
+
+Given the sentence fragment: "${sentence.prompt}"
+
+Generate exactly 5 word predictions that would commonly complete this sentence, along with their approximate probabilities (must sum to 100).
+
+Context: ${sentence.context}
+
+IMPORTANT RULES:
+1. Return ONLY valid JSON in this exact format:
+{
+  "predictions": [
+    {"word": "word1", "probability": 30},
+    {"word": "word2", "probability": 25},
+    {"word": "word3", "probability": 20},
+    {"word": "word4", "probability": 15},
+    {"word": "word5", "probability": 10}
+  ]
+}
+
+2. Words should be single tokens (one or two words max)
+3. Probabilities must be realistic percentages that sum to 100
+4. Focus on common, appropriate completions based on typical training data patterns
+5. NO explanations, NO additional text, ONLY the JSON
+
+Return the JSON now:`;
+
+      const response = await generateWithGemini(prompt, {
+        maxOutputTokens: 300,
+        temperature: 0.3
+      });
+
+      // Handle null response from API
+      if (!response) {
+        throw new Error('No response from AI');
+      }
+
+      // Parse the response
+      let parsedResponse;
+      try {
+        // Try to extract JSON from response
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsedResponse = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No JSON found in response');
+        }
+      } catch (parseError) {
+        console.error('Failed to parse Gemini response:', response);
+        // Fallback to generic predictions if parsing fails
+        parsedResponse = {
+          predictions: [
+            {word: "a", probability: 30},
+            {word: "the", probability: 25},
+            {word: "something", probability: 20},
+            {word: "it", probability: 15},
+            {word: "that", probability: 10}
+          ]
+        };
+      }
+
+      const aiPredictions = parsedResponse.predictions || [];
+
+      // Check if user's prediction matches any AI predictions
+      const isMatch = aiPredictions.some(
+        (pred: {word: string}) => pred.word.toLowerCase() === userInput.toLowerCase().trim()
+      );
+
+      setResult({
+        userPrediction: userInput.trim(),
+        aiPredictions,
+        isMatch
+      });
+
+    } catch (err) {
+      console.error('Error getting AI predictions:', err);
+      setError("Couldn't get AI predictions. Let's try again!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleShowPredictions = () => {
-    if (!userGuess.trim()) return;
-    setShowPredictions(true);
-    setTimeout(() => setShowComparison(true), 1500);
+  const handleNextSentence = () => {
+    if (currentSentence < sentences.length - 1) {
+      setCurrentSentence(currentSentence + 1);
+      setUserInput('');
+      setResult(null);
+      setShowReflection(false);
+    } else {
+      onComplete();
+    }
   };
 
-  const userGuessMatches = () => {
-    const normalizedGuess = userGuess.toLowerCase().trim();
-    return predictionExample.predictions.some(
-      pred => pred.word.toLowerCase() === normalizedGuess
+  const handleShowReflection = () => {
+    setShowReflection(true);
+  };
+
+  const currentSentenceData = sentences[currentSentence];
+
+  // Introduction Screen
+  if (showIntro) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-4xl w-full"
+        >
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 border-2 border-white/20">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="text-center mb-6"
+            >
+              <Brain className="h-20 w-20 text-purple-400 mx-auto mb-4" />
+              <h1 className="text-4xl font-bold text-white mb-4">
+                Beat the Predictor
+              </h1>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-6 text-white mb-8"
+            >
+              <div className="bg-blue-900/40 border-2 border-blue-400 rounded-xl p-6">
+                <h2 className="text-2xl font-bold text-white mb-3">What You'll Do:</h2>
+                <p className="text-lg text-white/90 mb-4">
+                  You'll compete with a real AI to predict what word comes next in a sentence. This shows you firsthand how LLMs work!
+                </p>
+              </div>
+
+              <div className="bg-purple-900/40 border-2 border-purple-400 rounded-xl p-6">
+                <h2 className="text-2xl font-bold text-white mb-3">Why This Matters:</h2>
+                <ul className="space-y-3 text-lg text-white/90">
+                  <li className="flex items-start gap-3">
+                    <Check className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
+                    <span>Experience how AI predicts based on <strong className="text-yellow-300">statistical patterns</strong>, not understanding</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
+                    <span>See how <strong className="text-yellow-300">training data</strong> shapes AI predictions</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
+                    <span>Understand that YOUR unique answers are just as valid as the AI's common predictions</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-yellow-900/30 border-2 border-yellow-400 rounded-xl p-6">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
+                  <p className="text-lg text-white/90">
+                    <strong className="text-yellow-300">Remember:</strong> There's no "wrong" answer! Your creativity and unique perspective are what make you human. The AI just shows what's statistically common.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Button
+                onClick={handleStartGame}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-6 text-xl rounded-xl"
+              >
+                Start the Game
+                <ArrowRight className="ml-2 h-6 w-6" />
+              </Button>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
     );
-  };
+  }
 
-  const isQuizCorrect = selectedQuizAnswer === checkInQuestion.correctIndex;
-
+  // Main Game Screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-6">
       <motion.div
@@ -97,320 +286,204 @@ export default function BeatThePredictorGame({ onComplete }: Props) {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-4xl w-full"
       >
-        {/* Part 1: Check-In Quiz */}
-        {currentScreen === 0 && (
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8">
-            <div className="text-center mb-8">
-              <Target className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold text-white mb-4">
-                Quick Check-In
-              </h1>
-              <p className="text-white text-lg">
-                Let's make sure you got the key concept from the video...
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border-2 border-white/20">
+          {/* Progress */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-white/70 text-sm font-medium">
+                Round {currentSentence + 1} of {sentences.length}
+              </span>
+            </div>
+            <div className="bg-white/20 rounded-full h-2 overflow-hidden">
+              <motion.div
+                className="bg-gradient-to-r from-purple-400 to-pink-400 h-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${((currentSentence + 1) / sentences.length) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
+
+          {/* Sentence Prompt */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Complete this sentence:
+            </h2>
+            <div className="bg-gradient-to-r from-purple-900/60 to-blue-900/60 border-2 border-purple-400 rounded-xl p-6">
+              <p className="text-3xl font-bold text-white">
+                "{currentSentenceData.prompt}{' '}
+                <span className="text-yellow-300">___________</span>"
               </p>
             </div>
+          </div>
 
-            <div className="bg-blue-900/40 border border-blue-400 rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-bold text-white mb-6">
-                {checkInQuestion.question}
-              </h2>
-
-              <div className="space-y-3">
-                {checkInQuestion.options.map((option, index) => {
-                  const isSelected = selectedQuizAnswer === index;
-                  const isCorrectAnswer = index === checkInQuestion.correctIndex;
-
-                  let bgColor = "bg-white/10 hover:bg-white/20";
-                  let borderColor = "border-white/30";
-
-                  if (showQuizFeedback) {
-                    if (isCorrectAnswer) {
-                      bgColor = "bg-green-900/40";
-                      borderColor = "border-green-400";
-                    } else if (isSelected) {
-                      bgColor = "bg-red-900/40";
-                      borderColor = "border-red-400";
-                    }
-                  }
-
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => handleQuizAnswer(index)}
-                      disabled={showQuizFeedback}
-                      className={`w-full p-4 rounded-xl border-2 ${bgColor} ${borderColor} text-white text-left transition-all duration-200 flex items-center justify-between`}
-                    >
-                      <span className="text-base">{option}</span>
-                      {showQuizFeedback && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                        >
-                          {isCorrectAnswer ? (
-                            <CheckCircle className="h-6 w-6 text-green-400" />
-                          ) : isSelected ? (
-                            <XCircle className="h-6 w-6 text-red-400" />
-                          ) : null}
-                        </motion.div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Feedback */}
-            {showQuizFeedback && (
+          {!result ? (
+            <AnimatePresence mode="wait">
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`p-4 rounded-xl mb-6 ${
-                  isQuizCorrect
-                    ? 'bg-green-900/40 border-2 border-green-400'
-                    : 'bg-red-900/40 border-2 border-red-400'
-                }`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-4"
               >
-                <div className="flex items-start gap-3">
-                  {isQuizCorrect ? (
-                    <CheckCircle className="h-6 w-6 text-green-400 flex-shrink-0 mt-0.5" />
+                <input
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+                  placeholder="Type your prediction (1-2 words)..."
+                  className="w-full px-6 py-4 bg-gray-800 text-white rounded-xl text-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  disabled={isLoading}
+                  maxLength={50}
+                />
+
+                {error && (
+                  <div className="bg-red-900/40 border border-red-400 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-white">{error}</p>
+                    </div>
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!userInput.trim() || isLoading}
+                  className={`w-full py-6 text-xl rounded-xl ${
+                    !userInput.trim() || isLoading
+                      ? 'bg-gray-700 text-white/50 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white'
+                  }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader className="w-6 h-6 animate-spin mr-2" />
+                      AI is thinking...
+                    </>
                   ) : (
-                    <XCircle className="h-6 w-6 text-red-400 flex-shrink-0 mt-0.5" />
+                    <>
+                      Submit Your Prediction
+                      <ArrowRight className="ml-2 h-6 w-6" />
+                    </>
                   )}
-                  <div>
-                    {isQuizCorrect ? (
-                      <>
-                        <p className="font-semibold mb-1 text-white">Correct!</p>
-                        <p className="text-sm text-white">
-                          {checkInQuestion.explanation}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="font-semibold text-white">
-                        Not quite! Try again.
-                      </p>
+                </Button>
+              </motion.div>
+            </AnimatePresence>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                {/* Your Prediction */}
+                <div className="bg-blue-900/40 border-2 border-blue-400 rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-white mb-3">Your Prediction:</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-600 px-6 py-3 rounded-lg">
+                      <p className="text-2xl font-bold text-white">{result.userPrediction}</p>
+                    </div>
+                    {result.isMatch && (
+                      <div className="flex items-center gap-2 text-green-400">
+                        <Trophy className="w-6 h-6" />
+                        <span className="font-semibold">Match!</span>
+                      </div>
                     )}
                   </div>
                 </div>
-              </motion.div>
-            )}
-
-            {/* Next Button */}
-            {showQuizFeedback && (
-              <Button
-                onClick={handleQuizNext}
-                className={`w-full py-6 text-lg rounded-xl ${
-                  isQuizCorrect
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white'
-                    : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white'
-                }`}
-              >
-                {isQuizCorrect ? (
-                  <>
-                    Continue
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </>
-                ) : (
-                  'Try Again'
-                )}
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Part 2: Interactive Prediction Game */}
-        {currentScreen === 1 && (
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8">
-            <div className="text-center mb-8">
-              <Zap className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold text-white mb-4">
-                The Prediction Game
-              </h1>
-              <p className="text-xl text-white">
-                Can you predict what word comes next?
-              </p>
-            </div>
-
-            {/* The Prompt */}
-            <div className="bg-blue-900/40 border-2 border-blue-400 rounded-xl p-8 mb-6 text-center">
-              <p className="text-3xl font-bold text-white mb-6">
-                "{predictionExample.prompt} <span className="text-yellow-300">___________</span>"
-              </p>
-
-              {!showPredictions && (
-                <div className="max-w-md mx-auto">
-                  <label className="block text-white text-lg mb-3 text-left">
-                    Your prediction:
-                  </label>
-                  <input
-                    type="text"
-                    value={userGuess}
-                    onChange={(e) => setUserGuess(e.target.value)}
-                    placeholder="Type your guess..."
-                    className="w-full p-4 rounded-xl border-2 border-white/30 bg-white/10 text-white text-xl placeholder-white/50 focus:outline-none focus:border-yellow-400 transition-colors"
-                    onKeyPress={(e) => e.key === 'Enter' && handleShowPredictions()}
-                  />
-                </div>
-              )}
-            </div>
-
-            {!showPredictions ? (
-              <Button
-                onClick={handleShowPredictions}
-                disabled={!userGuess.trim()}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white py-6 text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                See What AI Predicts
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            ) : (
-              <>
-                {/* Show user's guess */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-purple-900/40 border-2 border-purple-400 rounded-xl p-6 mb-6"
-                >
-                  <h3 className="text-xl font-semibold text-white mb-3">You predicted:</h3>
-                  <p className="text-3xl font-bold text-yellow-300 capitalize">
-                    {userGuess}
-                  </p>
-                </motion.div>
 
                 {/* AI Predictions */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="bg-gray-900/40 border-2 border-purple-400 rounded-xl p-6 mb-6"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <TrendingUp className="w-6 h-6 text-purple-400" />
-                    <h3 className="text-xl font-semibold text-white">AI's Predictions:</h3>
-                  </div>
-                  <div className="space-y-4">
-                    {predictionExample.predictions.map((pred, index) => {
-                      const isUserGuess = pred.word.toLowerCase() === userGuess.toLowerCase().trim();
-                      return (
-                        <motion.div
-                          key={pred.word}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.5 + index * 0.15 }}
-                          className={isUserGuess ? 'ring-2 ring-yellow-400 rounded-lg p-2 -m-2' : ''}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className={`font-semibold text-lg capitalize ${
-                              isUserGuess ? 'text-yellow-300' : 'text-white'
-                            }`}>
-                              {pred.word}
-                              {isUserGuess && ' ⭐'}
-                            </span>
-                            <span className="text-white text-base">
-                              {pred.probability}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                <div className="bg-purple-900/40 border-2 border-purple-400 rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">AI's Top Predictions:</h3>
+                  <div className="space-y-3">
+                    {result.aiPredictions.map((pred, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-center gap-4"
+                      >
+                        <div className="bg-purple-600 px-4 py-2 rounded-lg min-w-[120px]">
+                          <p className="text-lg font-bold text-white">{pred.word}</p>
+                        </div>
+                        <div className="flex-1">
+                          <div className="bg-white/20 rounded-full h-6 overflow-hidden">
                             <motion.div
-                              className={`${pred.color} h-full rounded-full flex items-center justify-end pr-2`}
+                              className="bg-gradient-to-r from-purple-400 to-pink-400 h-full flex items-center justify-end pr-2"
                               initial={{ width: 0 }}
                               animate={{ width: `${pred.probability}%` }}
-                              transition={{ duration: 0.8, delay: 0.5 + index * 0.15 }}
+                              transition={{ delay: index * 0.1 + 0.3, duration: 0.5 }}
                             >
-                              {pred.probability >= 20 && (
-                                <span className="text-white text-xs font-bold">
-                                  {pred.probability}%
-                                </span>
-                              )}
+                              <span className="text-white text-sm font-bold">{pred.probability}%</span>
                             </motion.div>
                           </div>
-                        </motion.div>
-                      );
-                    })}
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                </motion.div>
+                </div>
 
-                {/* Comparison & Explanation */}
-                <AnimatePresence>
-                  {showComparison && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-6 mb-6"
-                    >
-                      {userGuessMatches() ? (
-                        <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-400 rounded-xl p-6">
-                          <div className="flex items-start gap-3">
-                            <CheckCircle className="w-8 h-8 text-green-400 flex-shrink-0 mt-1" />
-                            <div>
-                              <h3 className="text-2xl font-bold text-white mb-3">
-                                You matched the AI!
-                              </h3>
-                              <p className="text-white text-base leading-relaxed mb-3">
-                                You and the AI made the same prediction. That's because <strong className="text-yellow-300">you're both pattern matching</strong>!
-                              </p>
-                              <p className="text-white text-base leading-relaxed">
-                                The AI isn't "smarter"—it just has access to <strong className="text-yellow-300">way more data</strong> about how people typically complete this sentence.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 border-2 border-blue-400 rounded-xl p-6">
-                          <div className="flex items-start gap-3">
-                            <Lightbulb className="w-8 h-8 text-yellow-400 flex-shrink-0 mt-1" />
-                            <div>
-                              <h3 className="text-2xl font-bold text-white mb-3">
-                                Different predictions!
-                              </h3>
-                              <p className="text-white text-base leading-relaxed mb-3">
-                                Your guess was unique—but that doesn't mean the AI is "right" and you're "wrong."
-                              </p>
-                              <p className="text-white text-base leading-relaxed">
-                                The AI just predicted what word appears <strong className="text-yellow-300">most often</strong> in its training data after "{predictionExample.prompt}". It's all about <strong className="text-yellow-300">statistical patterns</strong>, not truth!
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-400 rounded-lg p-6">
-                        <div className="flex items-start gap-3">
-                          <Sparkles className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
-                          <div>
-                            <p className="text-white font-semibold mb-2 text-lg">
-                              The Key Takeaway
-                            </p>
-                            <p className="text-white text-base leading-relaxed">
-                              The AI isn't thinking or understanding—it's just calculating <strong className="text-yellow-300">statistical probabilities</strong> based on patterns it's seen billions of times.
-                            </p>
-                          </div>
-                        </div>
+                {/* Key Insight */}
+                {!result.isMatch && (
+                  <div className="bg-yellow-900/30 border-2 border-yellow-400 rounded-xl p-6">
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
+                      <div>
+                        <h4 className="font-bold text-white mb-2">Different predictions!</h4>
+                        <p className="text-white/90">
+                          Your guess was unique—but that doesn't mean the AI is "right" and you're "wrong."
+                          The AI just predicted what words appear most often in its training data. It's all about
+                          <strong className="text-yellow-300"> statistical patterns</strong>, not truth!
+                        </p>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
+                  </div>
+                )}
 
-                {/* Continue Button */}
-                {showComparison && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
+                {/* Reflection Section */}
+                {!showReflection ? (
+                  <Button
+                    onClick={handleShowReflection}
+                    className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white py-4 rounded-xl"
                   >
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Why Did the AI Predict These Words?
+                  </Button>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-green-900/40 border-2 border-green-400 rounded-xl p-6"
+                  >
+                    <h4 className="text-xl font-bold text-white mb-3">{currentSentenceData.reflectionQuestion}</h4>
+                    <div className="bg-green-800/40 rounded-lg p-4 mb-4">
+                      <p className="text-white/90 text-lg leading-relaxed">
+                        {currentSentenceData.reflectionAnswer}
+                      </p>
+                    </div>
+
+                    <div className="bg-blue-900/40 border border-blue-400 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <Brain className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
+                        <p className="text-white/90">
+                          <strong className="text-blue-300">The Key Takeaway:</strong> The AI isn't thinking or understanding—it's just calculating
+                          statistical probabilities based on patterns it's seen billions of times in its training data.
+                        </p>
+                      </div>
+                    </div>
+
                     <Button
-                      onClick={onComplete}
-                      className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-6 text-lg rounded-xl"
+                      onClick={handleNextSentence}
+                      className="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-4 rounded-xl text-lg"
                     >
-                      Continue
+                      {currentSentence < sentences.length - 1 ? 'Next Round' : 'Complete Activity'}
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </motion.div>
                 )}
-              </>
-            )}
-          </div>
-        )}
-
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </div>
       </motion.div>
     </div>
   );

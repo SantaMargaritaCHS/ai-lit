@@ -22,6 +22,7 @@ import KnowledgeCheckQuiz from '@/components/UnderstandingLLMModule/activities/K
 import MeetTheLLMs from '@/components/UnderstandingLLMModule/activities/MeetTheLLMs';
 import GuessDataSize from '@/components/UnderstandingLLMModule/activities/GuessDataSize';
 import WhyPredictionIsntEnough from '@/components/UnderstandingLLMModule/activities/WhyPredictionIsntEnough';
+import NeuralNetworkKnowledgeCheck from '@/components/UnderstandingLLMModule/activities/NeuralNetworkKnowledgeCheck';
 import WeavingItTogether from '@/components/UnderstandingLLMModule/activities/WeavingItTogether';
 import TrainingLoopStory from '@/components/UnderstandingLLMModule/activities/TrainingLoopStory';
 
@@ -70,6 +71,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     { id: 'video-using-data', title: 'How Data Becomes Predictions', duration: '2:15' },
     { id: 'why-prediction-isnt-enough', title: 'Why Simple Predictions Aren\'t Enough', duration: '1 minute' },
     { id: 'video-neural-networks', title: 'Understanding Context', duration: '1:49' },
+    { id: 'neural-network-check', title: 'Neural Network Check-In', duration: '2 minutes' },
 
     // Phase 5: Pattern-Finding Web (Tokens & Training)
     { id: 'video-tokens-training', title: 'Tokens, Training, and Tuning', duration: '1:03' },
@@ -151,22 +153,22 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     },
     'video-using-data': {
       source: VIDEO_PATHS.howChatbotsLLMs,
-      start: 112,
+      start: 56,
       end: 191,
       title: 'How Data Becomes Predictions',
       description: 'Shakespeare letter-by-letter analogy showing how simple predictions work and their limitations'
     },
     'video-neural-networks': {
       source: VIDEO_PATHS.howChatbotsLLMs,
-      start: 191,
-      end: 299,
+      start: 191.5,
+      end: 300,
       title: 'Understanding Context with Neural Networks',
       description: 'Neural networks provide context: predict → compare → adjust loop, learning from mistakes'
     },
     'video-tokens-training': {
       source: VIDEO_PATHS.howChatbotsLLMs,
-      start: 299,
-      end: 354,
+      start: 300,
+      end: 363,
       title: 'Tokens, Training, and Tuning',
       description: 'Three key additions: internet data (not Shakespeare), tokens instead of letters, human tuning'
     },
@@ -455,6 +457,9 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
             )}
             {phases[currentPhase].id === 'why-prediction-isnt-enough' && (
               <WhyPredictionIsntEnough onComplete={handleNextPhase} />
+            )}
+            {phases[currentPhase].id === 'neural-network-check' && (
+              <NeuralNetworkKnowledgeCheck onComplete={handleNextPhase} />
             )}
 
             {/* Phase 5: Pattern-Finding Web */}

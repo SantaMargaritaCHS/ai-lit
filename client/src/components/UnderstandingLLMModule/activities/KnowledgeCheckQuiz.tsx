@@ -54,19 +54,12 @@ export default function KnowledgeCheckQuiz({ onComplete }: Props) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [score, setScore] = useState(0);
-  const [completed, setCompleted] = useState(false);
   const [hasAttempted, setHasAttempted] = useState(false); // Track if they've tried this question
 
   const handleAnswerSelect = (index: number) => {
     if (showFeedback) return;
     setSelectedAnswer(index);
     setShowFeedback(true);
-
-    // Only count score on first attempt
-    if (index === questions[currentQuestion].correctIndex && !hasAttempted) {
-      setScore(score + 1);
-    }
     setHasAttempted(true);
   };
 
@@ -77,7 +70,8 @@ export default function KnowledgeCheckQuiz({ onComplete }: Props) {
       setShowFeedback(false);
       setHasAttempted(false); // Reset for next question
     } else {
-      setCompleted(true);
+      // Quiz completed - immediately proceed to next activity
+      onComplete();
     }
   };
 
@@ -88,49 +82,6 @@ export default function KnowledgeCheckQuiz({ onComplete }: Props) {
   };
 
   const isCorrect = selectedAnswer === questions[currentQuestion].correctIndex;
-
-  if (completed) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-6"
-      >
-        <div className="max-w-2xl w-full bg-white/10 backdrop-blur-md rounded-2xl p-8 text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="mb-6"
-          >
-            <div className="text-6xl mb-4">
-              🎉
-            </div>
-          </motion.div>
-
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Perfect Score!
-          </h2>
-
-          <div className="text-5xl font-bold text-blue-300 mb-4">
-            {score} / {questions.length}
-          </div>
-
-          <p className="text-white/80 text-lg mb-8">
-            You've got a solid understanding of what an LLM is!
-          </p>
-
-          <Button
-            onClick={onComplete}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-6 text-lg rounded-xl"
-          >
-            Continue
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </div>
-      </motion.div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-6">

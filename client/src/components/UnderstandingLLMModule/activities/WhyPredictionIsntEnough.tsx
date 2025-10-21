@@ -65,7 +65,7 @@ export default function WhyPredictionIsntEnough({ onComplete }: Props) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8 }}
-            className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-blue-400 rounded-xl p-6 mb-8"
+            className="bg-gradient-to-br from-blue-900/40 to-purple-900/40 border-2 border-blue-400 rounded-xl p-6 mb-8"
           >
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 mt-1">
