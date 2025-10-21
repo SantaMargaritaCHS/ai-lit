@@ -44,7 +44,7 @@ export default function CertificateLLM({ userName }: Props) {
           <h1 className="text-4xl font-bold text-white mb-2">
             Congratulations!
           </h1>
-          <p className="text-xl text-blue-200">
+          <p className="text-xl text-white">
             You've completed the Understanding Large Language Models module
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function CertificateLLM({ userName }: Props) {
             {/* Main Content */}
             <div className="text-center">
               <p className="text-lg text-gray-600 mb-6">This certifies that</p>
-              <h2 className="text-4xl font-bold text-blue-800 mb-6 border-b-2 border-blue-200 pb-2 inline-block">
+              <h2 className="text-4xl font-bold text-blue-800 mb-6 border-b-2 border-blue-400 pb-2 inline-block">
                 {userName}
               </h2>
               <p className="text-lg text-gray-600 mb-4">has successfully completed</p>
@@ -132,7 +132,7 @@ export default function CertificateLLM({ userName }: Props) {
         {/* Summary */}
         <div className="mt-8 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg p-6">
           <h3 className="text-xl font-semibold text-white mb-4">What You've Learned:</h3>
-          <div className="grid md:grid-cols-2 gap-4 text-blue-200">
+          <div className="grid md:grid-cols-2 gap-4 text-white">
             <div className="flex items-start gap-2">
               <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
               <span>How LLMs predict text through pattern matching</span>

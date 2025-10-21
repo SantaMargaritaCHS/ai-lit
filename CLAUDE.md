@@ -215,6 +215,41 @@ npx tsc --noEmit     # Type check
 - [ ] ARIA labels on interactive elements
 - [ ] Semantic HTML (`<button>` not `<div onClick>`)
 
+### How to Prevent Text Visibility Issues
+
+**The Simple Rule:**
+- **Dark backgrounds** → Use `text-white` or very light tints
+- **Light backgrounds** → Use `text-black` or `text-gray-900`
+
+**NEVER use:**
+- ❌ `text-*-200` or `text-*-100` on dark backgrounds
+- ❌ `text-gray-*` on semi-transparent backgrounds
+- ❌ Any color without explicitly checking contrast
+
+**Use Contrast Checker Tools (MANDATORY):**
+
+Before finalizing ANY custom color combination, verify it passes WCAG standards:
+
+**Free Tools:**
+1. **WebAIM Color Contrast Checker**
+   - URL: https://webaim.org/resources/contrastchecker/
+   - Input your text color and background color
+   - Instant pass/fail for WCAG AA and AAA standards
+
+2. **Adobe Color Contrast Analyzer**
+   - URL: https://color.adobe.com/create/color-contrast-analyzer
+   - Visual interface for testing multiple combinations
+   - Shows exact contrast ratios
+
+**Workflow:**
+1. Choose your background color (e.g., `bg-blue-900/40`)
+2. Choose your text color (e.g., `text-white`)
+3. Run both through contrast checker
+4. Verify it shows "PASS" for WCAG AA (minimum 4.5:1)
+5. If it fails, adjust until it passes
+
+**This removes ALL guesswork and prevents repeated visibility mistakes.**
+
 ## 🛡️ Student Input Validation
 
 **For ALL reflection/exit ticket activities:**

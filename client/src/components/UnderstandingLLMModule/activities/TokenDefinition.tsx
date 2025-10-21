@@ -106,7 +106,7 @@ export default function TokenDefinition({ onComplete }: Props) {
             <h1 className="text-3xl font-bold text-white mb-2">
               What Exactly is a Token?
             </h1>
-            <p className="text-blue-200">
+            <p className="text-white">
               Understanding the building blocks of AI language processing
             </p>
           </motion.div>
@@ -116,7 +116,7 @@ export default function TokenDefinition({ onComplete }: Props) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 }}
-            className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg p-6 mb-8 border border-blue-400/30"
+            className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 rounded-lg p-6 mb-8 border border-blue-400"
           >
             <div className="flex items-start gap-4">
               <Puzzle className="w-8 h-8 text-blue-400 mt-1 flex-shrink-0" />
@@ -124,7 +124,7 @@ export default function TokenDefinition({ onComplete }: Props) {
                 <p className="text-xl text-white font-medium mb-3">
                   A token is the basic unit that LLMs use to process text.
                 </p>
-                <p className="text-blue-200 text-lg">
+                <p className="text-white text-lg">
                   Think of tokens like LEGO blocks - just as you build structures with LEGO pieces, 
                   LLMs build understanding with tokens.
                 </p>
@@ -144,7 +144,7 @@ export default function TokenDefinition({ onComplete }: Props) {
                 <Scissors className="w-6 h-6 text-purple-400" />
                 <h3 className="text-lg font-semibold text-white">Not Always Full Words</h3>
               </div>
-              <p className="text-gray-300">
+              <p className="text-white">
                 "running" might be 2 tokens: "run" + "ning"
               </p>
             </motion.div>
@@ -159,7 +159,7 @@ export default function TokenDefinition({ onComplete }: Props) {
                 <Keyboard className="w-6 h-6 text-green-400" />
                 <h3 className="text-lg font-semibold text-white">Includes Spaces & Punctuation</h3>
               </div>
-              <p className="text-gray-300">
+              <p className="text-white">
                 A space before a word is often part of the token
               </p>
             </motion.div>
@@ -174,7 +174,7 @@ export default function TokenDefinition({ onComplete }: Props) {
                 <BarChart className="w-6 h-6 text-yellow-400" />
                 <h3 className="text-lg font-semibold text-white">Common Patterns</h3>
               </div>
-              <p className="text-gray-300">
+              <p className="text-white">
                 Frequent words = 1 token ("the", "and")<br />
                 Rare words = multiple tokens
               </p>
@@ -190,7 +190,7 @@ export default function TokenDefinition({ onComplete }: Props) {
                 <Zap className="w-6 h-6 text-orange-400" />
                 <h3 className="text-lg font-semibold text-white">Why It Matters</h3>
               </div>
-              <p className="text-gray-300">
+              <p className="text-white">
                 LLMs have token limits (context windows)<br />
                 More tokens = more processing needed
               </p>
@@ -219,7 +219,7 @@ export default function TokenDefinition({ onComplete }: Props) {
                     transition={{ duration: 0.5 }}
                     className="text-center"
                   >
-                    <div className="text-lg text-gray-300 mb-3">
+                    <div className="text-lg text-white mb-3">
                       <span className="font-mono bg-gray-700 px-2 py-1 rounded">
                         "{currentExample.text}"
                       </span>
@@ -232,14 +232,14 @@ export default function TokenDefinition({ onComplete }: Props) {
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: index * 0.2 }}
-                          className="bg-purple-500/30 border border-purple-400/50 rounded px-3 py-2 text-purple-200 font-mono text-sm"
+                          className="bg-purple-900/40 border border-purple-400 rounded px-3 py-2 text-white font-mono text-sm"
                         >
                           {token === ' ' ? '␣' : token}
                         </motion.span>
                       ))}
                     </div>
                     
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-white/70 text-sm">
                       {currentExample.explanation}
                     </p>
                   </motion.div>
@@ -259,7 +259,7 @@ export default function TokenDefinition({ onComplete }: Props) {
                 <h3 className="text-xl font-semibold text-white mb-4 text-center">
                   Quick Check
                 </h3>
-                <p className="text-gray-300 text-center mb-4">
+                <p className="text-white text-center mb-4">
                   How many tokens do you think are in this sentence?
                 </p>
                 <div className="text-center mb-6">
@@ -292,14 +292,14 @@ export default function TokenDefinition({ onComplete }: Props) {
                       <div className="text-green-400">
                         <CheckCircle className="w-8 h-8 mx-auto mb-2" />
                         <p className="text-lg font-semibold">Correct! 🎉</p>
-                        <p className="text-gray-300 mt-2">
+                        <p className="text-white mt-2">
                           The sentence has exactly {correctAnswer} tokens: ["The", " teacher", " explained", " token", "ization", " clearly", "."]
                         </p>
                       </div>
                     ) : (
                       <div className="text-orange-400">
                         <p className="text-lg font-semibold">Close, but not quite!</p>
-                        <p className="text-gray-300 mt-2">
+                        <p className="text-white mt-2">
                           The correct answer is {correctAnswer} tokens. Tokenization can be tricky - 
                           "tokenization" gets split into "token" + "ization"!
                         </p>

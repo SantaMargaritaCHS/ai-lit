@@ -132,7 +132,7 @@ export default function TokenVisualization({ onComplete }: Props) {
             {!customMode ? (
               <>
                 <div className="text-center">
-                  <p className="text-blue-200 mb-2">
+                  <p className="text-white mb-2">
                     Example {currentExample + 1} of {TOKEN_EXAMPLES.length}
                   </p>
                   <div className="w-full bg-gray-700 rounded-full h-2 mb-6">
@@ -159,7 +159,7 @@ export default function TokenVisualization({ onComplete }: Props) {
                   <h3 className="text-xl font-semibold text-white mb-2">
                     Try It Yourself!
                   </h3>
-                  <p className="text-blue-200">
+                  <p className="text-white">
                     Type any text below to see how it would be tokenized:
                   </p>
                 </div>
@@ -177,7 +177,7 @@ export default function TokenVisualization({ onComplete }: Props) {
 
             {!showTokens && (
               <div className="text-center">
-                <p className="text-blue-200 mb-4">
+                <p className="text-white mb-4">
                   {!customMode 
                     ? "Click below to see how an LLM would break this text into tokens:"
                     : "Click to tokenize your custom text:"}
@@ -212,7 +212,7 @@ export default function TokenVisualization({ onComplete }: Props) {
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: index * 0.1 }}
-                          className="inline-block bg-purple-500/20 border border-purple-400/50 rounded-lg px-3 py-2 text-purple-200 font-mono text-sm hover:bg-purple-500/30 transition-colors cursor-default"
+                          className="inline-block bg-purple-900/40 border border-purple-400 rounded-lg px-3 py-2 text-white font-mono text-sm hover:bg-purple-800/50 transition-colors cursor-default"
                           title={`Token ${index + 1}`}
                         >
                           {token === ' ' ? '␣' : token}
@@ -226,10 +226,10 @@ export default function TokenVisualization({ onComplete }: Props) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: example.tokens.length * 0.1 + 0.3 }}
-                      className="bg-blue-500/20 border border-blue-400/50 rounded-lg p-6"
+                      className="bg-blue-900/40 border border-blue-400 rounded-lg p-6"
                     >
                       <h4 className="font-semibold text-white mb-2">How This Helps LLMs:</h4>
-                      <p className="text-blue-200">{example.explanation}</p>
+                      <p className="text-white">{example.explanation}</p>
                     </motion.div>
                   )}
 
@@ -237,10 +237,10 @@ export default function TokenVisualization({ onComplete }: Props) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: example.tokens.length * 0.1 + 0.5 }}
-                    className="bg-yellow-500/20 border border-yellow-400/50 rounded-lg p-6"
+                    className="bg-yellow-900/40 border border-yellow-400 rounded-lg p-6"
                   >
                     <h4 className="font-semibold text-white mb-2">🎯 {TEACHER_CONNECTION.title}:</h4>
-                    <p className="text-yellow-200">
+                    <p className="text-white">
                       {TEACHER_CONNECTION.content}
                     </p>
                   </motion.div>

@@ -122,16 +122,23 @@ export default function TokenizationDemo({ onComplete }: Props) {
         <div className="text-center mb-8">
           <Scissors className="w-16 h-16 text-blue-400 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">
-            See How LLMs Break Down Text
+            The "Ingredients" - Understanding Tokens
           </h1>
-          <p className="text-blue-200">
-            Type or select an example to see how text becomes tokens
+          <p className="text-white text-lg mb-4">
+            Remember the Shakespeare example that predicted letter-by-letter? That didn't work well.
           </p>
+          <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-4 max-w-2xl mx-auto">
+            <p className="text-white">
+              Modern LLMs don't predict letters—they predict <strong className="text-yellow-300">tokens</strong>.
+              Tokens are the <strong className="text-yellow-300">building blocks</strong> that LLMs use to process and predict text.
+              They're like "chunks" of text that capture meaning better than individual letters.
+            </p>
+          </div>
         </div>
 
         {/* Example buttons */}
         <div className="mb-6">
-          <p className="text-gray-300 text-sm mb-3">Try these examples:</p>
+          <p className="text-white text-sm mb-3">Try these examples:</p>
           <div className="flex flex-wrap gap-2">
             {examples.map((example, index) => (
               <button
@@ -140,7 +147,7 @@ export default function TokenizationDemo({ onComplete }: Props) {
                 className={`px-4 py-2 rounded-lg text-sm transition-all ${
                   currentExample === index && inputText === example.text
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
                 }`}
               >
                 "{example.text}"
@@ -148,7 +155,7 @@ export default function TokenizationDemo({ onComplete }: Props) {
             ))}
           </div>
           {inputText && examples[currentExample]?.text === inputText && (
-            <p className="text-blue-300 text-sm mt-2">{examples[currentExample].description}</p>
+            <p className="text-white text-sm mt-2">{examples[currentExample].description}</p>
           )}
         </div>
 
@@ -175,7 +182,7 @@ export default function TokenizationDemo({ onComplete }: Props) {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Tokens Generated:</h3>
-              <div className="flex items-center gap-2 text-gray-300">
+              <div className="flex items-center gap-2 text-white">
                 <Hash className="w-5 h-5" />
                 <span>{tokens.length} tokens</span>
               </div>
@@ -226,10 +233,10 @@ export default function TokenizationDemo({ onComplete }: Props) {
               exit={{ opacity: 0, height: 0 }}
               className="mb-8"
             >
-              <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6 space-y-4">
+              <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-6 space-y-4">
                 <h3 className="text-lg font-semibold text-white">How Tokenization Works:</h3>
-                
-                <div className="space-y-3 text-blue-200">
+
+                <div className="space-y-3 text-white">
                   <p>• <strong>Spaces</strong> usually become their own tokens (shown as ␣)</p>
                   <p>• <strong>Common words</strong> like "the", "is", "hello" stay as single tokens</p>
                   <p>• <strong>Longer words</strong> split into meaningful parts: "understanding" → "under" + "stand" + "ing"</p>
@@ -238,9 +245,10 @@ export default function TokenizationDemo({ onComplete }: Props) {
                 </div>
 
                 <div className="bg-yellow-900/20 rounded-lg p-4 mt-4">
-                  <p className="text-yellow-200 text-sm">
-                    💡 <strong>Why this matters:</strong> The way text is tokenized affects how well 
-                    the AI understands your prompt. More tokens = more processing needed!
+                  <p className="text-white text-sm">
+                    💡 <strong>Why this matters:</strong> Tokens are the <strong className="text-yellow-300">building blocks</strong> the LLM uses for prediction.
+                    When the LLM predicts "what comes next," it's predicting the next <em>token</em>, not the next letter.
+                    More tokens = more processing needed!
                   </p>
                 </div>
               </div>

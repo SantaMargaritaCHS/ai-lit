@@ -247,7 +247,7 @@ export default function VideoSegmentPlayer({
               </button>
 
               {/* Time display */}
-              <span className="text-sm text-gray-300">
+              <span className="text-sm text-white">
                 {Math.floor((currentTime - startTime) / 60)}:
                 {Math.floor((currentTime - startTime) % 60).toString().padStart(2, '0')} / 
                 {Math.floor(duration / 60)}:
@@ -291,7 +291,7 @@ export default function VideoSegmentPlayer({
                       background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100}%, #374151 ${volume * 100}%, #374151 100%)`
                     }}
                   />
-                  <span className="text-xs text-gray-300 min-w-[2rem]">
+                  <span className="text-xs text-white min-w-[2rem]">
                     {Math.round(volume * 100)}%
                   </span>
                 </div>
@@ -303,7 +303,7 @@ export default function VideoSegmentPlayer({
                 className={`transition-colors ${
                   subtitlesEnabled 
                     ? 'text-yellow-400 bg-yellow-400/20' 
-                    : 'text-gray-300 hover:text-white'
+                    : 'text-white hover:text-white'
                 } px-2 py-1 rounded`}
                 aria-label="Toggle subtitles"
                 title={subtitlesEnabled ? 'Turn off subtitles' : 'Turn on subtitles'}

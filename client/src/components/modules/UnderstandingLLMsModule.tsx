@@ -1,4 +1,5 @@
 // In /client/src/components/modules/UnderstandingLLMsModule.tsx
+// REVISED MODULE STRUCTURE - 2025-10-21
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
@@ -10,23 +11,28 @@ import { UnderstandingLLMsDeveloperPanel } from './UnderstandingLLMsDeveloperPan
 import { SecretKeyPrompt } from '@/components/SecretKeyPrompt';
 import '../../styles/premium-video-llm.css';
 
-// Import activities
+// Import existing activities
 import GenAIBridge from '@/components/UnderstandingLLMModule/activities/GenAIBridge';
-import WordPredictionImproved from '@/components/UnderstandingLLMModule/activities/WordPredictionImproved';
-import TrainingDataQuiz from '@/components/UnderstandingLLMModule/activities/TrainingDataQuiz';
-import GenericTrainingDataInfo from '@/components/UnderstandingLLMModule/activities/GenericTrainingDataInfo';
-import TokenDefinition from '@/components/UnderstandingLLMModule/activities/TokenDefinition';
 import TokenizationDemo from '@/components/UnderstandingLLMModule/activities/TokenizationDemo';
-import NLPDefinition from '@/components/UnderstandingLLMModule/activities/NLPDefinition';
-import NeuralNetworkVisual from '@/components/UnderstandingLLMModule/activities/NeuralNetworkVisual';
-import ReflectionQuiz from '@/components/UnderstandingLLMModule/activities/ReflectionQuiz';
 import ExitTicketLLM from '@/components/UnderstandingLLMModule/activities/ExitTicketLLM';
-import RealityCheck from '@/components/UnderstandingLLMModule/activities/RealityCheck';
+import BeatThePredictorGame from '@/components/UnderstandingLLMModule/activities/BeatThePredictorGame';
+
+// Import new components
+import KnowledgeCheckQuiz from '@/components/UnderstandingLLMModule/activities/KnowledgeCheckQuiz';
+import MeetTheLLMs from '@/components/UnderstandingLLMModule/activities/MeetTheLLMs';
+import GuessDataSize from '@/components/UnderstandingLLMModule/activities/GuessDataSize';
+import WhyPredictionIsntEnough from '@/components/UnderstandingLLMModule/activities/WhyPredictionIsntEnough';
+import WeavingItTogether from '@/components/UnderstandingLLMModule/activities/WeavingItTogether';
+import TrainingLoopStory from '@/components/UnderstandingLLMModule/activities/TrainingLoopStory';
 
 import { Certificate } from '../Certificate';
 
-// Single video URL for all segments - use Firebase Storage path
-const VIDEO_PATH = 'Videos/3 Introduction to Large Language Models.mp4';
+// Video sources
+const VIDEO_PATHS = {
+  unlockingBlackBox: 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2FStudent%20Videos%2FIntro%20to%20LLMS%2FUnlocking_the_AI_Black_Box.mp4?alt=media',
+  understandingModels: 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2FStudent%20Videos%2FIntro%20to%20LLMS%2F3Understanding%20LLM%20Models.mp4?alt=media',
+  howChatbotsLLMs: 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2FStudent%20Videos%2FIntro%20to%20LLMS%2FHow%20Chatbots%20and%20LLMS.mp4?alt=media'
+};
 
 interface Props {
   onComplete: () => void;
@@ -35,42 +41,45 @@ interface Props {
 
 export default function UnderstandingLLMsModule({ onComplete, userName }: Props) {
   const [currentPhase, setCurrentPhase] = useState(0);
-  const [videoUrl, setVideoUrl] = useState('');
   const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
   const playerName = userName || 'Student';
-  
+
   // Developer Mode
   const { isDevModeActive: isDevMode } = useDevMode();
   const showDevPanel = false;
   const showKeyPrompt = false;
-  const handleSecretKeySubmit = () => true;
-  const setShowKeyPrompt = () => {};
+  const handleSecretKeySubmit = (_key: string) => true;
+  const setShowKeyPrompt = (_value: boolean) => {};
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // RESTRUCTURED: Consolidated from 19 to 13 phases, 7 to 3 video segments
-  // Based on agent feedback to improve pacing and reduce interruptions
+  // REVISED 18-PHASE STRUCTURE
   const phases = [
+    // Phase 1: Introduction - What is an LLM?
     { id: 'welcome', title: 'Welcome', duration: '1 minute' },
+    { id: 'video-what-is-llm', title: 'What is an LLM?', duration: '1:23' },
+    { id: 'knowledge-check-quiz', title: 'Knowledge Check', duration: '3 minutes' },
+    { id: 'meet-the-llms', title: 'Meet the LLMs', duration: '2 minutes' },
 
-    // Consolidated Video 1: Core Concepts (0-100s = 1:40)
-    { id: 'video-core-concepts', title: 'What Are LLMs & Pattern Recognition', duration: '1:40' },
-    { id: 'reality-check-1', title: 'Reality Check: Understanding vs. Processing', duration: '2 minutes' },
-    { id: 'nlp-definition', title: 'What is NLP?', duration: '2 minutes' },
-    { id: 'word-prediction', title: 'Word Prediction Game', duration: '3 minutes' },
-    { id: 'pattern-reflection', title: 'Pattern Recognition Reflection', duration: '3 minutes' },
+    // Phase 2: Core Function - Prediction
+    { id: 'video-prediction-core', title: 'Prediction is Everything', duration: '1:26' },
+    { id: 'beat-predictor-game', title: 'Beat the Predictor', duration: '5 minutes' },
 
-    // Consolidated Video 2: Training & Tokenization (100-176s = 1:16)
-    { id: 'video-training-tokenization', title: 'Training Data & Tokenization', duration: '1:16' },
-    { id: 'reality-check-2', title: 'Reality Check: Learning vs. Calculating', duration: '2 minutes' },
-    { id: 'training-data-info', title: 'Understanding Training Data', duration: '3 minutes' },
-    { id: 'token-demo', title: 'Tokenization Demo & Quiz', duration: '4 minutes' },
+    // Phase 4: How Do They Work? Data & Neural Networks
+    { id: 'video-data-scale', title: 'The Scale of Data', duration: '14 seconds' },
+    { id: 'guess-data-size', title: 'Guess the Data Size', duration: '3 minutes' },
+    { id: 'video-using-data', title: 'How Data Becomes Predictions', duration: '2:15' },
+    { id: 'why-prediction-isnt-enough', title: 'Why Simple Predictions Aren\'t Enough', duration: '1 minute' },
+    { id: 'video-neural-networks', title: 'Understanding Context', duration: '1:49' },
 
-    // Consolidated Video 3: Neural Networks (176-252s = 1:16)
-    { id: 'video-neural-networks', title: 'Neural Networks & Summary', duration: '1:16' },
-    { id: 'reality-check-3', title: 'Reality Check: Networks Calculate, Not Think', duration: '2 minutes' },
-    { id: 'training-simulation', title: 'Neural Network Visualization', duration: '3 minutes' },
+    // Phase 5: Pattern-Finding Web (Tokens & Training)
+    { id: 'video-tokens-training', title: 'Tokens, Training, and Tuning', duration: '1:03' },
+    { id: 'weaving-it-together', title: 'Weaving It All Together', duration: '2 minutes' },
+    { id: 'tokenization-demo', title: 'The Tokenizer', duration: '4 minutes' },
+    { id: 'training-loop-story', title: 'The Training Loop', duration: '5 minutes' },
 
-    { id: 'exit-ticket', title: 'Exit Ticket', duration: '3 minutes' },
+    // Phase 6: Big Takeaway & Conclusion
+    { id: 'video-big-takeaway', title: 'The Big Takeaway', duration: '1:10' },
+    { id: 'exit-ticket', title: 'Exit Ticket', duration: '5 minutes' },
     { id: 'certificate', title: 'Certificate', duration: '1 minute' }
   ];
 
@@ -85,9 +94,10 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     phases.forEach((phase, index) => {
       const activity = {
         id: phase.id,
+        name: phase.title,
         type: phase.id === 'certificate' ? 'certificate' as const :
               phase.id.includes('video') ? 'video' as const :
-              phase.id.includes('reflection') || phase.id.includes('exit') ? 'reflection' as const :
+              phase.id.includes('exit-ticket') ? 'reflection' as const :
               'interactive' as const,
         title: phase.title,
         completed: index < currentPhase
@@ -95,7 +105,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
       console.log(`📝 Registering activity: ${activity.id} (${activity.type})`);
       registerActivity(activity);
     });
-  }, []); // Only register once on mount to avoid loops
+  }, []); // Only register once on mount
 
   // Listen for dev panel navigation commands
   useEffect(() => {
@@ -116,48 +126,58 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     };
   }, [phases]);
 
-  // CONSOLIDATED: 3 video segments instead of 7
-  // Reduces interruptions while maintaining pedagogical clarity
+  // Video segments mapped to correct sources and timestamps
   const videoSegments = {
-    'video-core-concepts': {
+    'video-what-is-llm': {
+      source: VIDEO_PATHS.unlockingBlackBox,
       start: 0,
-      end: 100,
-      title: 'What Are LLMs & Pattern Recognition',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt',
-      description: 'LLM definition, examples, NLP overview, and pattern recognition basics'
+      end: 83,
+      title: 'What is an LLM?',
+      description: 'Introduction to Large Language Models - what they are and what they do'
     },
-    'video-training-tokenization': {
-      start: 100,
-      end: 176,
-      title: 'Training Data & Tokenization',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt',
-      description: 'Data collection, cleaning, and tokenization process'
+    'video-prediction-core': {
+      source: VIDEO_PATHS.unlockingBlackBox,
+      start: 84,
+      end: 169,
+      title: 'Prediction is Everything',
+      description: 'The core function: predicting the next word. Super advanced pattern matcher, auto-complete on cosmic scale.'
+    },
+    'video-data-scale': {
+      source: VIDEO_PATHS.unlockingBlackBox,
+      start: 169,
+      end: 183.5,
+      title: 'The Scale of Data',
+      description: 'Introduction to the colossal amount of training data needed for LLMs'
+    },
+    'video-using-data': {
+      source: VIDEO_PATHS.howChatbotsLLMs,
+      start: 112,
+      end: 191,
+      title: 'How Data Becomes Predictions',
+      description: 'Shakespeare letter-by-letter analogy showing how simple predictions work and their limitations'
     },
     'video-neural-networks': {
-      start: 176,
-      end: 252,
-      title: 'Neural Networks & Summary',
-      subtitlesUrl: '/subtitles/3-introduction-to-llms.srt',
-      description: 'Transformer architecture, learning process, and module summary'
+      source: VIDEO_PATHS.howChatbotsLLMs,
+      start: 191,
+      end: 299,
+      title: 'Understanding Context with Neural Networks',
+      description: 'Neural networks provide context: predict → compare → adjust loop, learning from mistakes'
+    },
+    'video-tokens-training': {
+      source: VIDEO_PATHS.howChatbotsLLMs,
+      start: 299,
+      end: 354,
+      title: 'Tokens, Training, and Tuning',
+      description: 'Three key additions: internet data (not Shakespeare), tokens instead of letters, human tuning'
+    },
+    'video-big-takeaway': {
+      source: VIDEO_PATHS.unlockingBlackBox,
+      start: 308,
+      end: 378,
+      title: 'The Big Takeaway',
+      description: 'Key takeaways: predictors not thinkers, data reliability, statistical likelihood, you check the work'
     }
   };
-
-  // Set video URL on mount - load from Firebase Storage
-  useEffect(() => {
-    const loadVideoUrl = async () => {
-      try {
-        const { getVideoUrl } = await import('@/services/videoService');
-        const url = await getVideoUrl(VIDEO_PATH);
-        setVideoUrl(url);
-        console.log('🎬 LLM video URL loaded:', url);
-      } catch (error) {
-        console.error('❌ Failed to load LLM video:', error);
-        setVideoUrl(''); // Clear URL on error
-      }
-    };
-    
-    loadVideoUrl();
-  }, []);
 
   // Developer Mode: Event listeners
   useEffect(() => {
@@ -168,8 +188,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
       if (currentPhase < phases.length - 1) {
         setCurrentPhase(currentPhase + 1);
         console.log(`🔧 Skipped to: ${phases[currentPhase + 1].title}`);
-        
-        // Dispatch activity jump event
+
         window.dispatchEvent(new CustomEvent('dev-jump-to-activity', {
           detail: { activity: phases[currentPhase + 1].id, index: currentPhase + 1 }
         }));
@@ -181,8 +200,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
       if (currentPhase > 0) {
         setCurrentPhase(currentPhase - 1);
         console.log(`🔧 Skipped back to: ${phases[currentPhase - 1].title}`);
-        
-        // Dispatch activity jump event
+
         window.dispatchEvent(new CustomEvent('dev-jump-to-activity', {
           detail: { activity: phases[currentPhase - 1].id, index: currentPhase - 1 }
         }));
@@ -191,18 +209,15 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
 
     const handleDevSkipVideo = () => {
       console.log('🔧 Developer mode: Video skip requested');
-      // Try to find video element in PremiumVideoPlayer
       const videoElement = document.querySelector(`video[data-video-id="understanding-llms-${phases[currentPhase].id}"]`) as HTMLVideoElement;
       if (videoElement) {
         const duration = videoElement.duration;
         if (duration) {
-          // Jump to 5 seconds before end of video
           videoElement.currentTime = duration - 5;
           console.log('🔧 Developer mode: Skipped video to 5s before end');
         }
       } else {
         console.log('🔧 Developer mode: Video element not found, advancing to next phase');
-        // If no video found, just advance to next phase
         handleNextPhase();
       }
     };
@@ -211,11 +226,10 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
       const { activity, index } = event.detail;
       console.log(`🔧 Developer event caught: dev-jump-to-activity`, event.detail);
       console.log(`🔧 Developer mode: Jumping to ${activity}`);
-      
+
       if (typeof index === 'number') {
         setCurrentPhase(index);
       } else {
-        // Find phase by activity id
         const phaseIndex = phases.findIndex(phase => phase.id === activity);
         if (phaseIndex !== -1) {
           setCurrentPhase(phaseIndex);
@@ -223,47 +237,16 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
       }
     };
 
-    const handleTokenizationSegmentJump = (event: any) => {
-      const { segment } = event.detail;
-      console.log(`🔧 Developer mode: Jumping to tokenization segment: ${segment}`);
-      
-      // First switch to tokenization video URL (using main video for now)
-      setVideoUrl(videoUrl);
-      
-      // Then seek to the specific segment
-      setTimeout(() => {
-        const videoElement = document.querySelector(`video[data-video-id="understanding-llms-video-tokenization"]`) as HTMLVideoElement;
-        if (videoElement) {
-          switch (segment) {
-            case 'tokenization-intro':
-              videoElement.currentTime = 0; // Start of "What is Tokenization?"
-              break;
-            case 'tokenization-process':
-              videoElement.currentTime = 90; // Start of "How Tokenization Works"
-              break;
-            case 'tokenization-examples':
-              videoElement.currentTime = 180; // Start of "Tokenization Examples"
-              break;
-          }
-          videoElement.play();
-          console.log(`🔧 Jumped to ${segment} at ${videoElement.currentTime}s`);
-        }
-      }, 500); // Wait for video to load
-    };
-
-    // Add event listeners
     window.addEventListener('dev-skip-forward', handleDevSkipForward);
     window.addEventListener('dev-skip-backward', handleDevSkipBackward);
     window.addEventListener('dev-skip-video', handleDevSkipVideo);
     window.addEventListener('dev-jump-to-activity', handleActivityJump);
-    window.addEventListener('dev-jump-to-tokenization-segment', handleTokenizationSegmentJump);
 
     return () => {
       window.removeEventListener('dev-skip-forward', handleDevSkipForward);
       window.removeEventListener('dev-skip-backward', handleDevSkipBackward);
       window.removeEventListener('dev-skip-video', handleDevSkipVideo);
       window.removeEventListener('dev-jump-to-activity', handleActivityJump);
-      window.removeEventListener('dev-jump-to-tokenization-segment', handleTokenizationSegmentJump);
     };
   }, [isDevMode, currentPhase, phases]);
 
@@ -279,21 +262,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
   const handleVideoSegmentComplete = (segmentId: string) => {
     console.log('Video segment completed:', segmentId);
     setCompletedVideos(prev => new Set(prev).add(segmentId));
-    
-    // Map video segments to phases
-    const segmentToPhaseMap: { [key: string]: string } = {
-      'intro': 'video-intro',
-      'training': 'video-training',
-      'tokenization': 'video-tokenization',
-      'neural': 'video-neural',
-      'conclusion': 'video-conclusion'
-    };
-    
-    // Auto-advance if this is the current video phase
-    const currentPhaseId = phases[currentPhase].id;
-    if (segmentToPhaseMap[segmentId] === currentPhaseId) {
-      handleNextPhase();
-    }
+    handleNextPhase();
   };
 
   const progressPercentage = ((currentPhase + 1) / phases.length) * 100;
@@ -308,10 +277,9 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
   // Developer Mode: Auto-fill functionality
   const autoFillReflections = () => {
     if (!isDevMode) return;
-    
+
     console.log('🔧 Developer mode: Auto-filling reflections and activities');
-    
-    // Dispatch events to auto-complete activities
+
     window.dispatchEvent(new CustomEvent('dev-auto-complete-activity', {
       detail: { type: 'auto-fill', moduleId: 'understanding-llms' }
     }));
@@ -320,16 +288,15 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
   // Developer Mode: Activity navigation
   const jumpToActivity = (index: number) => {
     if (!isDevMode) return;
-    
+
     if (index >= 0 && index < phases.length) {
       setCurrentPhase(index);
       console.log(`🔧 Developer mode: Jumped to ${phases[index].title} (${phases[index].id})`);
-      
-      // Dispatch custom event for activity jumping
+
       window.dispatchEvent(new CustomEvent('dev-jump-to-activity', {
         detail: { activity: phases[index].id, index }
       }));
-      
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -337,16 +304,16 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
   // Developer Mode: Complete all activities
   const completeAllActivities = () => {
     if (!isDevMode) return;
-    
+
     autoFillReflections();
-    setCurrentPhase(phases.length - 1); // Jump to certificate
+    setCurrentPhase(phases.length - 1);
     console.log('🔧 Developer mode: All activities completed');
   };
 
   // Developer Mode: Reset module
   const resetModule = () => {
     if (!isDevMode) return;
-    
+
     setCurrentPhase(0);
     setCompletedVideos(new Set());
     console.log('🔧 Developer mode: Module reset');
@@ -354,21 +321,22 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
 
   // Check if current phase is a video
   const isVideoPhase = phases[currentPhase].id.startsWith('video-');
-  
+
   // Get current video segment for video phases
   const getCurrentVideoSegment = () => {
     const currentPhaseId = phases[currentPhase].id;
     const segment = videoSegments[currentPhaseId as keyof typeof videoSegments];
-    
+
     if (segment) {
       return {
+        source: segment.source,
         start: segment.start,
         end: segment.end,
         title: segment.title,
-        subtitlesUrl: segment.subtitlesUrl
+        description: segment.description
       };
     }
-    
+
     return null;
   };
 
@@ -386,13 +354,13 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
           videoRef={videoRef}
         />
       )}
-      
+
       <SecretKeyPrompt
         isOpen={showKeyPrompt}
         onSubmit={handleSecretKeySubmit}
         onCancel={() => setShowKeyPrompt(false)}
       />
-      
+
       {/* Developer Mode Quick Actions */}
       {isDevMode && (
         <div className="fixed top-4 right-4 bg-red-900/95 backdrop-blur-sm text-white p-3 rounded-lg shadow-xl z-40">
@@ -400,19 +368,19 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
             <span className="text-red-300">🔧 DEV MODE</span>
             <button
               onClick={autoFillReflections}
-              className="bg-red-800 hover:bg-red-700 px-2 py-1 rounded text-xs"
+              className="bg-red-800 hover:bg-red-700 px-2 py-1 rounded text-xs text-white"
             >
               Auto-Fill
             </button>
             <button
-              onClick={() => jumpToActivity(phases.length - 2)} // Jump to exit ticket
-              className="bg-red-800 hover:bg-red-700 px-2 py-1 rounded text-xs"
+              onClick={() => jumpToActivity(phases.length - 2)}
+              className="bg-red-800 hover:bg-red-700 px-2 py-1 rounded text-xs text-white"
             >
               Skip to Exit
             </button>
             <button
-              onClick={() => jumpToActivity(phases.length - 1)} // Jump to certificate
-              className="bg-red-800 hover:bg-red-700 px-2 py-1 rounded text-xs"
+              onClick={() => jumpToActivity(phases.length - 1)}
+              className="bg-red-800 hover:bg-red-700 px-2 py-1 rounded text-xs text-white"
             >
               Certificate
             </button>
@@ -440,18 +408,18 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
       {/* Content */}
       <div className="max-w-6xl mx-auto">
         {/* Video phases use PremiumVideoPlayer */}
-        {isVideoPhase && videoUrl && (
+        {isVideoPhase && getCurrentVideoSegment() && (
           <PremiumVideoPlayer
             key={phases[currentPhase].id}
-            videoUrl={videoUrl}
+            videoUrl={getCurrentVideoSegment()?.source || ''}
             segments={[{
               id: phases[currentPhase].id,
               title: getCurrentVideoSegment()?.title || phases[currentPhase].title,
               start: getCurrentVideoSegment()?.start || 0,
               end: getCurrentVideoSegment()?.end || -1,
-              source: videoUrl,
+              source: getCurrentVideoSegment()?.source || '',
               interactive: undefined,
-              description: getCurrentVideoSegment()?.title || phases[currentPhase].title,
+              description: getCurrentVideoSegment()?.description || phases[currentPhase].title,
               mandatory: true
             }]}
             videoId={`understanding-llms-${phases[currentPhase].id}`}
@@ -462,54 +430,45 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
           />
         )}
 
-        {/* Activity phases - RESTRUCTURED for better flow */}
+        {/* Activity phases */}
         {!isVideoPhase && (
           <>
-            {/* Welcome */}
+            {/* Phase 1: Introduction */}
             {phases[currentPhase].id === 'welcome' && (
               <GenAIBridge onComplete={handleNextPhase} />
             )}
-
-            {/* Reality Checks - De-anthropomorphization */}
-            {phases[currentPhase].id === 'reality-check-1' && (
-              <RealityCheck segment="core-concepts" onComplete={handleNextPhase} />
+            {phases[currentPhase].id === 'knowledge-check-quiz' && (
+              <KnowledgeCheckQuiz onComplete={handleNextPhase} />
             )}
-            {phases[currentPhase].id === 'reality-check-2' && (
-              <RealityCheck segment="training" onComplete={handleNextPhase} />
-            )}
-            {phases[currentPhase].id === 'reality-check-3' && (
-              <RealityCheck segment="neural-networks" onComplete={handleNextPhase} />
+            {phases[currentPhase].id === 'meet-the-llms' && (
+              <MeetTheLLMs onComplete={handleNextPhase} />
             )}
 
-            {/* Core Concepts Activities */}
-            {phases[currentPhase].id === 'nlp-definition' && (
-              <NLPDefinition onComplete={handleNextPhase} />
-            )}
-            {phases[currentPhase].id === 'word-prediction' && (
-              <WordPredictionImproved onComplete={handleNextPhase} />
-            )}
-            {phases[currentPhase].id === 'pattern-reflection' && (
-              <ReflectionQuiz onComplete={handleNextPhase} />
+            {/* Phase 2: Core Function */}
+            {phases[currentPhase].id === 'beat-predictor-game' && (
+              <BeatThePredictorGame onComplete={handleNextPhase} />
             )}
 
-            {/* Training & Tokenization Activities */}
-            {phases[currentPhase].id === 'training-data-info' && (
-              <GenericTrainingDataInfo onComplete={handleNextPhase} />
+            {/* Phase 4: Data & Neural Networks */}
+            {phases[currentPhase].id === 'guess-data-size' && (
+              <GuessDataSize onComplete={handleNextPhase} />
             )}
-            {phases[currentPhase].id === 'token-demo' && (
-              <>
-                <TokenDefinition onComplete={() => {}} />
-                <div className="my-6" />
-                <TokenizationDemo onComplete={handleNextPhase} />
-              </>
+            {phases[currentPhase].id === 'why-prediction-isnt-enough' && (
+              <WhyPredictionIsntEnough onComplete={handleNextPhase} />
             )}
 
-            {/* Neural Network Activities */}
-            {phases[currentPhase].id === 'training-simulation' && (
-              <NeuralNetworkVisual onComplete={handleNextPhase} />
+            {/* Phase 5: Pattern-Finding Web */}
+            {phases[currentPhase].id === 'weaving-it-together' && (
+              <WeavingItTogether onComplete={handleNextPhase} />
+            )}
+            {phases[currentPhase].id === 'tokenization-demo' && (
+              <TokenizationDemo onComplete={handleNextPhase} />
+            )}
+            {phases[currentPhase].id === 'training-loop-story' && (
+              <TrainingLoopStory onComplete={handleNextPhase} />
             )}
 
-            {/* Exit & Certificate */}
+            {/* Phase 6: Big Takeaway & Exit */}
             {phases[currentPhase].id === 'exit-ticket' && (
               <ExitTicketLLM onComplete={handleNextPhase} />
             )}

@@ -147,7 +147,7 @@ export default function VideoSegment({ videoUrl, startTime, endTime, title, onCo
       <div className="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden">
         <div className="p-6 border-b border-white/10">
           <h2 className="text-2xl font-bold text-white">{title}</h2>
-          <p className="text-blue-200 mt-1">
+          <p className="text-white mt-1">
             Duration: {formatTime(endTime - startTime)}
           </p>
         </div>
@@ -266,7 +266,7 @@ export default function VideoSegment({ videoUrl, startTime, endTime, title, onCo
             className={`w-full py-3 rounded-lg font-medium transition-all ${
               hasWatched
                 ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-700 text-white/70 cursor-not-allowed'
             }`}
           >
             {hasWatched ? 'Continue to Next Activity' : 'Watch the video to continue'}

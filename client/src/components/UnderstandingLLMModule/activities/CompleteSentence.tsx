@@ -114,11 +114,11 @@ const WordPredictionSection: React.FC<{ onComplete: () => void }> = ({ onComplet
           </div>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6">
-          <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">Your Predictions:</h4>
+        <div className="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg mb-6">
+          <h4 className="font-semibold mb-2 text-blue-900 dark:text-white">Your Predictions:</h4>
           {predictions.map((pred, idx) => (
             <div key={idx} className="mb-2">
-              <span className="text-gray-600 dark:text-gray-300">"{pred.sentence} </span>
+              <span className="text-gray-600 dark:text-white">"{pred.sentence} </span>
               <span className="font-bold text-blue-600 dark:text-blue-400">{pred.userWord}"</span>
               <span className="text-sm text-gray-500"> - {(pred.probability * 100).toFixed(1)}% likely</span>
             </div>
@@ -135,7 +135,7 @@ const WordPredictionSection: React.FC<{ onComplete: () => void }> = ({ onComplet
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <h3 className="text-xl font-semibold text-white">Predict the Next Word</h3>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-white/70">
             Sentence {currentSentence + 1} of {sentences.length}
           </span>
         </div>
@@ -149,7 +149,7 @@ const WordPredictionSection: React.FC<{ onComplete: () => void }> = ({ onComplet
 
       <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg mb-6">
         <p className="text-lg mb-4">
-          <span className="text-gray-700 dark:text-gray-300">{sentences[currentSentence].text}</span>
+          <span className="text-gray-700 dark:text-white">{sentences[currentSentence].text}</span>
           <span className="text-blue-600 font-bold animate-pulse"> ___?</span>
         </p>
         
@@ -198,10 +198,10 @@ const WordPredictionSection: React.FC<{ onComplete: () => void }> = ({ onComplet
             </div>
 
             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+              <p className="text-sm text-gray-600 dark:text-white/70 mb-1">
                 <strong>Why this probability?</strong>
               </p>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+              <p className="text-sm text-gray-700 dark:text-white">
                 {predictions[predictions.length - 1].insight}
               </p>
             </div>
@@ -212,7 +212,7 @@ const WordPredictionSection: React.FC<{ onComplete: () => void }> = ({ onComplet
             <div className="space-y-2">
               {sentences[currentSentence].topPredictions.slice(0, 4).map((pred, idx) => (
                 <div key={idx} className="flex items-center justify-between">
-                  <span className="text-gray-700 dark:text-gray-300">{pred.word}</span>
+                  <span className="text-gray-700 dark:text-white">{pred.word}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                       <div 
@@ -220,7 +220,7 @@ const WordPredictionSection: React.FC<{ onComplete: () => void }> = ({ onComplet
                         style={{ width: `${pred.probability * 100}%` }}
                       />
                     </div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 w-12 text-right">
+                    <span className="text-sm text-gray-500 dark:text-white/70 w-12 text-right">
                       {(pred.probability * 100).toFixed(0)}%
                     </span>
                   </div>

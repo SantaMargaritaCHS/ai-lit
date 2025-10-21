@@ -108,7 +108,7 @@ export default function GenericTrainingDataInfo({ onComplete }: Props) {
           <h1 className="text-4xl font-bold text-white mb-4">
             What's in Training Data?
           </h1>
-          <p className="text-xl text-blue-200 max-w-3xl mx-auto">
+          <p className="text-xl text-white max-w-3xl mx-auto">
             Understanding the diverse sources that teach LLMs about language and the world
           </p>
         </motion.div>
@@ -129,11 +129,11 @@ export default function GenericTrainingDataInfo({ onComplete }: Props) {
               <h2 className="text-2xl font-bold text-white mb-4">
                 The Foundation of Knowledge
               </h2>
-              <p className="text-lg text-blue-200 mb-6">
+              <p className="text-lg text-white mb-6">
                 Large Language Models learn from vast collections of text from many different sources. 
                 This diverse training data is what gives them their broad knowledge and language abilities.
               </p>
-              <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg p-4 border border-yellow-400/30">
+              <div className="bg-gradient-to-r from-yellow-900/40 to-orange-900/40 rounded-lg p-4 border border-yellow-400">
                 <p className="text-white text-center font-medium">
                   💡 Think of it like a student reading millions of books, articles, and websites to learn about the world
                 </p>
@@ -157,15 +157,15 @@ export default function GenericTrainingDataInfo({ onComplete }: Props) {
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-xl font-bold text-white">{type.title}</h3>
-                        <span className="text-sm font-medium text-blue-300 bg-blue-500/20 px-2 py-1 rounded">
+                        <span className="text-sm font-medium text-blue-300 bg-blue-900/40 px-2 py-1 rounded">
                           ~{type.percentage}
                         </span>
                       </div>
-                      <p className="text-blue-200 mb-3">{type.description}</p>
+                      <p className="text-white mb-3">{type.description}</p>
                       <div className="space-y-1">
                         <p className="text-sm text-blue-300 font-medium">Examples:</p>
                         {type.examples.map((example, idx) => (
-                          <p key={idx} className="text-sm text-blue-200">• {example}</p>
+                          <p key={idx} className="text-sm text-white">• {example}</p>
                         ))}
                       </div>
                     </div>
@@ -212,14 +212,14 @@ export default function GenericTrainingDataInfo({ onComplete }: Props) {
                       <point.icon className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-xl font-bold text-white mb-2">{point.title}</h3>
-                    <p className="text-blue-200">{point.description}</p>
+                    <p className="text-white">{point.description}</p>
                   </motion.div>
                 ))}
               </div>
 
-              <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg p-6 border border-blue-400/30">
+              <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 rounded-lg p-6 border border-blue-400">
                 <h3 className="text-xl font-bold text-white mb-4">Why This Matters for Students</h3>
-                <div className="space-y-3 text-blue-200">
+                <div className="space-y-3 text-white">
                   <p>• <strong className="text-white">Diverse Knowledge:</strong> Training on varied sources gives LLMs broad knowledge across many topics</p>
                   <p>• <strong className="text-white">Language Understanding:</strong> Exposure to different writing styles helps them communicate effectively</p>
                   <p>• <strong className="text-white">Cultural Awareness:</strong> Global content helps them understand different perspectives and contexts</p>

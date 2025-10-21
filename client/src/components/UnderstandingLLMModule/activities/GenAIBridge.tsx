@@ -9,33 +9,30 @@ interface Props {
 }
 
 export default function GenAIBridge({ onComplete }: Props) {
-  const [showConnection, setShowConnection] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState(0); // 0 = preview, 1 = bridge
 
   // Developer Mode: Auto-complete functionality
   useEffect(() => {
     const handleDevAutoComplete = (event: any) => {
       if (event.detail?.moduleId === 'understanding-llms') {
         console.log('🔧 Developer mode: Auto-completing GenAI Bridge');
-        if (!showConnection) {
-          setShowConnection(true);
-          setTimeout(() => onComplete(), 1000);
-        } else {
-          onComplete();
-        }
+        onComplete();
       }
     };
 
     window.addEventListener('dev-auto-complete-activity', handleDevAutoComplete);
     return () => window.removeEventListener('dev-auto-complete-activity', handleDevAutoComplete);
-  }, [showConnection, onComplete]);
+  }, [onComplete]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto"
-    >
-      {!showConnection ? (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl w-full"
+      >
+      {currentScreen === 0 ? (
+        /* Screen 1: Module Preview */
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
           <div className="flex justify-center mb-6">
             <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-4 rounded-full">
@@ -44,77 +41,100 @@ export default function GenAIBridge({ onComplete }: Props) {
           </div>
           
           <h1 className="text-3xl font-bold text-white mb-4">
-            From Generative AI to Large Language Models
+            Understanding Large Language Models
           </h1>
-          
-          <p className="text-xl text-blue-200 mb-8 max-w-2xl mx-auto">
-            You've learned how Generative AI creates new content. Now, let's explore the specific 
-            type of AI that powers tools like ChatGPT and Claude: Large Language Models.
+
+          <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
+            Ever wondered what's really happening when you chat with ChatGPT or Claude?
+            It's time to pull back the curtain and see how the magic trick actually works.
           </p>
 
-          <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-white mb-3">Remember from Generative AI:</h3>
-            <ul className="text-left text-blue-200 space-y-2 max-w-xl mx-auto">
-              <li>• AI can generate text, images, and more</li>
-              <li>• It learns patterns from existing data</li>
-              <li>• It creates new content based on those patterns</li>
+          <div className="bg-blue-900/40 border border-blue-400 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold text-white mb-3">In this module, you'll discover:</h3>
+            <ul className="text-left text-white space-y-2 max-w-xl mx-auto">
+              <li>• What an LLM really is (and why "large" is an understatement)</li>
+              <li>• The one simple function that powers everything these chatbots do</li>
+              <li>• How a mind-boggling amount of data becomes useful predictions</li>
+              <li>• Why understanding how it works puts YOU in the driver's seat</li>
             </ul>
           </div>
 
           <button
-            onClick={() => setShowConnection(true)}
+            onClick={() => setCurrentScreen(1)}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-lg font-medium inline-flex items-center gap-2"
           >
-            See the Connection <ArrowRight className="w-5 h-5" />
+            Let's Get Started <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       ) : (
+        /* Screen 2: Bridge from Gen AI to LLMs */
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8">
           <h2 className="text-2xl font-bold text-white mb-6 text-center">
-            The Connection: LLMs are Text-Focused Generative AI
+            From Generative AI to LLMs
           </h2>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-purple-900/30 border border-purple-400/30 rounded-lg p-6">
-              <Sparkles className="w-8 h-8 text-purple-400 mb-3" />
-              <h3 className="text-xl font-semibold text-white mb-2">Generative AI</h3>
-              <p className="text-purple-200">
-                The broad category of AI that creates new content across different formats
-              </p>
-            </div>
+          <div className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-400 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-purple-400" />
+              What You've Learned So Far:
+            </h3>
+            <ul className="text-white space-y-2 ml-7">
+              <li>• Generative AI can create new content—text, images, music, and more</li>
+              <li>• It learns patterns from massive amounts of existing data</li>
+              <li>• It uses those patterns to generate brand-new content</li>
+            </ul>
+          </div>
 
-            <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6">
-              <Brain className="w-8 h-8 text-blue-400 mb-3" />
-              <h3 className="text-xl font-semibold text-white mb-2">Large Language Models</h3>
-              <p className="text-blue-200">
-                Specialized generative AI focused on understanding and creating text
-              </p>
+          <div className="flex items-center justify-center mb-8">
+            <div className="flex items-center gap-4">
+              <div className="bg-purple-600/40 border-2 border-purple-400 rounded-lg px-6 py-3">
+                <p className="text-white font-semibold">Generative AI</p>
+                <p className="text-white text-sm">Broad category</p>
+              </div>
+              <ArrowRight className="w-8 h-8 text-yellow-400" />
+              <div className="bg-blue-600/40 border-2 border-blue-400 rounded-lg px-6 py-3">
+                <p className="text-white font-semibold">Large Language Models</p>
+                <p className="text-white text-sm">Specialized type</p>
+              </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-purple-800/20 to-blue-800/20 rounded-lg p-6 mb-8">
+          <div className="bg-blue-900/40 border border-blue-400 rounded-lg p-6 mb-8">
+            <div className="flex items-start gap-3">
+              <Brain className="w-8 h-8 text-blue-400 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-3">The Connection</h3>
+                <p className="text-white leading-relaxed mb-3">
+                  <strong className="text-white">Large Language Models (LLMs)</strong> are a specific type of Generative AI
+                  that specializes in one thing: <strong className="text-yellow-300">language</strong>.
+                </p>
+                <p className="text-white leading-relaxed">
+                  While some Generative AI creates images (like DALL-E) or music, LLMs like ChatGPT and Claude
+                  are laser-focused on understanding and generating <strong className="text-yellow-300">text</strong>.
+                  They're the tools that can write essays, answer questions, and hold conversations.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-400 rounded-lg p-6 mb-6">
             <Lightbulb className="w-6 h-6 text-yellow-400 inline mr-2" />
-            <span className="text-white font-medium">Key Insight:</span>
-            <p className="text-gray-200 mt-2">
-              While DALL-E generates images and other AI generates music, LLMs like ChatGPT 
-              specialize in language—reading, understanding, and writing text with remarkable fluency.
-            </p>
-          </div>
-
-          <div className="bg-green-900/30 border border-green-400/30 rounded-lg p-6 mb-6">
-            <p className="text-green-200 text-center text-lg">
-              🎯 <strong>Ready to explore?</strong> Let's see how these language models actually work!
+            <span className="text-white font-semibold">Key Insight:</span>
+            <p className="text-white mt-2 leading-relaxed">
+              Think of it like this: If Generative AI is the whole toolkit, then LLMs are the super-powered
+              <strong className="text-yellow-300"> word-processing tools</strong> in that kit.
             </p>
           </div>
 
           <button
             onClick={onComplete}
-            className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-3 rounded-lg font-medium"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium inline-flex items-center justify-center gap-2"
           >
-            Start Learning About LLMs
+            Start Learning <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       )}
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }

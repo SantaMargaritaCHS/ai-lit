@@ -131,11 +131,11 @@ export default function DataVolumeGuess({ onComplete }: Props) {
             How Much Data Trains an LLM?
           </h1>
           
-          <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6 mb-8">
-            <p className="text-blue-200 text-center">
+          <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-6 mb-8">
+            <p className="text-white text-center">
               LLMs are trained on massive amounts of text. Can you guess how much data was used?
             </p>
-            <p className="text-sm text-gray-400 text-center mt-2">
+            <p className="text-sm text-white/70 text-center mt-2">
               Think in terms of books, web pages, and words that we can relate to!
             </p>
           </div>
@@ -145,7 +145,7 @@ export default function DataVolumeGuess({ onComplete }: Props) {
               <h2 className="text-2xl font-bold text-white mb-2">
                 {models[currentModel].name}
               </h2>
-              <p className="text-gray-300">
+              <p className="text-white">
                 Parameters: {models[currentModel].parameters}
               </p>
             </div>
@@ -153,11 +153,11 @@ export default function DataVolumeGuess({ onComplete }: Props) {
             <div className="flex items-center justify-center gap-4 mb-6">
               <Database className="w-12 h-12 text-blue-400" />
               <div className="text-4xl font-bold text-white">?</div>
-              <span className="text-xl text-gray-300">{models[currentModel].unit}</span>
+              <span className="text-xl text-white">{models[currentModel].unit}</span>
             </div>
 
-            <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-4 mb-6">
-              <p className="text-blue-200 text-center">
+            <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-4 mb-6">
+              <p className="text-white text-center">
                 {currentModel === 0 && "Think about how many books would contain all human knowledge..."}
                 {currentModel === 1 && "Consider how many web pages exist on the entire internet..."}
                 {currentModel === 2 && "Imagine all the words ever written in human history..."}
@@ -227,13 +227,13 @@ export default function DataVolumeGuess({ onComplete }: Props) {
 
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <p className="text-gray-400 text-sm">Your guess</p>
+                      <p className="text-white/70 text-sm">Your guess</p>
                       <p className="text-2xl font-bold text-white">
                         {model.userGuess || 'N/A'} {model.userGuess ? model.unit : ''}
                       </p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-sm">Actual amount</p>
+                      <p className="text-white/70 text-sm">Actual amount</p>
                       <p className={`text-2xl font-bold bg-gradient-to-r ${model.color} bg-clip-text text-transparent`}>
                         {model.actualAmount} {model.unit}
                       </p>
@@ -241,7 +241,7 @@ export default function DataVolumeGuess({ onComplete }: Props) {
                   </div>
 
                   <div className="bg-gradient-to-r from-gray-700/50 to-gray-600/50 rounded-lg p-4">
-                    <p className="text-blue-200 text-sm">{model.equivalent}</p>
+                    <p className="text-white text-sm">{model.equivalent}</p>
                   </div>
                 </motion.div>
               );
@@ -292,13 +292,13 @@ export default function DataVolumeGuess({ onComplete }: Props) {
                     <h3 className="text-lg font-semibold text-white">{source.label}</h3>
                   </div>
                   
-                  <p className="text-gray-300 text-sm mb-2">{source.examples}</p>
-                  
+                  <p className="text-white text-sm mb-2">{source.examples}</p>
+
                   <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg p-3 mb-3">
-                    <p className="text-purple-200 font-bold">{source.actualAmount}</p>
-                    <p className="text-purple-300 text-xs mt-1">{source.detail}</p>
+                    <p className="text-white font-bold">{source.actualAmount}</p>
+                    <p className="text-white/80 text-xs mt-1">{source.detail}</p>
                   </div>
-                  
+
                   <div className="bg-gray-700 rounded-full h-3 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
@@ -307,16 +307,16 @@ export default function DataVolumeGuess({ onComplete }: Props) {
                       className="bg-gradient-to-r from-blue-500 to-purple-500 h-full"
                     />
                   </div>
-                  <p className="text-right text-sm text-gray-400 mt-1">{source.percentage}%</p>
+                  <p className="text-right text-sm text-white/70 mt-1">{source.percentage}%</p>
                 </motion.div>
               ))}
             </AnimatePresence>
           </div>
 
           <div className="space-y-4 mb-8">
-            <div className="bg-yellow-900/30 border border-yellow-400/30 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-yellow-200 mb-2">⚡ Fun Facts:</h3>
-              <ul className="space-y-2 text-yellow-100">
+            <div className="bg-yellow-900/30 border border-yellow-400 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">⚡ Fun Facts:</h3>
+              <ul className="space-y-2 text-white">
                 <li>• The training data includes text in over 100 languages</li>
                 <li>• It contains millions of cooking recipes from around the world</li>
                 <li>• Scientific papers from the last 100+ years are included</li>
@@ -324,10 +324,10 @@ export default function DataVolumeGuess({ onComplete }: Props) {
               </ul>
             </div>
 
-            <div className="bg-red-900/30 border border-red-400/30 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-red-200 mb-2">⚠️ Important Note:</h3>
-              <p className="text-red-100">
-                Not all data is perfect! Training data can include mistakes, biases, and outdated 
+            <div className="bg-red-900/30 border border-red-400 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">⚠️ Important Note:</h3>
+              <p className="text-white">
+                Not all data is perfect! Training data can include mistakes, biases, and outdated
                 information. That's why we always need to verify AI outputs!
               </p>
             </div>

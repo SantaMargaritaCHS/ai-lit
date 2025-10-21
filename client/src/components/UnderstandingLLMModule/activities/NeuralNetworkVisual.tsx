@@ -49,14 +49,14 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
           <h1 className="text-3xl font-bold text-white mb-4">
             Neural Networks: The Recipe for Language
           </h1>
-          <p className="text-xl text-blue-200 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-white mb-8 max-w-3xl mx-auto">
             Neural networks sound complicated, but they're really just like following 
             a recipe. Let's see how they "cook up" the next word in a sentence!
           </p>
 
           <div className="bg-purple-900/30 rounded-lg p-6 mb-8 max-w-2xl mx-auto">
             <ChefHat className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-            <p className="text-purple-200">
+            <p className="text-white">
               Just like a chef combines ingredients to make a meal, neural networks 
               combine word patterns to predict what comes next.
             </p>
@@ -94,7 +94,7 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
               >
                 <div className="text-4xl mb-3">{step.icon}</div>
                 <h3 className="text-white font-semibold mb-2">{step.title}</h3>
-                <p className="text-gray-300 text-sm mb-2">{step.description}</p>
+                <p className="text-white text-sm mb-2">{step.description}</p>
                 <p className="text-blue-300 text-xs italic">{step.detail}</p>
               </motion.div>
             ))}
@@ -106,7 +106,7 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
             </h3>
             
             <div className="text-center mb-6">
-              <p className="text-lg text-blue-200 mb-4">
+              <p className="text-lg text-white mb-4">
                 Input: "The cat __?"
               </p>
               
@@ -235,7 +235,7 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
                 <ChefHat className="w-6 h-6" />
                 It's Just a Recipe!
               </h3>
-              <p className="text-gray-200">
+              <p className="text-white">
                 Neural networks follow a "recipe" calculated from millions of examples.
                 They don't think—they just match which "ingredients" (words) appeared together in training data.
               </p>
@@ -251,7 +251,7 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
                 <Filter className="w-6 h-6" />
                 Layers = Steps in the Recipe
               </h3>
-              <p className="text-gray-200">
+              <p className="text-white">
                 Each layer is like a step in cooking: prep the ingredients, combine them, 
                 cook them, and serve. More layers = more complex "recipes" for language!
               </p>
@@ -267,16 +267,16 @@ export default function NeuralNetworkVisual({ onComplete }: Props) {
                 <Users className="w-6 h-6" />
                 Practice Makes Perfect
               </h3>
-              <p className="text-gray-200">
+              <p className="text-white">
                 Just like a chef gets better with practice, neural networks improve by 
                 "tasting" billions of sentences during training. That's why they need so much data!
               </p>
             </motion.div>
           </div>
 
-          <div className="bg-blue-900/20 border border-blue-400/30 rounded-lg p-6 mb-6 text-center">
+          <div className="bg-blue-900/40 border border-blue-400 rounded-lg p-6 mb-6 text-center">
             <Lightbulb className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-            <p className="text-blue-200 text-lg">
+            <p className="text-white text-lg">
               <strong>Remember:</strong> Neural networks are pattern-matching systems that have
               calculated statistical probabilities from millions of word combinations. They're powerful tools,
               but they don't actually understand what they're processing!

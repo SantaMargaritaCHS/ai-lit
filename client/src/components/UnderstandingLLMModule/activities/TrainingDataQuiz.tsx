@@ -153,9 +153,9 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6 mb-6"
+            className="bg-blue-900/30 border border-blue-400 rounded-lg p-6 mb-6"
           >
-            <h2 className="text-xl font-semibold text-blue-200 mb-4 text-center">
+            <h2 className="text-xl font-semibold text-white mb-4 text-center">
               What are "Parameters"?
             </h2>
             <div className="text-center mb-4">
@@ -163,7 +163,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
                 <div className="bg-purple-600/30 p-3 rounded-lg">
                   <Brain className="w-8 h-8 text-purple-300" />
                 </div>
-                <ArrowRight className="w-6 h-6 text-gray-400" />
+                <ArrowRight className="w-6 h-6 text-white/70" />
                 <div className="bg-blue-600/30 p-3 rounded-lg">
                   <Database className="w-8 h-8 text-blue-300" />
                 </div>
@@ -174,11 +174,11 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
             </div>
             
             <div className="bg-gray-800/50 rounded-lg p-4">
-              <p className="text-gray-300 text-center">
+              <p className="text-white text-center">
                 Just like humans have billions of neurons that help us think and learn,
                 AI models have billions (or trillions!) of parameters that help them understand and generate text.
               </p>
-              <p className="text-blue-200 text-center mt-3 font-semibold">
+              <p className="text-white text-center mt-3 font-semibold">
                 💡 More parameters = More complex understanding
               </p>
             </div>
@@ -190,7 +190,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
             transition={{ delay: 1.5 }}
             className="text-center"
           >
-            <p className="text-gray-400 text-sm">Auto-advancing in a few seconds...</p>
+            <p className="text-white/70 text-sm">Auto-advancing in a few seconds...</p>
           </motion.div>
         </div>
       )}
@@ -217,7 +217,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white">{model.name}</h3>
-                    <p className="text-gray-400">{model.year}</p>
+                    <p className="text-white/70">{model.year}</p>
                   </div>
                   <div className="ml-auto">
                     <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -228,22 +228,22 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
 
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <p className="text-gray-400 text-sm">Developer</p>
+                    <p className="text-white/70 text-sm">Developer</p>
                     <p className="text-white font-semibold">{model.developer}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm">Parameters</p>
+                    <p className="text-white/70 text-sm">Parameters</p>
                     <p className="text-white font-semibold">{model.parameters}</p>
                   </div>
                 </div>
                 
                 <div className="mb-4">
-                  <p className="text-gray-400 text-sm mb-2">Key Capabilities</p>
-                  <p className="text-gray-300 text-sm">{model.capabilities}</p>
+                  <p className="text-white/70 text-sm mb-2">Key Capabilities</p>
+                  <p className="text-white text-sm">{model.capabilities}</p>
                 </div>
                 
-                <div className="bg-blue-900/20 border border-blue-400/20 rounded-lg p-3">
-                  <p className="text-blue-200 text-sm">{model.context}</p>
+                <div className="bg-blue-900/40 border border-blue-400/20 rounded-lg p-3">
+                  <p className="text-white text-sm">{model.context}</p>
                 </div>
               </motion.div>
             ))}
@@ -277,8 +277,8 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
             Training Data Guessing Game
           </h1>
           
-          <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6 mb-8">
-            <p className="text-blue-200 text-center">
+          <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-6 mb-8">
+            <p className="text-white text-center">
               Each model required massive amounts of text data for training. 
               Can you guess how much?
             </p>
@@ -289,7 +289,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
               <h2 className="text-2xl font-bold text-white mb-2">
                 {models[currentModel].name} ({models[currentModel].year})
               </h2>
-              <p className="text-gray-300">
+              <p className="text-white">
                 Parameters: {models[currentModel].parameters}
               </p>
             </div>
@@ -297,17 +297,17 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
             <div className="flex items-center justify-center gap-4 mb-6">
               <Database className="w-12 h-12 text-blue-400" />
               <div className="text-4xl font-bold text-white">?</div>
-              <span className="text-xl text-gray-300">{models[currentModel].unit}</span>
+              <span className="text-xl text-white">{models[currentModel].unit}</span>
             </div>
 
-            <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-4 mb-4">
-              <p className="text-blue-200 text-center font-medium">
+            <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-4 mb-4">
+              <p className="text-white text-center font-medium">
                 💡 {getContextualClue(currentModel)}
               </p>
             </div>
 
             <div className="bg-gray-700/50 rounded-lg p-3 mb-6">
-              <p className="text-gray-300 text-center text-sm">
+              <p className="text-white text-center text-sm">
                 {getGuessRange(currentModel)}
               </p>
             </div>
@@ -368,7 +368,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <h3 className="text-xl font-bold text-white">{model.name}</h3>
-                      <span className="text-sm text-gray-400">({model.year})</span>
+                      <span className="text-sm text-white/70">({model.year})</span>
                     </div>
                     {quality && (
                       <span className={`text-sm ${quality.color} flex items-center gap-2`}>
@@ -380,25 +380,25 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
 
                   <div className="grid md:grid-cols-3 gap-4 mb-4">
                     <div>
-                      <p className="text-gray-400 text-sm">Your guess</p>
+                      <p className="text-white/70 text-sm">Your guess</p>
                       <p className="text-xl font-bold text-white">
                         {model.userGuess ? `${model.userGuess} ${model.unit}` : 'N/A'}
                       </p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-sm">Actual amount</p>
+                      <p className="text-white/70 text-sm">Actual amount</p>
                       <p className={`text-xl font-bold bg-gradient-to-r ${model.color} bg-clip-text text-transparent`}>
                         {model.actualAmount} {model.unit}
                       </p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-sm">That's equivalent to</p>
-                      <p className="text-blue-200 text-sm">{model.equivalent}</p>
+                      <p className="text-white/70 text-sm">That's equivalent to</p>
+                      <p className="text-white text-sm">{model.equivalent}</p>
                     </div>
                   </div>
 
                   <div className="bg-gradient-to-r from-gray-700/50 to-gray-600/50 rounded-lg p-4">
-                    <p className="text-gray-300 text-sm">
+                    <p className="text-white text-sm">
                       <strong>Capabilities:</strong> {model.capabilities}
                     </p>
                   </div>
@@ -418,7 +418,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
               <p className="text-white text-lg mb-2">
                 <strong>Exponential Growth Pattern</strong>
               </p>
-              <p className="text-purple-200">
+              <p className="text-white">
                 Each new generation of LLMs requires exponentially more data to achieve 
                 better performance. This massive scale is what enables their remarkable capabilities!
               </p>
@@ -450,7 +450,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
             <h2 className="text-3xl font-bold text-white mb-4">
               GPT-5: Coming Soon?
             </h2>
-            <p className="text-gray-300">
+            <p className="text-white">
               What do you think the next generation will require?
             </p>
           </div>
@@ -461,7 +461,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
             </h3>
             
             <div className="mb-6">
-              <label className="block text-gray-300 mb-4 text-center">
+              <label className="block text-white mb-4 text-center">
                 How many trillion words might GPT-5 need for training?
               </label>
               
@@ -474,7 +474,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
                   onChange={(e) => setFutureGuess(parseInt(e.target.value))}
                   className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
                 />
-                <div className="flex justify-between text-sm text-gray-400 mt-2">
+                <div className="flex justify-between text-sm text-white/70 mt-2">
                   <span>10T</span>
                   <span className="text-xl font-bold text-white">{futureGuess}T words</span>
                   <span>100T</span>
@@ -482,8 +482,8 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
               </div>
             </div>
 
-            <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-4">
-              <p className="text-blue-200 text-center">
+            <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-4">
+              <p className="text-white text-center">
                 {futureGuess <= 20 && "Conservative estimate - similar to current models"}
                 {futureGuess > 20 && futureGuess <= 50 && "Moderate growth - following current trends"}
                 {futureGuess > 50 && "Ambitious prediction - major leap in data requirements"}
@@ -492,10 +492,10 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
           </div>
 
           <div className="bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-green-200 mb-4 text-center">
+            <h3 className="text-lg font-semibold text-white mb-4 text-center">
               💭 Classroom Connection
             </h3>
-            <p className="text-green-100 text-center">
+            <p className="text-white text-center">
               Understanding this massive scale helps us appreciate why LLMs are so powerful - 
               and why we still need human judgment to guide and verify their outputs!
             </p>
@@ -519,7 +519,7 @@ export default function TrainingDataQuiz({ onComplete }: Props) {
             transition={{ delay: 1 }}
             className="text-center mt-4"
           >
-            <p className="text-gray-400 text-sm">Auto-advancing in 2 seconds...</p>
+            <p className="text-white/70 text-sm">Auto-advancing in 2 seconds...</p>
           </motion.div>
         </div>
       )}

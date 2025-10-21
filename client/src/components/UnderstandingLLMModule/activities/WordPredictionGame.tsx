@@ -81,7 +81,7 @@ export default function WordPredictionGame({ onComplete }: Props) {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="mb-4">
-              <p className="text-blue-200 mb-2">
+              <p className="text-white mb-2">
                 Question {currentScenario + 1} of {PREDICTION_SCENARIOS.length}
               </p>
               <div className="w-full bg-gray-700 rounded-full h-2 mb-6">
@@ -93,7 +93,7 @@ export default function WordPredictionGame({ onComplete }: Props) {
             </div>
 
             <div className="mb-8">
-              <p className="text-lg text-blue-200 mb-6">
+              <p className="text-lg text-white mb-6">
                 What word would an AI most likely predict to complete this sentence?
               </p>
               <div className="bg-gray-800 p-6 rounded-lg mb-6">
@@ -117,10 +117,10 @@ export default function WordPredictionGame({ onComplete }: Props) {
                       className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                         showExplanation && isSelected
                           ? isCorrect
-                            ? 'border-green-400 bg-green-500/20 text-green-300'
-                            : 'border-red-400 bg-red-500/20 text-red-300'
+                            ? 'border-green-400 bg-green-900/40 text-green-300'
+                            : 'border-red-400 bg-red-900/40 text-red-300'
                           : showExplanation && isCorrect
-                          ? 'border-green-400 bg-green-500/20 text-green-300'
+                          ? 'border-green-400 bg-green-900/40 text-green-300'
                           : 'border-gray-600 hover:border-purple-400 bg-gray-800 text-white'
                       } ${showExplanation ? 'cursor-default' : 'cursor-pointer'}`}
                     >
@@ -143,13 +143,13 @@ export default function WordPredictionGame({ onComplete }: Props) {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-blue-500/20 border border-blue-400/50 rounded-lg p-6"
+                className="bg-blue-900/40 border border-blue-400 rounded-lg p-6"
               >
                 <div className="flex items-start gap-3">
                   <Lightbulb className="w-6 h-6 text-yellow-400 mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-white mb-2">AI Explanation</h4>
-                    <p className="text-blue-200">{scenario.explanation}</p>
+                    <p className="text-white">{scenario.explanation}</p>
                   </div>
                 </div>
               </motion.div>

@@ -194,7 +194,7 @@ export default function NLPDefinition({ onComplete }: Props) {
               <p className="text-xl text-white leading-relaxed">
                 🗣️ <strong>Natural Language Processing (NLP)</strong> is how computers learn to understand and work with human language.
               </p>
-              <p className="text-lg text-blue-200 mt-4">
+              <p className="text-lg text-white mt-4">
                 Think of it as teaching computers to "read" and "understand" text the way humans do - but using math and patterns instead of actual comprehension.
               </p>
             </div>
@@ -238,11 +238,11 @@ export default function NLPDefinition({ onComplete }: Props) {
                   <h3 className="text-lg font-semibold text-white">Without NLP</h3>
                 </div>
                 <div className="bg-gray-900/50 rounded p-4 mb-4">
-                  <code className="text-sm text-gray-300 whitespace-pre-wrap">
+                  <code className="text-sm text-white whitespace-pre-wrap">
                     {examples[currentExample].withoutNLP.code}
                   </code>
                 </div>
-                <p className="text-red-200">{examples[currentExample].withoutNLP.result}</p>
+                <p className="text-white">{examples[currentExample].withoutNLP.result}</p>
               </div>
 
               {/* With NLP */}
@@ -252,11 +252,11 @@ export default function NLPDefinition({ onComplete }: Props) {
                   <h3 className="text-lg font-semibold text-white">With NLP</h3>
                 </div>
                 <div className="bg-gray-900/50 rounded p-4 mb-4">
-                  <code className="text-sm text-gray-300 whitespace-pre-wrap">
+                  <code className="text-sm text-white whitespace-pre-wrap">
                     {examples[currentExample].withNLP.code}
                   </code>
                 </div>
-                <p className="text-green-200">{examples[currentExample].withNLP.result}</p>
+                <p className="text-white">{examples[currentExample].withNLP.result}</p>
               </div>
             </motion.div>
 
@@ -283,7 +283,7 @@ export default function NLPDefinition({ onComplete }: Props) {
                 >
                   {React.createElement(app.icon, { className: "w-8 h-8 text-blue-400 mx-auto mb-3" })}
                   <h3 className="font-semibold text-white mb-2">{app.title}</h3>
-                  <p className="text-sm text-blue-200">{app.example}</p>
+                  <p className="text-sm text-white">{app.example}</p>
                 </motion.div>
               ))}
             </div>
@@ -359,14 +359,14 @@ export default function NLPDefinition({ onComplete }: Props) {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                     <h3 className="font-semibold text-white mb-3">Without NLP:</h3>
-                    <p className="text-red-200">
+                    <p className="text-white">
                       {nlpAnalysis.withoutNLP.characters} characters, {nlpAnalysis.withoutNLP.words} words
                     </p>
                   </div>
 
                   <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                     <h3 className="font-semibold text-white mb-3">With NLP (Gemini AI):</h3>
-                    <div className="space-y-2 text-green-200">
+                    <div className="space-y-2 text-white">
                       <p><strong>Topic:</strong> {nlpAnalysis.withNLP.topic}</p>
                       <p><strong>Sentiment:</strong> {nlpAnalysis.withNLP.sentiment}</p>
                       <p><strong>Entities:</strong> {nlpAnalysis.withNLP.entities.join(', ')}</p>

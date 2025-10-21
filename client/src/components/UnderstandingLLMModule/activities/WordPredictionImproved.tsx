@@ -135,13 +135,13 @@ export default function WordPredictionImproved({ onComplete }: Props) {
           <h1 className="text-3xl font-bold text-white mb-4">
             Think Like an LLM: Word Prediction
           </h1>
-          <p className="text-xl text-blue-200 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
             LLMs predict the next word by calculating probabilities. See how confident 
             the AI is about different word choices!
           </p>
-          <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6 mb-8 max-w-2xl mx-auto">
+          <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-6 mb-8 max-w-2xl mx-auto">
             <Info className="w-6 h-6 text-blue-400 inline mr-2" />
-            <p className="text-blue-200 text-left">
+            <p className="text-white text-left">
               The percentages show how confident the AI is. Higher percentages mean 
               the AI saw this word pattern more often in its training data.
             </p>
@@ -180,7 +180,7 @@ export default function WordPredictionImproved({ onComplete }: Props) {
               "{examples[currentExample].prompt}
               <span className="text-blue-400 font-bold animate-pulse"> _____ </span>"
             </p>
-            <p className="text-gray-400 text-sm">Click the word the AI would most likely predict</p>
+            <p className="text-white/70 text-sm">Click the word the AI would most likely predict</p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 mb-8">
@@ -244,8 +244,8 @@ export default function WordPredictionImproved({ onComplete }: Props) {
             >
               <div className={`rounded-lg p-4 ${
                 selectedWord === examples[currentExample].correctAnswer
-                  ? 'bg-green-900/30 border border-green-400/30'
-                  : 'bg-yellow-900/30 border border-yellow-400/30'
+                  ? 'bg-green-900/30 border border-green-400'
+                  : 'bg-yellow-900/30 border border-yellow-400'
               }`}>
                 <p className="text-white">
                   {selectedWord === examples[currentExample].correctAnswer
@@ -254,8 +254,8 @@ export default function WordPredictionImproved({ onComplete }: Props) {
                 </p>
               </div>
 
-              <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-4">
-                <p className="text-blue-200">
+              <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-4">
+                <p className="text-white">
                   <strong>Why these probabilities?</strong> {examples[currentExample].explanation}
                 </p>
               </div>
@@ -284,7 +284,7 @@ export default function WordPredictionImproved({ onComplete }: Props) {
           <div className="space-y-6 mb-8">
             <div className="bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-lg p-6">
               <h3 className="text-xl font-semibold text-white mb-3">🎯 High Confidence (70-100%)</h3>
-              <p className="text-gray-200">
+              <p className="text-white">
                 When the AI has seen a phrase thousands of times in the same way, like 
                 "The capital of France is Paris", it assigns very high probability to the expected word.
               </p>
@@ -292,7 +292,7 @@ export default function WordPredictionImproved({ onComplete }: Props) {
 
             <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 rounded-lg p-6">
               <h3 className="text-xl font-semibold text-white mb-3">🤔 Medium Confidence (30-70%)</h3>
-              <p className="text-gray-200">
+              <p className="text-white">
                 When multiple words could work, the AI spreads probability across options. 
                 This happens with creative or open-ended prompts.
               </p>
@@ -300,40 +300,40 @@ export default function WordPredictionImproved({ onComplete }: Props) {
 
             <div className="bg-gradient-to-r from-red-900/30 to-purple-900/30 rounded-lg p-6">
               <h3 className="text-xl font-semibold text-white mb-3">❓ Low Confidence (0-30%)</h3>
-              <p className="text-gray-200">
+              <p className="text-white">
                 Words that could grammatically fit but rarely appear in this context get
                 low probabilities. The AI assigns them low probability because these patterns rarely appeared in training data.
               </p>
             </div>
           </div>
 
-          <div className="bg-blue-900/30 border border-blue-400/30 rounded-lg p-6 mb-6">
-            <p className="text-blue-200 text-center text-lg">
+          <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-6 mb-6">
+            <p className="text-white text-center text-lg">
               💡 <strong>Key Insight:</strong> LLMs don't "understand" - they predict based on patterns. 
               High confidence just means "I've seen this pattern a lot!"
             </p>
           </div>
 
           {/* Add transition message */}
-          <div className="bg-yellow-900/30 border border-yellow-400/30 rounded-lg p-6 mb-6">
-            <h4 className="text-yellow-200 font-semibold mb-3">🔍 What You've Learned:</h4>
+          <div className="bg-yellow-900/30 border border-yellow-400 rounded-lg p-6 mb-6">
+            <h4 className="text-white font-semibold mb-3">🔍 What You've Learned:</h4>
             <div className="space-y-2 mb-4">
               <div className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <p className="text-gray-200">AI predicts words based on patterns in training data</p>
+                <p className="text-white">AI predicts words based on patterns in training data</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <p className="text-gray-200">Common word combinations have higher probabilities</p>
+                <p className="text-white">Common word combinations have higher probabilities</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <p className="text-gray-200">Context heavily influences AI predictions</p>
+                <p className="text-white">Context heavily influences AI predictions</p>
               </div>
             </div>
             
             <div className="border-t border-yellow-400/20 pt-4">
-              <p className="text-yellow-200">
+              <p className="text-white">
                 <strong>Up Next:</strong> Now let's reflect on how this pattern recognition works and what it means for how we use AI in education and daily life.
               </p>
             </div>

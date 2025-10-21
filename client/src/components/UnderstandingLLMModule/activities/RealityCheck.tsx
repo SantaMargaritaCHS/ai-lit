@@ -85,7 +85,7 @@ export default function RealityCheck({ onComplete, segment = 'core-concepts' }: 
           <h2 className="text-2xl font-bold text-white mb-2">
             🔍 Reality Check
           </h2>
-          <h3 className="text-xl text-orange-200">
+          <h3 className="text-xl text-white">
             {title}
           </h3>
         </div>
@@ -116,14 +116,14 @@ export default function RealityCheck({ onComplete, segment = 'core-concepts' }: 
 
         {/* Summary */}
         <div className="bg-orange-900/30 border border-orange-500/30 rounded-lg p-4 mb-6">
-          <p className="text-orange-100 font-medium text-center">
+          <p className="text-white font-medium text-center">
             💡 {summary}
           </p>
         </div>
 
         {/* Educational Note */}
-        <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-6">
-          <p className="text-blue-200 text-sm">
+        <div className="bg-blue-900/40 border border-blue-500/30 rounded-lg p-4 mb-6">
+          <p className="text-white text-sm">
             <strong>Why This Matters:</strong> Using words like "understand," "think," or "know" for AI systems can make us forget they're just sophisticated calculators. This leads to over-trusting their outputs or feeling like they're intelligent beings. They're powerful tools—but they're tools, not thinking entities.
           </p>
         </div>

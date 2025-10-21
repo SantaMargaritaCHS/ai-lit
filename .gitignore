@@ -43,3 +43,6 @@ coverage
 # Misc
 *.log
 .cache
+
+# Temporary review files - Can be deleted after incorporating feedback
+temp-reviews/

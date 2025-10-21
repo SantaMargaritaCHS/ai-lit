@@ -97,7 +97,7 @@ export default function ExitTicket({ onComplete }: Props) {
               className="space-y-4"
             >
               <div className={`${darkTheme.cardHighlight} p-4`}>
-                <p className={`text-blue-200 text-sm flex items-center gap-2`}>
+                <p className={`text-white text-sm flex items-center gap-2`}>
                   <Sparkles className="w-4 h-4" />
                   {exitQuestions[currentQuestion].focusArea}
                 </p>
@@ -129,7 +129,7 @@ export default function ExitTicket({ onComplete }: Props) {
                 className={`w-full py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2
                   ${canProceed 
                     ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-600 text-white/70 cursor-not-allowed'
                   }`}
               >
                 {isGenerating ? (

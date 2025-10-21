@@ -140,7 +140,7 @@ export default function ReflectionQuiz({ onComplete }: Props) {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-white">Knowledge Check</h2>
-            <span className="text-blue-200">
+            <span className="text-white">
               Question {currentQuestion + 1} of {questions.length}
             </span>
           </div>
@@ -200,15 +200,15 @@ export default function ReflectionQuiz({ onComplete }: Props) {
           >
             <div className={`rounded-lg p-4 ${
               selectedAnswer === questions[currentQuestion].correct
-                ? 'bg-green-900/30 border border-green-400/30'
-                : 'bg-blue-900/30 border border-blue-400/30'
+                ? 'bg-green-900/30 border border-green-400'
+                : 'bg-blue-900/30 border border-blue-400'
             }`}>
               <p className="text-white mb-2">
                 {selectedAnswer === questions[currentQuestion].correct
                   ? '✅ Correct!'
                   : '💡 Not quite right, but that\'s okay!'}
               </p>
-              <p className="text-gray-200">{questions[currentQuestion].explanation}</p>
+              <p className="text-white">{questions[currentQuestion].explanation}</p>
             </div>
           </motion.div>
         )}
@@ -219,7 +219,7 @@ export default function ReflectionQuiz({ onComplete }: Props) {
           className={`w-full py-3 rounded-lg font-medium transition-all ${
             showFeedback
               ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-700 text-white/70 cursor-not-allowed'
           }`}
         >
           {currentQuestion < questions.length - 1 ? 'Next Question' : 'Complete Quiz'}
@@ -227,7 +227,7 @@ export default function ReflectionQuiz({ onComplete }: Props) {
 
         {currentQuestion === questions.length - 1 && showFeedback && (
           <div className="mt-4 text-center">
-            <p className="text-blue-200">
+            <p className="text-white">
               Your score: {score} out of {questions.length}
             </p>
           </div>
