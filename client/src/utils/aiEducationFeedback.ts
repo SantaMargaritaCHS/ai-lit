@@ -146,6 +146,30 @@ Evaluate now:`;
 export const getContextualFallback = (response: string, question: string): string => {
   const lowerResponse = response.toLowerCase();
 
+  // Detect obvious complaints/negativity without AI content
+  const hasComplaintWords = (
+    lowerResponse.includes("waste") ||
+    lowerResponse.includes("stupid") ||
+    lowerResponse.includes("boring") ||
+    lowerResponse.includes("hate this") ||
+    (lowerResponse.includes("don't") && lowerResponse.includes("enjoy")) ||
+    (lowerResponse.includes("didn't") && lowerResponse.includes("enjoy"))
+  );
+  const hasAIContent = (
+    lowerResponse.includes("llm") ||
+    lowerResponse.includes("ai") ||
+    lowerResponse.includes("token") ||
+    lowerResponse.includes("predict") ||
+    lowerResponse.includes("pattern") ||
+    lowerResponse.includes("train") ||
+    lowerResponse.includes("model")
+  );
+
+  // Reject complaints without AI content
+  if (hasComplaintWords && !hasAIContent) {
+    return "Your response does not address the question about how LLMs work. Please re-read the question and provide a thoughtful answer about what you learned.";
+  }
+
   // Detect key concepts mentioned in their response
   const mentionedPrediction = lowerResponse.includes('predict') || lowerResponse.includes('pattern') || lowerResponse.includes('guess');
   const mentionedData = lowerResponse.includes('data') || lowerResponse.includes('train') || lowerResponse.includes('learn');
