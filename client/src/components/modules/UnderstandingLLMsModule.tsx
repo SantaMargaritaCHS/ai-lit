@@ -20,11 +20,12 @@ import BeatThePredictorGame from '@/components/UnderstandingLLMModule/activities
 // Import new components
 import KnowledgeCheckQuiz from '@/components/UnderstandingLLMModule/activities/KnowledgeCheckQuiz';
 import MeetTheLLMs from '@/components/UnderstandingLLMModule/activities/MeetTheLLMs';
-import GuessDataSize from '@/components/UnderstandingLLMModule/activities/GuessDataSize';
+import ReadAThon from '@/components/UnderstandingLLMModule/activities/ReadAThon';
 import WhyPredictionIsntEnough from '@/components/UnderstandingLLMModule/activities/WhyPredictionIsntEnough';
 import NeuralNetworkKnowledgeCheck from '@/components/UnderstandingLLMModule/activities/NeuralNetworkKnowledgeCheck';
 import WeavingItTogether from '@/components/UnderstandingLLMModule/activities/WeavingItTogether';
-import TrainingLoopStory from '@/components/UnderstandingLLMModule/activities/TrainingLoopStory';
+import HumanTuningApproaches from '@/components/UnderstandingLLMModule/activities/HumanTuningApproaches';
+import WhyTokenLimitsMatter from '@/components/UnderstandingLLMModule/activities/WhyTokenLimitsMatter';
 
 import { Certificate } from '../Certificate';
 
@@ -53,7 +54,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
   const setShowKeyPrompt = (_value: boolean) => {};
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // REVISED 18-PHASE STRUCTURE
+  // REVISED 20-PHASE STRUCTURE (Combined token limit activities into one)
   const phases = [
     // Phase 1: Introduction - What is an LLM?
     { id: 'welcome', title: 'Welcome', duration: '1 minute' },
@@ -77,7 +78,8 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     { id: 'video-tokens-training', title: 'Tokens, Training, and Tuning', duration: '1:03' },
     { id: 'weaving-it-together', title: 'Weaving It All Together', duration: '2 minutes' },
     { id: 'tokenization-demo', title: 'The Tokenizer', duration: '4 minutes' },
-    { id: 'training-loop-story', title: 'The Training Loop', duration: '5 minutes' },
+    { id: 'token-limits', title: 'Why Token Limits Matter', duration: '6 minutes' },
+    { id: 'human-tuning', title: 'Making AI Reasonable', duration: '5 minutes' },
 
     // Phase 6: Big Takeaway & Conclusion
     { id: 'video-big-takeaway', title: 'The Big Takeaway', duration: '1:10' },
@@ -133,7 +135,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     'video-what-is-llm': {
       source: VIDEO_PATHS.unlockingBlackBox,
       start: 0,
-      end: 83,
+      end: 84,
       title: 'What is an LLM?',
       description: 'Introduction to Large Language Models - what they are and what they do'
     },
@@ -161,7 +163,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     'video-neural-networks': {
       source: VIDEO_PATHS.howChatbotsLLMs,
       start: 191.5,
-      end: 300,
+      end: 299.75,
       title: 'Understanding Context with Neural Networks',
       description: 'Neural networks provide context: predict → compare → adjust loop, learning from mistakes'
     },
@@ -174,7 +176,7 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
     },
     'video-big-takeaway': {
       source: VIDEO_PATHS.unlockingBlackBox,
-      start: 308,
+      start: 309,
       end: 378,
       title: 'The Big Takeaway',
       description: 'Key takeaways: predictors not thinkers, data reliability, statistical likelihood, you check the work'
@@ -422,7 +424,8 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
               source: getCurrentVideoSegment()?.source || '',
               interactive: undefined,
               description: getCurrentVideoSegment()?.description || phases[currentPhase].title,
-              mandatory: true
+              mandatory: true,
+              crossfade: phases[currentPhase].id === 'video-neural-networks'
             }]}
             videoId={`understanding-llms-${phases[currentPhase].id}`}
             onSegmentComplete={() => handleNextPhase()}
@@ -448,12 +451,18 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
 
             {/* Phase 2: Core Function */}
             {phases[currentPhase].id === 'beat-predictor-game' && (
-              <BeatThePredictorGame onComplete={handleNextPhase} />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1 }}
+              >
+                <BeatThePredictorGame onComplete={handleNextPhase} />
+              </motion.div>
             )}
 
             {/* Phase 4: Data & Neural Networks */}
             {phases[currentPhase].id === 'guess-data-size' && (
-              <GuessDataSize onComplete={handleNextPhase} />
+              <ReadAThon onComplete={handleNextPhase} />
             )}
             {phases[currentPhase].id === 'why-prediction-isnt-enough' && (
               <WhyPredictionIsntEnough onComplete={handleNextPhase} />
@@ -469,8 +478,11 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
             {phases[currentPhase].id === 'tokenization-demo' && (
               <TokenizationDemo onComplete={handleNextPhase} />
             )}
-            {phases[currentPhase].id === 'training-loop-story' && (
-              <TrainingLoopStory onComplete={handleNextPhase} />
+            {phases[currentPhase].id === 'token-limits' && (
+              <WhyTokenLimitsMatter onComplete={handleNextPhase} />
+            )}
+            {phases[currentPhase].id === 'human-tuning' && (
+              <HumanTuningApproaches onComplete={handleNextPhase} />
             )}
 
             {/* Phase 6: Big Takeaway & Exit */}

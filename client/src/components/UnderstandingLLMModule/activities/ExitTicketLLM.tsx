@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Sparkles, Loader, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
-import { isNonsensical, generateEducationFeedback } from '@/utils/aiEducationFeedback';
+import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
 
 interface Props {
   onComplete: () => void;
@@ -44,44 +44,22 @@ export default function ExitTicketLLM({ onComplete }: Props) {
 
     try {
       const trimmedResponse = response.trim();
-      const wordCount = trimmedResponse.split(/\s+/).filter(w => w.length > 0).length;
 
-      // Layer 1: Pre-filter
-      const isInvalid = isNonsensical(trimmedResponse);
-
-      if (isInvalid) {
-        setNeedsRetry(true);
-        setValidationError('Please provide a thoughtful response. Keyboard mashing or gibberish is not accepted.');
-        setIsSubmitting(false);
-        setIsGeneratingFeedback(false);
-        return;
-      }
-
-      if (trimmedResponse.length < minResponseLength) {
-        setNeedsRetry(true);
-        setValidationError(`Please write at least ${minResponseLength} characters (currently ${trimmedResponse.length}).`);
-        setIsSubmitting(false);
-        setIsGeneratingFeedback(false);
-        return;
-      }
-
-      if (wordCount < minWords) {
-        setNeedsRetry(true);
-        setValidationError(`Please write at least ${minWords} words (currently ${wordCount}).`);
-        setIsSubmitting(false);
-        setIsGeneratingFeedback(false);
-        return;
-      }
-
-      // Layer 2: AI validation
+      // ALWAYS generate AI feedback - the AI handles validation internally
+      // This ensures students ALWAYS receive educational feedback
       const aiFeedback = await generateEducationFeedback(
         trimmedResponse,
-        "How does understanding how LLMs work inform how you will use them as tools?"
+        "How does understanding how LLMs work inform how you will use them as tools? Include a specific example in your response."
       );
 
-      setFeedback(aiFeedback);
+      // Ensure feedback is never empty
+      const finalFeedback = aiFeedback && aiFeedback.trim().length > 0
+        ? aiFeedback
+        : "Thank you for your thoughtful reflection on using LLMs as tools. Your understanding of how LLMs work through pattern matching and statistical predictions will help you use them more effectively and critically.";
 
-      // Check for strict rejection phrases
+      setFeedback(finalFeedback);
+
+      // Check for strict rejection phrases (including pre-filter feedback)
       const feedbackIndicatesRetry =
         aiFeedback.toLowerCase().includes('does not address') ||
         aiFeedback.toLowerCase().includes('please re-read') ||
@@ -89,6 +67,8 @@ export default function ExitTicketLLM({ onComplete }: Props) {
         aiFeedback.toLowerCase().includes('off-topic') ||
         aiFeedback.toLowerCase().includes('must elaborate') ||
         aiFeedback.toLowerCase().includes('insufficient') ||
+        aiFeedback.toLowerCase().includes('needs more depth') ||
+        aiFeedback.toLowerCase().includes('random text') ||
         aiFeedback.toLowerCase().includes('monitored for inappropriate') ||
         aiFeedback.toLowerCase().includes('answer the original question');
 
@@ -150,20 +130,20 @@ export default function ExitTicketLLM({ onComplete }: Props) {
                     Reflection Question
                   </h3>
                   <p className="text-white text-lg">
-                    How does understanding how LLMs work inform how you will use them as tools?
+                    How does understanding how LLMs work inform how you will use them as tools? <strong className="text-yellow-300">Include a specific example in your response.</strong>
                   </p>
                 </div>
 
                 <textarea
                   value={response}
                   onChange={(e) => setResponse(e.target.value)}
-                  placeholder="Think about prediction, training data, your role in checking outputs, and using AI as a tool (not a teammate)..."
+                  placeholder="Think about prediction, training data, your role in checking outputs, and using AI as a tool (not a teammate). Be sure to include a specific example of how you'll apply this knowledge..."
                   className="w-full h-48 px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none mb-3"
                 />
 
                 <div className="flex justify-between text-sm mb-4">
                   <span className={response.length >= minResponseLength ? 'text-green-400' : 'text-white/70'}>
-                    {response.length >= minResponseLength ? '✓' : '•'} Minimum {minResponseLength} characters ({minWords} words)
+                    {response.length >= minResponseLength ? '✓ Ready for AI feedback' : `• Minimum ${minResponseLength} characters to submit`}
                   </span>
                   <span className="text-white/70">{response.length}/{minResponseLength}</span>
                 </div>
@@ -219,17 +199,18 @@ export default function ExitTicketLLM({ onComplete }: Props) {
                 </motion.div>
 
                 <h2 className="text-3xl font-bold text-white mb-4">
-                  Excellent Reflection!
+                  Reflection Complete!
                 </h2>
 
-                {feedback && (
-                  <div className="bg-green-900/30 border border-green-400 rounded-lg p-6 mb-6">
-                    <div className="flex items-start gap-3">
-                      <Sparkles className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                      <p className="text-white text-left">{feedback}</p>
+                <div className="bg-green-900/30 border border-green-400 rounded-lg p-6 mb-6">
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-2">AI Feedback:</h3>
+                      <p className="text-white text-left">{feedback || "Thank you for your thoughtful reflection."}</p>
                     </div>
                   </div>
-                )}
+                </div>
 
                 <p className="text-white/80 text-lg mb-8">
                   You've completed the Understanding LLMs module!

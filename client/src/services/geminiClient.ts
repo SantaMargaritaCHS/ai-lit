@@ -20,12 +20,14 @@ if (import.meta.env.DEV) {
 
 // Initialize Gemini AI client (will be null if no API key is configured)
 const getGeminiClient = (): GoogleGenerativeAI | null => {
-  // Check both VITE_GEMINI_API_KEY (for .env) and GEMINI_API_KEY (for Replit Secrets)
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
+  // Check multiple possible env var names (Replit uses VITE_GOOGLE_API_KEY)
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY ||
+                 import.meta.env.VITE_GEMINI_API_KEY ||
+                 import.meta.env.GEMINI_API_KEY;
 
   if (!apiKey || apiKey === 'your_gemini_api_key_here') {
     console.warn('⚠️ Gemini API key not configured. Using fallback responses.');
-    console.warn('💡 Add VITE_GEMINI_API_KEY to .env or GEMINI_API_KEY to Replit Secrets');
+    console.warn('💡 Add VITE_GOOGLE_API_KEY to .env or Replit Secrets');
     return null;
   }
 
@@ -123,7 +125,9 @@ export const generateWithGemini = async (
  * Check if Gemini API is configured and available
  */
 export const isGeminiConfigured = (): boolean => {
-  // Check both VITE_GEMINI_API_KEY (for .env) and GEMINI_API_KEY (for Replit Secrets)
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
+  // Check multiple possible env var names (Replit uses VITE_GOOGLE_API_KEY)
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY ||
+                 import.meta.env.VITE_GEMINI_API_KEY ||
+                 import.meta.env.GEMINI_API_KEY;
   return Boolean(apiKey && apiKey !== 'your_gemini_api_key_here');
 };
