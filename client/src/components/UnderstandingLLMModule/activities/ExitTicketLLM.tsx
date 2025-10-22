@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Sparkles, Loader, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
+import { MessageSquare, Sparkles, Loader, AlertCircle, CheckCircle, ArrowRight, ChevronDown } from 'lucide-react';
 import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
 
 interface Props {
@@ -163,7 +163,7 @@ export default function ExitTicketLLM({ onComplete }: Props) {
                 {isGeneratingFeedback && (
                   <div className="flex items-center justify-center gap-3 text-blue-300 bg-blue-900/40 rounded-lg p-4 mb-4">
                     <Loader className="w-5 h-5 animate-spin" />
-                    <span>Validating your response...</span>
+                    <span>Analyzing your response with AI...</span>
                   </div>
                 )}
 
@@ -205,9 +205,22 @@ export default function ExitTicketLLM({ onComplete }: Props) {
                 <div className="bg-green-900/30 border border-green-400 rounded-lg p-6 mb-6">
                   <div className="flex items-start gap-3">
                     <Sparkles className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                    <div>
+                    <div className="w-full">
                       <h3 className="text-lg font-semibold text-white mb-2">AI Feedback:</h3>
-                      <p className="text-white text-left">{feedback || "Thank you for your thoughtful reflection."}</p>
+                      <p className="text-white text-left mb-3">{feedback || "Thank you for your thoughtful reflection."}</p>
+
+                      {/* Collapsible section to show what they wrote */}
+                      <details className="mt-3">
+                        <summary className="text-white/70 text-sm cursor-pointer hover:text-white transition-colors list-none flex items-center gap-2">
+                          <ChevronDown className="w-4 h-4 inline" />
+                          <span>View your response</span>
+                        </summary>
+                        <div className="mt-3 bg-gray-800/50 rounded-lg p-4 border border-white/10">
+                          <p className="text-white/90 text-sm italic leading-relaxed">
+                            "{response}"
+                          </p>
+                        </div>
+                      </details>
                     </div>
                   </div>
                 </div>

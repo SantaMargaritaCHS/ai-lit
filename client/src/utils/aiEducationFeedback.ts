@@ -30,7 +30,11 @@ export const isNonsensical = (response: string): boolean => {
   return false;
 };
 
-export const generateEducationFeedback = async (response: string, question: string) => {
+export const generateEducationFeedback = async (
+  response: string,
+  question: string,
+  retryCount = 0
+): Promise<string> => {
   // Check for nonsensical input first
   if (isNonsensical(response)) {
     return "Your response needs more depth. Please write at least 2-3 complete sentences with specific thoughts about the question. Random text or very short answers won't be accepted.";
@@ -64,14 +68,23 @@ Only flag responses that are truly off-topic or inappropriate.`;
 
     // If Gemini returns null, it was either blocked by safety filters or not configured
     if (result === null) {
-      // Check if this might be due to inappropriate content (safety filters)
-      // vs. just not being configured - the console logs from geminiClient will clarify
       console.warn('⚠️ Gemini returned null - may be blocked by safety filters or not configured');
+      console.warn('  Possible reasons:');
+      console.warn('  1. API key not configured in Replit Secrets (GEMINI_API_KEY)');
+      console.warn('  2. Safety filters blocked the content');
+      console.warn('  3. Rate limit exceeded');
+      console.warn('  Check geminiClient.ts logs for more details');
 
-      // Return neutral fallback instead of warning message
-      // Safety filter blocks are rare and usually false positives
-      // Let the fallback system handle this gracefully
-      return getEducationFallback();
+      // Retry once if this is the first attempt
+      if (retryCount < 1) {
+        console.log('🔄 Retrying Gemini request once...');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        return generateEducationFeedback(response, question, retryCount + 1);
+      }
+
+      // After retry, use contextual fallback
+      console.log('ℹ️ Using contextual fallback after retry');
+      return getContextualFallback(response, question);
     }
 
     // If Gemini returns a result, use it
@@ -80,16 +93,74 @@ Only flag responses that are truly off-topic or inappropriate.`;
       return result;
     }
 
-    // Fallback to static messages if something unexpected happened
-    console.log('ℹ️ Using fallback feedback (unexpected case)');
-    return getEducationFallback();
+    // Fallback to contextual messages if something unexpected happened
+    console.log('ℹ️ Using contextual fallback (unexpected case)');
+    return getContextualFallback(response, question);
 
   } catch (error) {
-    console.error('Error generating feedback:', error);
-    return getEducationFallback();
+    console.error('❌ Error generating feedback:', error);
+
+    // Retry once on error
+    if (retryCount < 1) {
+      console.log('🔄 Retrying after error...');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      return generateEducationFeedback(response, question, retryCount + 1);
+    }
+
+    console.log('ℹ️ Using contextual fallback after error and retry');
+    return getContextualFallback(response, question);
   }
 };
 
+// Contextual fallback that references what the student wrote
+export const getContextualFallback = (response: string, question: string): string => {
+  const lowerResponse = response.toLowerCase();
+
+  // Detect key concepts mentioned in their response
+  const mentionedPrediction = lowerResponse.includes('predict') || lowerResponse.includes('pattern') || lowerResponse.includes('guess');
+  const mentionedData = lowerResponse.includes('data') || lowerResponse.includes('train') || lowerResponse.includes('learn');
+  const mentionedCheck = lowerResponse.includes('check') || lowerResponse.includes('verify') || lowerResponse.includes('review') || lowerResponse.includes('validate');
+  const mentionedTool = lowerResponse.includes('tool') || lowerResponse.includes('help') || lowerResponse.includes('assist');
+  const mentionedLimitation = lowerResponse.includes('limit') || lowerResponse.includes('can\'t') || lowerResponse.includes('cannot') || lowerResponse.includes('bias');
+  const mentionedUnderstanding = lowerResponse.includes('understand') || lowerResponse.includes('know') || lowerResponse.includes('aware');
+  const mentionedThinking = lowerResponse.includes('think') || lowerResponse.includes('critical') || lowerResponse.includes('question');
+
+  // Build contextual response based on what they mentioned
+  let feedback = "";
+
+  // Best case: They mentioned multiple key concepts
+  if (mentionedPrediction && mentionedCheck) {
+    feedback = "You've made an important connection between LLMs as prediction systems and the need to verify their outputs. This understanding will help you use AI more effectively.";
+  } else if (mentionedTool && mentionedData) {
+    feedback = "Your recognition of LLMs as tools shaped by their training data shows thoughtful engagement with how these systems work.";
+  } else if (mentionedCheck && mentionedLimitation) {
+    feedback = "Noting the importance of verification alongside AI limitations demonstrates critical thinking about responsible AI use.";
+  } else if (mentionedUnderstanding && mentionedTool) {
+    feedback = "Your reflection on how understanding LLMs informs their use as tools shows you've engaged with the core concepts of this module.";
+  }
+  // Good case: They mentioned one important concept
+  else if (mentionedCheck || lowerResponse.includes('trust') || lowerResponse.includes('responsible')) {
+    feedback = "Your emphasis on verifying AI outputs reflects the critical thinking approach we emphasized. Always being skeptical of AI-generated content is key.";
+  } else if (mentionedPrediction) {
+    feedback = "You're right to focus on how LLMs predict based on patterns. This understanding helps you recognize when AI might make mistakes or hallucinate information.";
+  } else if (mentionedData) {
+    feedback = "Your attention to training data shows you understand a fundamental aspect of how LLMs work and why they have limitations.";
+  } else if (mentionedLimitation || lowerResponse.includes('mistake') || lowerResponse.includes('error')) {
+    feedback = "Acknowledging AI limitations is crucial. Your awareness of where LLMs can go wrong will make you a more effective user.";
+  } else if (mentionedThinking) {
+    feedback = "Your focus on critical thinking when using AI tools demonstrates the mindset we're trying to cultivate in this module.";
+  } else if (mentionedTool) {
+    feedback = "Viewing AI as a tool rather than an authority figure is an important perspective that will serve you well.";
+  }
+  // Minimal case: Generic but acknowledges they wrote something
+  else {
+    feedback = "Thank you for sharing your thoughts on how LLMs work. Keep applying this knowledge when you use AI tools in the future.";
+  }
+
+  return feedback;
+};
+
+// Legacy random fallback (kept for backward compatibility, but contextual fallback is preferred)
 export const getEducationFallback = () => {
   const fallbacks = [
     "Thank you for your reflection. Consider how this concept applies to AI tools you use daily.",
