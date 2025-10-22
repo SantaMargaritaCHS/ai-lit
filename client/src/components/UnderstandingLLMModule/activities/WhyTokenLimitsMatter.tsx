@@ -73,12 +73,12 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
 
   // Context messages explaining what's happening at each step
   const contextMessages: { [key: number]: string } = {
-    0: "A student asks ChatGPT to analyze their research article. So far, everything looks normal.",
-    1: "ChatGPT agrees to help. The token count is still very low (120 tokens total).",
-    2: "⚠️ Watch the token counter explode! The student pastes a 15-page article (32,540 tokens)—way over ChatGPT 4's 8,000 token limit. Most of it will be silently ignored.",
-    3: "Notice how the AI only mentions the introduction? It can't see pages 6-15. The token limit was already reached, but the AI doesn't even know it.",
-    4: "The student realizes something is wrong—they pasted all 15 pages!",
-    5: "The AI admits it can only see the first few pages. This confused behavior is caused by silent token truncation."
+    0: "A student asks ChatGPT to analyze a research article. Let's see what happens.",
+    1: "The AI agrees. So far, the token count is very low (120 tokens).",
+    2: "The student pastes the 15-page article. Watch the 'Context Window' bar fill up instantly. This input (32,540 tokens) is way over the 8,000-token limit!",
+    3: "The AI gives a reply, but it only mentions the introduction. It couldn't 'read' the rest of the article because its context window was full.",
+    4: "The student is confused and asks if the AI saw the 'results' section.",
+    5: "The AI confirms it can only see the *beginning* of the text. The rest of the article was silently ignored. This is the problem with exceeding token limits."
   };
 
   // Steps where student must manually click Continue
@@ -289,32 +289,30 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
               currentStep={wrongWayStep}
               tokenLimit={TOKEN_LIMIT}
               title="What Happens When You Hit The Limit"
-              subtitle="Watch this realistic scenario play out..."
+              subtitle="A realistic scenario showing what happens when an AI's context window is too small."
             />
 
-            {/* Context Box - Narrates what's happening */}
-            <AnimatePresence mode="wait">
-              {wrongWayStep >= 0 && contextMessages[wrongWayStep] && (
-                <motion.div
-                  key={wrongWayStep}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-blue-900/30 border-2 border-blue-400 rounded-xl p-6"
-                >
-                  <div className="flex items-start gap-3">
-                    <MessageSquare className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
-                    <div>
-                      <h3 className="text-blue-300 font-bold text-sm mb-2">💡 CONTEXT</h3>
-                      <p className="text-white text-sm leading-relaxed">
-                        {contextMessages[wrongWayStep]}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* STATIC NARRATION BOX */}
+            <div className="bg-blue-900/30 border-2 border-blue-400 rounded-xl p-6 min-h-[120px]">
+              <div className="flex items-start gap-3">
+                <MessageSquare className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="text-blue-300 font-bold text-sm mb-2">💡 WHAT'S HAPPENING</h3>
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={wrongWayStep}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-white text-sm leading-relaxed"
+                    >
+                      {contextMessages[wrongWayStep]}
+                    </motion.p>
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
 
             {/* Continue Button - shown at pause points */}
             <AnimatePresence>
@@ -615,6 +613,16 @@ function ChatGPTSimulation({
 
         {/* Token Meter */}
         <div className="bg-gray-800 border-t border-gray-700 p-4">
+          {/* --- ADDED LABEL --- */}
+          <div className="flex justify-between items-center mb-1 px-1">
+            <span className="text-xs font-medium text-white/70">
+              Context Window
+            </span>
+            <span className={`text-xs font-bold ${isOverLimit ? 'text-red-400' : 'text-white/70'}`}>
+              {isOverLimit ? 'LIMIT EXCEEDED' : ''}
+            </span>
+          </div>
+          {/* --- END ADDED LABEL --- */}
           <div className="w-full h-4 bg-gray-700 rounded-full overflow-hidden">
             <motion.div
               className={`h-full bg-gradient-to-r ${getTokenBarColor()}`}
