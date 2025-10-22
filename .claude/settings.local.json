@@ -17,7 +17,11 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nDocument Replit Secrets and production URL\n\nUpdates CLAUDE.md with critical information about the project''s deployment and secrets management:\n\n**Replit Secrets Documentation:**\n- Clarified that ALL API keys are stored in Replit Secrets (not in .env files)\n- Explained how Replit''s secure vault system works\n- Added instructions for accessing secrets via lock icon in sidebar\n- Documented the relationship between Replit Secrets and .secrets.local mirror\n\n**Production Information:**\n- Added live production URL: https://AILitStudents.replit.app\n- Documented Replit deployment environment\n- Noted automatic HTTPS and public accessibility\n\n**Why This Matters:**\n- Prevents confusion about where API keys are stored\n- Ensures future Claude sessions understand the Replit environment\n- Provides clear guidance for testing the live application\n- Improves onboarding for anyone working with this codebase\n\nThis documentation is critical for maintaining security and avoiding accidental key exposure in git history.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "WebFetch(domain:ailitstudents.replit.app)"
+      "WebFetch(domain:ailitstudents.replit.app)",
+      "Bash(if [ -f /home/runner/workspace/.secrets.local ])",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []
