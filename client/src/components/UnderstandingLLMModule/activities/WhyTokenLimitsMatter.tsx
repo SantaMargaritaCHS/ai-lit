@@ -73,12 +73,12 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
 
   // Context messages explaining what's happening at each step
   const contextMessages: { [key: number]: string } = {
-    0: "A student asks ChatGPT to analyze a research article. Let's see what happens.",
-    1: "The AI agrees. So far, the token count is very low (120 tokens).",
-    2: "The student pastes the 15-page article. Watch the 'Context Window' bar fill up instantly. This input (32,540 tokens) is way over the 8,000-token limit!",
-    3: "The AI gives a reply, but it only mentions the introduction. It couldn't 'read' the rest of the article because its context window was full.",
-    4: "The student is confused and asks if the AI saw the 'results' section.",
-    5: "The AI confirms it can only see the *beginning* of the text. The rest of the article was silently ignored. This is the problem with exceeding token limits."
+    0: "👋 A student wants help analyzing a long research paper. This is a normal request.",
+    1: "✅ ChatGPT says yes! Notice the token counter shows only 120 tokens used so far - plenty of room!",
+    2: "⚠️ WATCH THIS: The student pastes their entire 15-page paper (32,540 tokens). But ChatGPT can only handle 8,000 tokens! Watch the Context Window bar below turn red.",
+    3: "🤔 ChatGPT responds but ONLY talks about the introduction. Why? It never saw the rest of the paper - the context window was already full!",
+    4: "😕 The student is confused. They specifically asked about the results section on page 10, but ChatGPT didn't mention it.",
+    5: "💡 ChatGPT admits it can only see the first few pages. The rest was cut off without warning. This is why understanding token limits matters!"
   };
 
   // Steps where student must manually click Continue
@@ -284,19 +284,21 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
             animate={{ opacity: 1 }}
             className="space-y-6"
           >
-            <ChatGPTSimulation
-              messages={wrongWayMessages}
-              currentStep={wrongWayStep}
-              tokenLimit={TOKEN_LIMIT}
-              title="What Happens When You Hit The Limit"
-              subtitle="A realistic scenario showing what happens when an AI's context window is too small."
-            />
+            {/* PRE-SIMULATION INTRO BOX */}
+            {wrongWayStep === 0 && (
+              <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 border-2 border-blue-500 rounded-xl p-5">
+                <p className="text-white text-center text-sm font-medium">
+                  📚 <strong>WHAT YOU'LL LEARN:</strong> ChatGPT has a 'Context Window' - like a fixed-size container for text.
+                  When you paste too much, it silently cuts off the extra. Watch how this causes confusion...
+                </p>
+              </div>
+            )}
 
-            {/* STATIC NARRATION BOX */}
+            {/* STATIC NARRATION BOX - MOVED ABOVE SIMULATION */}
             <div className="bg-blue-900/30 border-2 border-blue-400 rounded-xl p-6 min-h-[120px]">
               <div className="flex items-start gap-3">
                 <MessageSquare className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
-                <div>
+                <div className="flex-1">
                   <h3 className="text-blue-300 font-bold text-sm mb-2">💡 WHAT'S HAPPENING</h3>
                   <AnimatePresence mode="wait">
                     <motion.p
@@ -305,7 +307,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.3 }}
-                      className="text-white text-sm leading-relaxed"
+                      className="text-white text-base leading-relaxed"
                     >
                       {contextMessages[wrongWayStep]}
                     </motion.p>
@@ -313,6 +315,14 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
                 </div>
               </div>
             </div>
+
+            <ChatGPTSimulation
+              messages={wrongWayMessages}
+              currentStep={wrongWayStep}
+              tokenLimit={TOKEN_LIMIT}
+              title="Token Limits in Action: When AI Can't See Everything"
+              subtitle="Watch what happens when someone tries to paste more text than ChatGPT can handle"
+            />
 
             {/* Continue Button - shown at pause points */}
             <AnimatePresence>
@@ -549,10 +559,15 @@ function ChatGPTSimulation({
             <div className="w-3 h-3 rounded-full bg-green-500" />
             <span className="ml-4 text-white font-medium">ChatGPT 4</span>
           </div>
-          <div className={`px-3 py-1 rounded-lg text-sm font-medium ${
-            isOverLimit ? 'bg-red-500/20 text-red-300 border border-red-500' : 'bg-gray-700 text-white'
+          <div className={`px-4 py-2 rounded-lg font-bold transition-all ${
+            isOverLimit
+              ? 'bg-red-500/30 text-red-300 border-2 border-red-500 animate-pulse text-base'
+              : 'bg-gray-700 text-white text-sm border border-gray-600'
           }`}>
-            Tokens: {currentTokenCount.toLocaleString()} / {tokenLimit.toLocaleString()}
+            {isOverLimit
+              ? `⚠️ ${currentTokenCount.toLocaleString()} tokens (EXCEEDS ${tokenLimit.toLocaleString()} limit!)`
+              : `Tokens: ${currentTokenCount.toLocaleString()} / ${tokenLimit.toLocaleString()}`
+            }
           </div>
         </div>
 
