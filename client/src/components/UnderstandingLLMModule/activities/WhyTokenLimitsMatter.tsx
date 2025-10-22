@@ -10,7 +10,8 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
-  BarChart3
+  BarChart3,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -18,7 +19,7 @@ interface Props {
   onComplete: () => void;
 }
 
-type ScenarioPhase = 'intro' | 'wrong-way' | 'debrief' | 'right-way' | 'tips';
+type ScenarioPhase = 'intro' | 'wrong-way' | 'tips';
 
 interface Message {
   role: 'user' | 'ai';
@@ -29,14 +30,13 @@ interface Message {
 export default function WhyTokenLimitsMatter({ onComplete }: Props) {
   const [scenarioPhase, setScenarioPhase] = useState<ScenarioPhase>('intro');
   const [wrongWayStep, setWrongWayStep] = useState(0);
-  const [rightWayStep, setRightWayStep] = useState(0);
   const [viewedTips, setViewedTips] = useState<Set<number>>(new Set());
   const [expandedTip, setExpandedTip] = useState<number | null>(null);
   const [canContinue, setCanContinue] = useState(false);
 
   const TOKEN_LIMIT = 8000; // ChatGPT 4 limit
 
-  // Wrong way scenario messages
+  // Wrong way scenario messages - MORE REALISTIC
   const wrongWayMessages: Message[] = [
     {
       role: 'user',
@@ -55,68 +55,24 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
     },
     {
       role: 'ai',
-      content: 'I can see the beginning of your article about renewable energy systems and the introduction to solar panel efficiency. However, I cannot see the rest of the document as it exceeded my 8,000 token context window. I can only access approximately the first 6 pages. I don\'t have access to the methodology, results, discussion, or conclusion sections you asked about.',
+      content: 'Based on the introduction section, this article examines solar panel efficiency improvements through new nano-coating technology. The research discusses the global shift toward renewable energy systems. For a complete analysis of the methodology, results, and conclusions, could you share those specific sections?',
       tokenCount: 120
     },
     {
       role: 'user',
-      content: 'Wait, you can\'t see all of it? I asked you to analyze the WHOLE article!',
+      content: 'Wait, I already pasted the whole article! Did you see the results section on pages 10-12?',
       tokenCount: 80
     },
     {
       role: 'ai',
-      content: 'I apologize for the confusion. The article was too long for my context window. I can only process about 6 pages at a time, and your article appears to be 15 pages. Everything after page 6 is invisible to me.',
+      content: 'I apologize for the confusion. I can only see the introduction and first few pages. Could you paste the results section (pages 10-12) separately so I can analyze it?',
       tokenCount: 95
     }
   ];
 
-  // Right way scenario messages
-  const rightWayMessages: Message[] = [
-    {
-      role: 'user',
-      content: 'Can you help me analyze this 15-page research article about renewable energy?',
-      tokenCount: 50
-    },
-    {
-      role: 'ai',
-      content: 'I\'d be happy to help! Since the article is 15 pages, it will exceed my 8,000 token limit. Let\'s break it down into sections. Can you start by pasting just the introduction and methodology (first 5 pages)?',
-      tokenCount: 100
-    },
-    {
-      role: 'user',
-      content: '📄 [Pasting pages 1-5: Introduction & Methodology]',
-      tokenCount: 5200
-    },
-    {
-      role: 'ai',
-      content: 'Great! I can see the introduction explains the global shift toward renewable energy, and the methodology describes a 3-year study of solar panel efficiency across 12 countries. The research examines efficiency improvements from new nano-coating technology. Now, please share the results and discussion sections (pages 6-10).',
-      tokenCount: 150
-    },
-    {
-      role: 'user',
-      content: '📄 [Pasting pages 6-10: Results & Discussion]',
-      tokenCount: 5400
-    },
-    {
-      role: 'ai',
-      content: 'Excellent! The results show a 23% increase in efficiency with the new coating technology, with the strongest improvements in high-humidity climates. The discussion section analyzes cost-benefit ratios and implementation barriers. Now please share the conclusion (pages 11-15).',
-      tokenCount: 140
-    },
-    {
-      role: 'user',
-      content: '📄 [Pasting pages 11-15: Conclusion & References]',
-      tokenCount: 4200
-    },
-    {
-      role: 'ai',
-      content: 'Perfect! Now I\'ve analyzed the complete article in manageable chunks. The conclusion emphasizes that while the technology shows promise, widespread adoption requires policy incentives and infrastructure investment. Here\'s my comprehensive summary of all sections...',
-      tokenCount: 130
-    }
-  ];
-
-  // Check if all tips viewed
+  // Check if all tips viewed (now 4 tips)
   useEffect(() => {
-    setCanContinue(viewedTips.size === 3);
+    setCanContinue(viewedTips.size === 4);
   }, [viewedTips]);
 
   // Handle tip card click
@@ -129,7 +85,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
   useEffect(() => {
     const handleDevAutoComplete = () => {
       setScenarioPhase('tips');
-      setViewedTips(new Set([0, 1, 2]));
+      setViewedTips(new Set([0, 1, 2, 3])); // All 4 tips
       setCanContinue(true);
     };
 
@@ -137,16 +93,27 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
     return () => window.removeEventListener('dev-auto-complete-activity', handleDevAutoComplete);
   }, []);
 
-  // Get current token count for animations
-  const getCurrentTokenCount = (messageIndex: number, messages: Message[]): number => {
-    return messages.slice(0, messageIndex + 1).reduce((sum, msg) => {
-      // For user message pasting article, show rapid increase
-      if (msg.tokenCount && msg.tokenCount > TOKEN_LIMIT) {
-        return TOKEN_LIMIT + (msg.tokenCount - TOKEN_LIMIT);
-      }
-      return Math.min(sum + (msg.tokenCount || 0), TOKEN_LIMIT + 10000);
-    }, 0);
-  };
+  // Auto-advance timer for wrong-way scenario
+  useEffect(() => {
+    if (scenarioPhase === 'wrong-way' && wrongWayStep < wrongWayMessages.length - 1) {
+      const timer = setTimeout(() => {
+        setWrongWayStep(wrongWayStep + 1);
+      }, 2500); // Auto-advance every 2.5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [scenarioPhase, wrongWayStep, wrongWayMessages.length]);
+
+  // Auto-transition to tips after last message
+  useEffect(() => {
+    if (scenarioPhase === 'wrong-way' && wrongWayStep === wrongWayMessages.length - 1) {
+      const timer = setTimeout(() => {
+        setScenarioPhase('tips');
+      }, 3000); // Wait 3 seconds after last message before showing tips
+
+      return () => clearTimeout(timer);
+    }
+  }, [scenarioPhase, wrongWayStep, wrongWayMessages.length]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
@@ -213,6 +180,22 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
                 <div className="bg-gray-800/50 rounded-lg p-4 border-2 border-gray-600">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
+                      <span className="text-2xl">🔧</span>
+                      <span className="text-white font-semibold text-lg">GitHub Copilot</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white font-bold">8,000 tokens</p>
+                      <p className="text-white/70 text-sm">~6 pages of code</p>
+                    </div>
+                  </div>
+                  <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-gray-400 w-[20%]" />
+                  </div>
+                </div>
+
+                <div className="bg-gray-800/50 rounded-lg p-4 border-2 border-gray-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
                       <span className="text-2xl">✨</span>
                       <span className="text-white font-semibold text-lg">Claude Sonnet</span>
                     </div>
@@ -252,7 +235,10 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
 
             {/* Start Button */}
             <Button
-              onClick={() => setScenarioPhase('wrong-way')}
+              onClick={() => {
+                setScenarioPhase('wrong-way');
+                setWrongWayStep(0);
+              }}
               className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-6 text-xl rounded-xl"
             >
               Show Me What Happens <ArrowRight className="w-6 h-6 ml-2" />
@@ -260,130 +246,14 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
           </motion.div>
         )}
 
-        {/* SCENARIO 1: THE WRONG WAY */}
+        {/* SCENARIO: THE WRONG WAY (Auto-plays) */}
         {scenarioPhase === 'wrong-way' && (
           <ChatGPTSimulation
             messages={wrongWayMessages}
             currentStep={wrongWayStep}
-            onStepComplete={() => setWrongWayStep(wrongWayStep + 1)}
-            onScenarioComplete={() => setScenarioPhase('debrief')}
             tokenLimit={TOKEN_LIMIT}
-            title="Scenario 1: The Wrong Way ❌"
-            subtitle="Watch what happens when you paste a long document all at once..."
-          />
-        )}
-
-        {/* DEBRIEF SECTION */}
-        {scenarioPhase === 'debrief' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-8"
-          >
-            <div className="text-center">
-              <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-              <h1 className="text-4xl font-bold text-white mb-4">
-                What Just Happened?
-              </h1>
-            </div>
-
-            {/* Explanation Card */}
-            <div className="bg-red-900/30 border-2 border-red-400 rounded-xl p-8">
-              <div className="space-y-4 text-white">
-                <p className="text-xl font-semibold">
-                  The article was <span className="text-red-300">TOO LONG</span> for ChatGPT 4's memory:
-                </p>
-                <ul className="space-y-3 text-lg">
-                  <li className="flex items-start gap-3">
-                    <span className="text-red-400 font-bold">•</span>
-                    <span>The article was 15 pages = <strong className="text-red-300">~32,000 tokens</strong></span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-red-400 font-bold">•</span>
-                    <span>ChatGPT 4 can only hold <strong className="text-red-300">8,000 tokens</strong> (~6 pages)</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-red-400 font-bold">•</span>
-                    <span>Everything after page 6 was <strong className="text-red-300">CUT OFF</strong> and invisible to the AI</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-red-400 font-bold">•</span>
-                    <span>The AI couldn't analyze the methodology, results, or conclusions because it <strong className="text-red-300">never saw them</strong></span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Visual Diagram */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 border-2 border-white/20">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">
-                What the AI Could See
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Pages 1-6: Visible */}
-                <div className="bg-green-900/40 border-2 border-green-400 rounded-lg p-6">
-                  <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
-                  <h3 className="text-white font-bold text-center mb-2">Pages 1-6</h3>
-                  <p className="text-white/90 text-center text-sm">✅ AI could see this</p>
-                  <div className="mt-4 space-y-2">
-                    {[1, 2, 3, 4, 5, 6].map(page => (
-                      <div key={page} className="bg-green-500/20 rounded p-2 text-center text-white text-sm">
-                        Page {page}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Pages 7-15: Invisible */}
-                <div className="bg-red-900/40 border-2 border-red-400 rounded-lg p-6 opacity-60">
-                  <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                  <h3 className="text-white font-bold text-center mb-2">Pages 7-15</h3>
-                  <p className="text-white/90 text-center text-sm">❌ AI COULD NOT see this</p>
-                  <div className="mt-4 space-y-2">
-                    {[7, 8, 9, 10, 11, 12, 13, 14, 15].map(page => (
-                      <div key={page} className="bg-gray-700/50 rounded p-2 text-center text-white/50 text-sm line-through">
-                        Page {page}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Real-World Impact */}
-            <div className="bg-yellow-900/30 border border-yellow-400 rounded-lg p-6">
-              <h3 className="text-white font-bold text-lg mb-3">🌍 Why This Matters to YOU:</h3>
-              <ul className="text-white space-y-2">
-                <li>• This happens when you paste long essays, research papers, or study guides</li>
-                <li>• This happens in very long conversations (AI "forgets" early messages)</li>
-                <li>• This is why AI sometimes gives incomplete or confusing answers</li>
-              </ul>
-            </div>
-
-            {/* Continue Button */}
-            <Button
-              onClick={() => {
-                setScenarioPhase('right-way');
-                setRightWayStep(0);
-              }}
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-6 text-xl rounded-xl"
-            >
-              Got it! Now show me the RIGHT way <ArrowRight className="w-6 h-6 ml-2" />
-            </Button>
-          </motion.div>
-        )}
-
-        {/* SCENARIO 2: THE RIGHT WAY */}
-        {scenarioPhase === 'right-way' && (
-          <ChatGPTSimulation
-            messages={rightWayMessages}
-            currentStep={rightWayStep}
-            onStepComplete={() => setRightWayStep(rightWayStep + 1)}
-            onScenarioComplete={() => setScenarioPhase('tips')}
-            tokenLimit={TOKEN_LIMIT}
-            title="Scenario 2: The Right Way ✅"
-            subtitle="Watch how chunking the article into smaller sections solves the problem..."
-            isSuccessScenario={true}
+            title="What Happens When You Hit The Limit"
+            subtitle="Watch this realistic scenario play out..."
           />
         )}
 
@@ -400,7 +270,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
                 Smart Ways to Work With Token Limits
               </h1>
               <p className="text-white text-xl">
-                Click each tip to learn more. You need to view all 3 to continue.
+                Click each tip to learn more. You need to view all 4 to continue.
               </p>
             </div>
 
@@ -426,7 +296,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
               {/* Tip 2: Summarize */}
               <TipCard
                 index={1}
-                icon={<MessageSquare className="w-8 h-8 text-blue-400" />}
+                icon={<FileText className="w-8 h-8 text-blue-400" />}
                 title="Ask AI to Summarize Each Section"
                 isExpanded={expandedTip === 1}
                 isViewed={viewedTips.has(1)}
@@ -457,13 +327,31 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
                   <li>• <strong className="text-yellow-300">Match the tool to your task size!</strong></li>
                 </ul>
               </TipCard>
+
+              {/* Tip 4: Start New Chat */}
+              <TipCard
+                index={3}
+                icon={<RefreshCw className="w-8 h-8 text-orange-400" />}
+                title="Start a New Chat When Switching Topics"
+                isExpanded={expandedTip === 3}
+                isViewed={viewedTips.has(3)}
+                onClick={() => handleTipClick(3)}
+              >
+                <ul className="space-y-2 text-white/90">
+                  <li>• Long conversations eat up tokens even if you switch topics</li>
+                  <li>• Start a fresh chat when moving to a different subject</li>
+                  <li>• Example: Don't ask about math homework in the same chat as your history essay</li>
+                  <li>• Clears the AI's "memory" and gives you full token capacity</li>
+                  <li>• Think of it like clearing your browser tabs before starting new work!</li>
+                </ul>
+              </TipCard>
             </div>
 
             {/* Progress Indicator */}
             <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <span className="text-white/70">
-                  Tips Viewed: {viewedTips.size}/3
+                  Tips Viewed: {viewedTips.size}/4
                 </span>
                 {canContinue && (
                   <span className="text-green-400 font-medium flex items-center gap-2">
@@ -489,7 +377,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
                   Continue to Next Activity <ArrowRight className="w-6 h-6 ml-2" />
                 </>
               ) : (
-                'View all 3 tips to continue'
+                'View all 4 tips to continue'
               )}
             </Button>
           </motion.div>
@@ -506,28 +394,21 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
 interface ChatGPTSimulationProps {
   messages: Message[];
   currentStep: number;
-  onStepComplete: () => void;
-  onScenarioComplete: () => void;
   tokenLimit: number;
   title: string;
   subtitle: string;
-  isSuccessScenario?: boolean;
 }
 
 function ChatGPTSimulation({
   messages,
   currentStep,
-  onStepComplete,
-  onScenarioComplete,
   tokenLimit,
   title,
-  subtitle,
-  isSuccessScenario = false
+  subtitle
 }: ChatGPTSimulationProps) {
   const visibleMessages = messages.slice(0, currentStep + 1);
   const currentTokenCount = visibleMessages.reduce((sum, msg) => sum + (msg.tokenCount || 0), 0);
   const isOverLimit = currentTokenCount > tokenLimit;
-  const isComplete = currentStep >= messages.length - 1;
 
   const getTokenBarColor = () => {
     const percentage = (currentTokenCount / tokenLimit) * 100;
@@ -574,7 +455,7 @@ function ChatGPTSimulation({
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.5 }}
+                transition={{ delay: 0.3 }}
                 className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {message.role === 'ai' && (
@@ -598,8 +479,8 @@ function ChatGPTSimulation({
             ))}
           </AnimatePresence>
 
-          {/* Token Limit Warning */}
-          {isOverLimit && !isSuccessScenario && (
+          {/* Token Limit Warning - Only shows AFTER AI gives incomplete response (step 3+) */}
+          {isOverLimit && currentStep >= 3 && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -608,9 +489,9 @@ function ChatGPTSimulation({
               <div className="flex items-center gap-3">
                 <AlertTriangle className="w-6 h-6 text-red-400 flex-shrink-0" />
                 <div>
-                  <p className="text-white font-bold">⚠️ TOKEN LIMIT EXCEEDED!</p>
+                  <p className="text-white font-bold">⚠️ TOKEN LIMIT REACHED!</p>
                   <p className="text-white/90 text-sm">
-                    The AI can't see everything. Content was cut off!
+                    The AI hit its 8,000 token limit after seeing only the first ~6 pages. Everything after that is invisible to it—that's why the response is incomplete and asks you to re-paste sections it already can't see.
                   </p>
                 </div>
               </div>
@@ -629,25 +510,6 @@ function ChatGPTSimulation({
             />
           </div>
         </div>
-      </div>
-
-      {/* Continue Button */}
-      <div className="flex justify-center">
-        {!isComplete ? (
-          <Button
-            onClick={onStepComplete}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg"
-          >
-            Continue <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            onClick={onScenarioComplete}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 text-lg"
-          >
-            {isSuccessScenario ? 'See the Smart Tips' : 'What Happened?'} <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-        )}
       </div>
     </motion.div>
   );
