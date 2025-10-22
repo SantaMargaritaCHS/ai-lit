@@ -33,6 +33,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
   const [viewedTips, setViewedTips] = useState<Set<number>>(new Set());
   const [expandedTip, setExpandedTip] = useState<number | null>(null);
   const [canContinue, setCanContinue] = useState(false);
+  const [simulationComplete, setSimulationComplete] = useState(false);
 
   const TOKEN_LIMIT = 8000; // ChatGPT 4 limit
 
@@ -93,27 +94,38 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
     return () => window.removeEventListener('dev-auto-complete-activity', handleDevAutoComplete);
   }, []);
 
-  // Auto-advance timer for wrong-way scenario
+  // Auto-advance timer with dynamic word-based timing
   useEffect(() => {
-    if (scenarioPhase === 'wrong-way' && wrongWayStep < wrongWayMessages.length - 1) {
-      const timer = setTimeout(() => {
-        setWrongWayStep(wrongWayStep + 1);
-      }, 2500); // Auto-advance every 2.5 seconds
+    if (scenarioPhase === 'wrong-way') {
+      if (wrongWayStep < wrongWayMessages.length - 1) {
+        // Reset simulation complete flag when replaying
+        setSimulationComplete(false);
 
-      return () => clearTimeout(timer);
+        const currentMessage = wrongWayMessages[wrongWayStep];
+        const messageContent = currentMessage.content || '';
+        const wordCount = messageContent.split(' ').length;
+
+        // Dynamic delay: 1200ms base + 60ms per word (prevents 6-9 second waits)
+        const baseDelay = 1200;
+        const msPerWord = 60;
+        const calculatedDelay = baseDelay + (wordCount * msPerWord);
+
+        // AI messages get minimum 1800ms (more realistic), cap maximum at 4000ms
+        const finalDelay = currentMessage.role === 'ai'
+          ? Math.min(Math.max(calculatedDelay, 1800), 4000)
+          : Math.min(calculatedDelay, 4000);
+
+        const timer = setTimeout(() => {
+          setWrongWayStep(wrongWayStep + 1);
+        }, finalDelay);
+
+        return () => clearTimeout(timer);
+      } else {
+        // Simulation complete - mark it
+        setSimulationComplete(true);
+      }
     }
-  }, [scenarioPhase, wrongWayStep, wrongWayMessages.length]);
-
-  // Auto-transition to tips after last message
-  useEffect(() => {
-    if (scenarioPhase === 'wrong-way' && wrongWayStep === wrongWayMessages.length - 1) {
-      const timer = setTimeout(() => {
-        setScenarioPhase('tips');
-      }, 3000); // Wait 3 seconds after last message before showing tips
-
-      return () => clearTimeout(timer);
-    }
-  }, [scenarioPhase, wrongWayStep, wrongWayMessages.length]);
+  }, [scenarioPhase, wrongWayStep, wrongWayMessages]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
@@ -238,6 +250,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
               onClick={() => {
                 setScenarioPhase('wrong-way');
                 setWrongWayStep(0);
+                setSimulationComplete(false);
               }}
               className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-6 text-xl rounded-xl"
             >
@@ -248,13 +261,50 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
 
         {/* SCENARIO: THE WRONG WAY (Auto-plays) */}
         {scenarioPhase === 'wrong-way' && (
-          <ChatGPTSimulation
-            messages={wrongWayMessages}
-            currentStep={wrongWayStep}
-            tokenLimit={TOKEN_LIMIT}
-            title="What Happens When You Hit The Limit"
-            subtitle="Watch this realistic scenario play out..."
-          />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <ChatGPTSimulation
+              messages={wrongWayMessages}
+              currentStep={wrongWayStep}
+              tokenLimit={TOKEN_LIMIT}
+              title="What Happens When You Hit The Limit"
+              subtitle="Watch this realistic scenario play out..."
+            />
+
+            {/* Replay and Continue Buttons - shown after simulation completes */}
+            <AnimatePresence>
+              {simulationComplete && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
+                >
+                  <Button
+                    onClick={() => {
+                      setWrongWayStep(0);
+                      setSimulationComplete(false);
+                    }}
+                    variant="outline"
+                    className="bg-white/20 border-white/30 text-white hover:bg-white/30 w-full sm:w-auto"
+                  >
+                    <RefreshCw className="w-5 h-5 mr-2" />
+                    Replay Simulation
+                  </Button>
+                  <Button
+                    onClick={() => setScenarioPhase('tips')}
+                    className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-6 text-lg"
+                  >
+                    I get it! Continue to the Tips
+                    <ArrowRight className="w-6 h-6 ml-2" />
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         )}
 
         {/* SMART TIPS SECTION */}
@@ -455,7 +505,7 @@ function ChatGPTSimulation({
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ duration: 0.3 }}
                 className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {message.role === 'ai' && (
@@ -484,14 +534,17 @@ function ChatGPTSimulation({
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-900/40 border-2 border-red-400 rounded-lg p-4"
+              className="bg-red-900/40 border-2 border-red-400 rounded-lg p-4 animate-pulse"
             >
               <div className="flex items-center gap-3">
-                <AlertTriangle className="w-6 h-6 text-red-400 flex-shrink-0" />
+                <AlertTriangle className="w-8 h-8 text-red-400 flex-shrink-0" />
                 <div>
-                  <p className="text-white font-bold">⚠️ TOKEN LIMIT REACHED!</p>
+                  <p className="text-white font-bold text-lg">⚠️ TOKEN LIMIT REACHED!</p>
                   <p className="text-white/90 text-sm">
-                    The AI hit its 8,000 token limit after seeing only the first ~6 pages. Everything after that is invisible to it—that's why the response is incomplete and asks you to re-paste sections it already can't see.
+                    The AI hit its 8,000 token limit. It <strong>only saw the first few pages</strong> of the article.
+                  </p>
+                  <p className="text-white/90 text-sm mt-2">
+                    Everything after that was <strong>invisible</strong> to it. That's why its response is incomplete and it's asking for sections you already pasted!
                   </p>
                 </div>
               </div>
