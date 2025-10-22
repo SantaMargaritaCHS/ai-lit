@@ -539,12 +539,12 @@ function ChatGPTSimulation({
               <div className="flex items-center gap-3">
                 <AlertTriangle className="w-8 h-8 text-red-400 flex-shrink-0" />
                 <div>
-                  <p className="text-white font-bold text-lg">⚠️ TOKEN LIMIT REACHED!</p>
-                  <p className="text-white/90 text-sm">
-                    The AI hit its 8,000 token limit. It <strong>only saw the first few pages</strong> of the article.
-                  </p>
+                  <p className="text-white font-bold text-lg">⚠️ THE AI IS CONFUSED!</p>
                   <p className="text-white/90 text-sm mt-2">
-                    Everything after that was <strong>invisible</strong> to it. That's why its response is incomplete and it's asking for sections you already pasted!
+                    The AI just hit its 8,000 token limit. It <strong>only saw the first few pages</strong> of the article.
+                  </p>
+                  <p className="text-white/90 text-sm mt-1">
+                    Everything after that was <strong>silently ignored</strong>. It doesn't even know the rest of the text exists! That's why it's asking for sections you already pasted.
                   </p>
                 </div>
               </div>
