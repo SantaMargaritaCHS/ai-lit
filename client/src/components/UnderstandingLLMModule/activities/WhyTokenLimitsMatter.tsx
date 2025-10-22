@@ -71,6 +71,19 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
     }
   ];
 
+  // Context messages explaining what's happening at each step
+  const contextMessages: { [key: number]: string } = {
+    0: "A student asks ChatGPT to analyze their research article. So far, everything looks normal.",
+    1: "ChatGPT agrees to help. The token count is still very low (120 tokens total).",
+    2: "⚠️ Watch the token counter explode! The student pastes a 15-page article (32,540 tokens)—way over ChatGPT 4's 8,000 token limit. Most of it will be silently ignored.",
+    3: "Notice how the AI only mentions the introduction? It can't see pages 6-15. The token limit was already reached, but the AI doesn't even know it.",
+    4: "The student realizes something is wrong—they pasted all 15 pages!",
+    5: "The AI admits it can only see the first few pages. This confused behavior is caused by silent token truncation."
+  };
+
+  // Steps where student must manually click Continue
+  const pausePoints = [2, 3, 5];
+
   // Check if all tips viewed (now 4 tips)
   useEffect(() => {
     setCanContinue(viewedTips.size === 4);
@@ -101,6 +114,11 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
         // Reset simulation complete flag when replaying
         setSimulationComplete(false);
 
+        // Check if current step is a pause point - DON'T auto-advance
+        if (pausePoints.includes(wrongWayStep)) {
+          return; // Wait for manual Continue click
+        }
+
         const currentMessage = wrongWayMessages[wrongWayStep];
         const messageContent = currentMessage.content || '';
         const wordCount = messageContent.split(' ').length;
@@ -125,7 +143,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
         setSimulationComplete(true);
       }
     }
-  }, [scenarioPhase, wrongWayStep, wrongWayMessages]);
+  }, [scenarioPhase, wrongWayStep, wrongWayMessages, pausePoints]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
@@ -259,7 +277,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
           </motion.div>
         )}
 
-        {/* SCENARIO: THE WRONG WAY (Auto-plays) */}
+        {/* SCENARIO: THE WRONG WAY (Step-by-step with manual progression) */}
         {scenarioPhase === 'wrong-way' && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -274,14 +292,57 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
               subtitle="Watch this realistic scenario play out..."
             />
 
-            {/* Replay and Continue Buttons - shown after simulation completes */}
+            {/* Context Box - Narrates what's happening */}
+            <AnimatePresence mode="wait">
+              {wrongWayStep >= 0 && contextMessages[wrongWayStep] && (
+                <motion.div
+                  key={wrongWayStep}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-blue-900/30 border-2 border-blue-400 rounded-xl p-6"
+                >
+                  <div className="flex items-start gap-3">
+                    <MessageSquare className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-blue-300 font-bold text-sm mb-2">💡 CONTEXT</h3>
+                      <p className="text-white text-sm leading-relaxed">
+                        {contextMessages[wrongWayStep]}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Continue Button - shown at pause points */}
+            <AnimatePresence>
+              {pausePoints.includes(wrongWayStep) && !simulationComplete && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-center"
+                >
+                  <Button
+                    onClick={() => setWrongWayStep(wrongWayStep + 1)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg rounded-xl"
+                  >
+                    Continue <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Replay and Continue to Tips - shown after simulation completes */}
             <AnimatePresence>
               {simulationComplete && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
+                  className="flex flex-col sm:flex-row gap-4 justify-center"
                 >
                   <Button
                     onClick={() => {
@@ -298,7 +359,7 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
                     onClick={() => setScenarioPhase('tips')}
                     className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-6 text-lg"
                   >
-                    I get it! Continue to the Tips
+                    Continue to the Tips
                     <ArrowRight className="w-6 h-6 ml-2" />
                   </Button>
                 </motion.div>
@@ -529,8 +590,8 @@ function ChatGPTSimulation({
             ))}
           </AnimatePresence>
 
-          {/* Token Limit Warning - Only shows AFTER AI gives incomplete response (step 3+) */}
-          {isOverLimit && currentStep >= 3 && (
+          {/* Token Limit Warning - Only shows at step 5 (final AI admission) */}
+          {isOverLimit && currentStep === 5 && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
