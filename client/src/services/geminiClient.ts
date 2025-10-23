@@ -14,20 +14,20 @@ if (import.meta.env.DEV) {
  *
  * Setup:
  * 1. Get an API key from https://aistudio.google.com/app/apikey
- * 2. Add VITE_GEMINI_API_KEY=your_key_here to your .env file
+ * 2. Add GEMINI_API_KEY=your_key_here to Replit Secrets
  * 3. The service automatically falls back to static messages if no API key is configured
  */
 
 // Initialize Gemini AI client (will be null if no API key is configured)
 const getGeminiClient = (): GoogleGenerativeAI | null => {
-  // Check multiple possible env var names (Replit uses VITE_GOOGLE_API_KEY)
-  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY ||
+  // Check for GEMINI_API_KEY (primary) with Vite-prefixed fallbacks
+  const apiKey = import.meta.env.GEMINI_API_KEY ||
                  import.meta.env.VITE_GEMINI_API_KEY ||
-                 import.meta.env.GEMINI_API_KEY;
+                 import.meta.env.VITE_GOOGLE_API_KEY;
 
   if (!apiKey || apiKey === 'your_gemini_api_key_here') {
     console.warn('⚠️ Gemini API key not configured. Using fallback responses.');
-    console.warn('💡 Add VITE_GOOGLE_API_KEY to .env or Replit Secrets');
+    console.warn('💡 Add GEMINI_API_KEY to Replit Secrets');
     return null;
   }
 
@@ -103,7 +103,14 @@ export const generateWithGemini = async (
     const text = response.text();
 
     if (!text || text.trim().length === 0) {
+      // Log diagnostic info for debugging
       console.error('❌ Gemini returned empty response');
+      if (response.candidates && response.candidates.length > 0) {
+        console.error('Finish reason:', response.candidates[0].finishReason);
+        if (response.candidates[0].finishReason === 'MAX_TOKENS') {
+          console.error('⚠️ Response was truncated due to MAX_TOKENS limit. Increase maxOutputTokens in the calling code.');
+        }
+      }
       return null;
     }
 
@@ -125,9 +132,9 @@ export const generateWithGemini = async (
  * Check if Gemini API is configured and available
  */
 export const isGeminiConfigured = (): boolean => {
-  // Check multiple possible env var names (Replit uses VITE_GOOGLE_API_KEY)
-  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY ||
+  // Check for GEMINI_API_KEY (primary) with Vite-prefixed fallbacks
+  const apiKey = import.meta.env.GEMINI_API_KEY ||
                  import.meta.env.VITE_GEMINI_API_KEY ||
-                 import.meta.env.GEMINI_API_KEY;
+                 import.meta.env.VITE_GOOGLE_API_KEY;
   return Boolean(apiKey && apiKey !== 'your_gemini_api_key_here');
 };

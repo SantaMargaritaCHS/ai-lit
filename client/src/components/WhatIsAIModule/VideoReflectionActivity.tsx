@@ -26,6 +26,10 @@ export default function VideoReflectionActivity({
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [needsRetry, setNeedsRetry] = useState(false);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [showEscapeHatch, setShowEscapeHatch] = useState(false);
+
+  const MAX_ATTEMPTS = 2;
 
 
   // Developer mode auto-fill responses based on video segment
@@ -73,7 +77,18 @@ export default function VideoReflectionActivity({
           feedback.toLowerCase().includes('answer the original question');
 
         // Require retry if EITHER pre-validation failed OR Gemini says response is inadequate
-        setNeedsRetry(isInvalid || feedbackIndicatesRetry);
+        const shouldRetry = isInvalid || feedbackIndicatesRetry;
+        setNeedsRetry(shouldRetry);
+
+        // Track attempt count and show escape hatch after MAX_ATTEMPTS
+        if (shouldRetry) {
+          const newAttemptCount = attemptCount + 1;
+          setAttemptCount(newAttemptCount);
+
+          if (newAttemptCount >= MAX_ATTEMPTS) {
+            setShowEscapeHatch(true);
+          }
+        }
       } catch (error) {
         console.error('Failed to get AI feedback:', error);
         setAiFeedback('Thank you for your thoughtful reflection! Your insights about AI are valuable as you continue learning.');
@@ -91,7 +106,15 @@ export default function VideoReflectionActivity({
     setShowFeedback(false);
     setAiFeedback('');
     setNeedsRetry(false);
+    setAttemptCount(0);
+    setShowEscapeHatch(false);
     // Keep the response so they can edit it
+  };
+
+  const handleContinueAnyway = () => {
+    // Student chooses to proceed despite validation failures
+    console.log('Student bypassed validation after', attemptCount, 'attempts');
+    onComplete();
   };
 
   const minResponseLength = 100;
@@ -213,8 +236,57 @@ export default function VideoReflectionActivity({
             </motion.div>
           )}
 
-          {/* Show appropriate buttons based on state */}
-          {needsRetry ? (
+          {/* Escape Hatch - appears after MAX_ATTEMPTS failed attempts */}
+          {showEscapeHatch && needsRetry && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-100 dark:bg-red-900/30 border-2 border-red-400 dark:border-red-700 rounded-lg p-6 mb-4"
+            >
+              <div className="flex items-start gap-3">
+                <div className="rounded-full p-2 bg-red-200 dark:bg-red-800 flex-shrink-0">
+                  <Zap className="w-5 h-5 text-red-700 dark:text-red-300" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-red-900 dark:text-red-100 mb-2">
+                    ⚠️ Multiple Attempts Detected
+                  </h4>
+                  <p className="text-red-900 dark:text-red-200 mb-3">
+                    You've tried {attemptCount} times and the AI feedback suggests your response needs improvement.
+                  </p>
+                  <p className="text-red-900 dark:text-red-200 mb-3">
+                    <strong className="text-red-700 dark:text-red-300">You have two options:</strong>
+                  </p>
+                  <ol className="text-red-900 dark:text-red-200 mb-4 space-y-1 ml-4">
+                    <li>1. Try again with a different response that addresses the question</li>
+                    <li>2. Continue anyway and move to the next step</li>
+                  </ol>
+                  <div className="bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-500 dark:border-yellow-600 rounded-lg p-3 mb-4">
+                    <p className="text-yellow-900 dark:text-yellow-200 text-sm">
+                      ⚠️ <strong>Important:</strong> If you continue, your response will be flagged for instructor review. We want to make sure students are engaging thoughtfully with the content.
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={handleTryAgain}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Try One More Time
+                    </Button>
+                    <Button
+                      onClick={handleContinueAnyway}
+                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                    >
+                      Continue Anyway
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Show appropriate buttons based on state - hidden when escape hatch is showing */}
+          {!showEscapeHatch && (needsRetry ? (
             <Button
               onClick={handleTryAgain}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -240,7 +312,7 @@ export default function VideoReflectionActivity({
                 'Submit Reflection'
               )}
             </Button>
-          )}
+          ))}
         </CardContent>
       </Card>
       </motion.div>

@@ -13,7 +13,6 @@
 GEMINI_API_KEY=<in Replit Secrets>
 BROWSERLESS_API_KEY=<in Replit Secrets>
 AI_LITERACY_BOT_API_KEY=<in Replit Secrets>
-VITE_GOOGLE_API_KEY=<in Replit Secrets>
 ```
 
 **Usage:**
@@ -252,23 +251,34 @@ Before finalizing ANY custom color combination, verify it passes WCAG standards:
 
 ## 🛡️ Student Input Validation
 
+**Philosophy**: Encourage thoughtful engagement while preventing infinite validation loops. System provides educational feedback via Gemini AI with a 2-attempt escape hatch.
+
 **For ALL reflection/exit ticket activities:**
 
-**Validation Rules:**
-- 100 characters minimum (2-3 sentences)
-- 15 words minimum
-- Detect gibberish (keyboard mashing, repeated chars)
-- NO bypass option - mandatory retry
+### Two-Layer Validation System
 
-**Two-Layer Validation:**
+**Layer 1: Pre-Filter (`isNonsensical`)**
+- Catches truly nonsensical input BEFORE calling Gemini API
+- Rejects: keyboard mashing, repeated chars, too short (<100 chars/<15 words), no vowels
+- Does NOT reject: complaints, off-topic, inappropriate (handled by Layer 2)
+- Generic error: "Your response needs more depth..."
+
+**Layer 2: Gemini AI Evaluation**
+- Intelligent, context-aware feedback on response quality
+- Model: `gemini-2.5-flash`, temp 0.4, maxOutputTokens 1000
+- Handles complaints, off-topic responses, generic fluff
+- Provides educational feedback or rejection with guidance
+
 ```typescript
 import { generateEducationFeedback, isNonsensical } from '@/utils/aiEducationFeedback';
 
-// Layer 1: Pre-filter (gibberish, too short)
+// Layer 1: Pre-filter check
 const isInvalid = isNonsensical(response);
 
-// Layer 2: AI feedback quality check (strict rejection only)
+// Layer 2: AI evaluation
 const feedback = await generateEducationFeedback(response, question);
+
+// Check for strict rejection phrases
 const feedbackIndicatesRetry =
   feedback.toLowerCase().includes('does not address') ||
   feedback.toLowerCase().includes('please re-read') ||
@@ -276,34 +286,96 @@ const feedbackIndicatesRetry =
   feedback.toLowerCase().includes('off-topic') ||
   feedback.toLowerCase().includes('must elaborate') ||
   feedback.toLowerCase().includes('insufficient') ||
-  feedback.toLowerCase().includes('monitored for inappropriate') ||
+  feedback.toLowerCase().includes('needs more depth') ||
+  feedback.toLowerCase().includes('random text') ||
   feedback.toLowerCase().includes('answer the original question');
 
 setNeedsRetry(isInvalid || feedbackIndicatesRetry);
 ```
 
-**Key Validation Phrases:**
-- ✅ **Strict Rejection** (triggers retry): "does not address", "must elaborate", "insufficient", "off-topic"
-- ❌ **Encouragement** (no retry): "please elaborate on...", "could you elaborate", "consider adding"
-- 🎯 **Philosophy**: Only block truly inadequate responses, not ones that could use minor improvement
+### Escape Hatch System (2-Attempt Limit)
 
-**Content Safety:**
-- Gemini API safety settings in `client/src/services/geminiClient.ts:68-87`
-- Blocked content → Show warning, force retry
-- Prompt injection protection built-in
+**Purpose**: Prevent students from getting stuck in validation loops (these are teenagers!)
 
-**Files:**
-- `client/src/utils/aiEducationFeedback.ts` - Validation logic
-- `client/src/services/geminiClient.ts` - Safety config
-- Examples: `VideoReflectionActivity.tsx`, `ExitTicket.tsx`
+**Implementation:**
+```typescript
+const [attemptCount, setAttemptCount] = useState(0);
+const [showEscapeHatch, setShowEscapeHatch] = useState(false);
+const MAX_ATTEMPTS = 2;
 
-**Testing Required:**
-1. Keyboard mashing → Reject
-2. Too short → Elaborate
-3. Gibberish → Reject
-4. Inappropriate → Block + warning
-5. Prompt injection → Ignore + evaluate normally
-6. Valid response → Honest feedback
+// Track attempts
+if (feedbackIndicatesRetry) {
+  const newAttemptCount = attemptCount + 1;
+  setAttemptCount(newAttemptCount);
+  if (newAttemptCount >= MAX_ATTEMPTS) {
+    setShowEscapeHatch(true);
+  }
+}
+```
+
+**After 2 failed attempts, student sees:**
+- ⚠️ Warning message about multiple attempts
+- **Two options:**
+  1. "Try One More Time" - Resets form, clears attempt count
+  2. "Continue Anyway" - Proceeds to next activity/certificate
+- ⚠️ **"Instructor review" warning** if they continue (harmless lie for accountability)
+
+**Button Actions:**
+- **Try Again**: Resets `attemptCount` to 0, clears form, hides escape hatch
+- **Continue Anyway**: Logs bypass to console, proceeds with `onComplete()`
+
+### Rejection Trigger Phrases
+
+Gemini feedback containing ANY of these phrases triggers retry:
+- "does not address"
+- "please re-read"
+- "inappropriate language"
+- "off-topic"
+- "must elaborate"
+- "insufficient"
+- "needs more depth"
+- "random text"
+- "answer the original question"
+
+### Implementation Status
+
+**Modules with Escape Hatch:**
+- ✅ Understanding LLMs - `ExitTicketLLM.tsx`
+- ✅ What Is AI - `VideoReflectionActivity.tsx`
+- ✅ Intro to Gen AI - `IntroToGenAIModule.tsx` (exit ticket)
+- ⏳ 5 remaining modules need implementation
+
+### Files & Documentation
+
+**Core Files:**
+- `client/src/utils/aiEducationFeedback.ts` - Validation logic, pre-filter, Gemini prompting
+- `client/src/services/geminiClient.ts` - Gemini API config, safety settings
+- `.claude/guides/student-feedback-validation.md` - Comprehensive 400+ line implementation guide
+
+**Implementation Examples:**
+- `client/src/components/UnderstandingLLMModule/activities/ExitTicketLLM.tsx`
+- `client/src/components/WhatIsAIModule/VideoReflectionActivity.tsx`
+- `client/src/components/modules/IntroToGenAIModule.tsx` (exit ticket section)
+
+### Testing Checklist
+
+**Must test every validation implementation:**
+1. ✅ Valid response → Green feedback, proceed
+2. ✅ Complaint (1st attempt) → Yellow retry feedback
+3. ✅ Complaint (2nd attempt) → Escape hatch appears
+4. ✅ Gibberish → Pre-filter rejection, no API call
+5. ✅ Too short → Pre-filter rejection
+6. ✅ "Try One More Time" → Resets everything
+7. ✅ "Continue Anyway" → Proceeds to certificate
+
+### Critical Configuration
+
+**IMPORTANT**: Gemini 2.5 Flash uses 200-500 "thinking tokens" internally. Always set:
+```typescript
+maxOutputTokens: 1000 // High enough for thinking (200-500) + response (100-200) + buffer
+```
+
+If `maxOutputTokens` is too low (e.g., 200), Gemini returns empty responses with `finishReason: "MAX_TOKENS"`.
 
 ## 💾 Progress Persistence
 

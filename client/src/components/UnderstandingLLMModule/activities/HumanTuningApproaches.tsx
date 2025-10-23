@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ThumbsUp, Users, Shield, Brain, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, ThumbsUp, Users, Shield, Brain, AlertTriangle, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -22,6 +22,7 @@ interface ApproachCard {
 
 export default function HumanTuningApproaches({ onComplete }: Props) {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [visitedCards, setVisitedCards] = useState<Set<string>>(new Set());
 
   const approaches: ApproachCard[] = [
     {
@@ -74,7 +75,16 @@ export default function HumanTuningApproaches({ onComplete }: Props) {
 
   const handleCardClick = (id: string) => {
     setExpandedCard(expandedCard === id ? null : id);
+
+    // Mark card as visited when clicked
+    if (!visitedCards.has(id)) {
+      setVisitedCards(new Set([...visitedCards, id]));
+    }
   };
+
+  // Check if all cards have been visited
+  const allCardsVisited = approaches.every(approach => visitedCards.has(approach.id));
+  const remainingCards = approaches.length - visitedCards.size;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
@@ -101,9 +111,12 @@ export default function HumanTuningApproaches({ onComplete }: Props) {
           transition={{ delay: 0.2 }}
           className="bg-purple-900/30 border border-purple-400 rounded-lg p-4 mb-8 max-w-4xl mx-auto"
         >
-          <p className="text-white text-center">
+          <p className="text-white text-center mb-2">
             Without human guidance, AI might generate harmful content, give wrong answers, or reflect biases.
             Even with tuning, <strong className="text-yellow-300">"you're always responsible for checking its work."</strong>
+          </p>
+          <p className="text-white/70 text-center text-sm">
+            Click on each approach to learn more
           </p>
         </motion.div>
 
@@ -120,11 +133,26 @@ export default function HumanTuningApproaches({ onComplete }: Props) {
               {/* Card Header */}
               <button
                 onClick={() => handleCardClick(approach.id)}
-                className={`w-full text-left transition-all duration-300 ${
+                className={`w-full text-left transition-all duration-300 relative ${
                   expandedCard === approach.id ? 'ring-4 ring-yellow-400' : ''
                 }`}
               >
-                <div className={`bg-gradient-to-br ${approach.bgGradient} rounded-xl p-6 border-2 border-white/30 hover:border-white/50`}>
+                <div className={`bg-gradient-to-br ${approach.bgGradient} rounded-xl p-6 border-2 ${
+                  visitedCards.has(approach.id)
+                    ? 'border-green-400/50 hover:border-green-400'
+                    : 'border-white/30 hover:border-white/50'
+                } relative`}>
+                  {/* Visited checkmark badge */}
+                  {visitedCards.has(approach.id) && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1"
+                    >
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </motion.div>
+                  )}
+
                   <div className="flex items-start justify-between mb-3">
                     <div className="text-white">
                       {approach.logoUrl ? (
@@ -145,7 +173,18 @@ export default function HumanTuningApproaches({ onComplete }: Props) {
                   </p>
                   <div className="flex items-center justify-between text-white">
                     <span className="text-sm">
-                      {expandedCard === approach.id ? 'Click to collapse' : 'Click to learn more'}
+                      {!visitedCards.has(approach.id) && !expandedCard ? (
+                        <span className="flex items-center gap-1">
+                          <motion.span
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                            className="inline-block w-2 h-2 bg-yellow-400 rounded-full"
+                          />
+                          Click to learn more
+                        </span>
+                      ) : (
+                        expandedCard === approach.id ? 'Click to collapse' : 'Click to learn more'
+                      )}
                     </span>
                     {expandedCard === approach.id ? (
                       <ChevronUp className="w-5 h-5" />
@@ -219,10 +258,21 @@ export default function HumanTuningApproaches({ onComplete }: Props) {
         <div className="text-center">
           <Button
             onClick={onComplete}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-10 py-6 text-lg rounded-xl"
+            disabled={!allCardsVisited}
+            className={`px-10 py-6 text-lg rounded-xl transition-all duration-300 ${
+              allCardsVisited
+                ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white'
+                : 'bg-gray-700 text-gray-400 cursor-not-allowed opacity-50'
+            }`}
           >
-            Continue
-            <ArrowRight className="ml-2 h-5 w-5" />
+            {allCardsVisited ? (
+              <>
+                Continue
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </>
+            ) : (
+              `Explore ${remainingCards} more ${remainingCards === 1 ? 'approach' : 'approaches'} to continue`
+            )}
           </Button>
         </div>
       </div>

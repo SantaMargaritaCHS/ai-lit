@@ -10,7 +10,6 @@ interface Props {
 
 export default function GenAIBridge({ onComplete }: Props) {
   const [currentScreen, setCurrentScreen] = useState(0); // 0 = preview, 1 = bridge
-  const [isFadingOut, setIsFadingOut] = useState(false);
 
   // Developer Mode: Auto-complete functionality
   useEffect(() => {
@@ -25,19 +24,12 @@ export default function GenAIBridge({ onComplete }: Props) {
     return () => window.removeEventListener('dev-auto-complete-activity', handleDevAutoComplete);
   }, [onComplete]);
 
-  const handleComplete = () => {
-    setIsFadingOut(true);
-    setTimeout(() => {
-      onComplete();
-    }, 1000); // 1 second fade-out
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: isFadingOut ? 0 : 1, y: isFadingOut ? 20 : 0 }}
-        transition={{ duration: isFadingOut ? 1 : 0.3 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
         className="max-w-4xl w-full"
       >
       {currentScreen === 0 ? (
@@ -136,7 +128,7 @@ export default function GenAIBridge({ onComplete }: Props) {
           </div>
 
           <button
-            onClick={handleComplete}
+            onClick={onComplete}
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium inline-flex items-center justify-center gap-2"
           >
             Start Learning <ArrowRight className="w-5 h-5" />

@@ -100,14 +100,14 @@ const comprehensionQuestions: ComprehensionQuestion[] = [
     question: "What are the limitations of AI predictions based on what you observed?",
     options: [
       {
-        text: "AI can only show what's statistically common in its training data—not what's true, best, or right for each individual person",
-        isCorrect: true,
-        explanation: "Perfect! This is the key limitation. The AI shows 'dog,' 'beach,' and 'doctor' because they're common in training data—not because they're objectively 'correct' or right for YOU. AI can't understand individual preferences, context, or truth. Your unique answer is just as valid!"
-      },
-      {
         text: "AI can predict the objectively correct answer that most people would agree with",
         isCorrect: false,
         explanation: "Not true. There's no 'objectively correct' answer to personal questions like favorite animals or career aspirations. AI only knows statistical patterns—it can't determine correctness or what's best for individuals."
+      },
+      {
+        text: "AI can only show what's statistically common in its training data—not what's true, best, or right for each individual person",
+        isCorrect: true,
+        explanation: "Perfect! This is the key limitation. The AI shows 'dog,' 'beach,' and 'doctor' because they're common in training data—not because they're objectively 'correct' or right for YOU. AI can't understand individual preferences, context, or truth. Your unique answer is just as valid!"
       },
       {
         text: "AI's predictions are always better than human answers because they're based on large amounts of data",
@@ -489,15 +489,26 @@ Return the JSON now:`;
     };
 
     const handleNextQuestion = () => {
+      // Only allow progression if answer is correct
+      if (selectedAnswer === null || !currentQuestion.options[selectedAnswer].isCorrect) {
+        return;
+      }
+
       if (currentComprehensionQ < comprehensionQuestions.length - 1) {
         // Move to next question
         setCurrentComprehensionQ(currentComprehensionQ + 1);
         setShowComprehensionFeedback(false);
         setSelectedAnswer(null);
       } else {
-        // Both questions answered, complete the activity
+        // Both questions answered correctly, complete the activity
         onComplete();
       }
+    };
+
+    const handleTryAgain = () => {
+      // Reset the current question to allow retry
+      setShowComprehensionFeedback(false);
+      setSelectedAnswer(null);
     };
 
     return (
@@ -619,13 +630,24 @@ Return the JSON now:`;
                     </div>
                   </div>
 
-                  <Button
-                    onClick={handleNextQuestion}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-6 text-xl rounded-xl"
-                  >
-                    {currentComprehensionQ < comprehensionQuestions.length - 1 ? 'Next Question' : 'Complete Activity'}
-                    <ArrowRight className="ml-2 h-6 w-6" />
-                  </Button>
+                  {/* Show Try Again if incorrect, Next Question if correct */}
+                  {currentQuestion.options[selectedAnswer!].isCorrect ? (
+                    <Button
+                      onClick={handleNextQuestion}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-6 text-xl rounded-xl"
+                    >
+                      {currentComprehensionQ < comprehensionQuestions.length - 1 ? 'Next Question' : 'Complete Activity'}
+                      <ArrowRight className="ml-2 h-6 w-6" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleTryAgain}
+                      className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white py-6 text-xl rounded-xl"
+                    >
+                      Try Again
+                      <ArrowRight className="ml-2 h-6 w-6" />
+                    </Button>
+                  )}
                 </motion.div>
               </>
             )}

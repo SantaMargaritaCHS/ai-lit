@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MessageSquare,
   AlertTriangle,
   CheckCircle,
   Zap,
   ArrowRight,
   Scissors,
   FileText,
-  ChevronDown,
-  ChevronUp,
   BarChart3,
-  RefreshCw
+  RefreshCw,
+  BookOpen,
+  MessageCircle,
+  FileCode,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -19,75 +21,141 @@ interface Props {
   onComplete: () => void;
 }
 
-type ScenarioPhase = 'intro' | 'wrong-way' | 'tips';
+type ViewMode = 'intro' | 'tips';
 
-interface Message {
-  role: 'user' | 'ai';
-  content: string;
-  tokenCount?: number;
+interface AIModel {
+  id: string;
+  name: string;
+  icon: string;
+  tokenLimit: number;
+  displayLimit: string;
+  description: string;
+  barColor: string;
+}
+
+interface Scenario {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  description: string;
+  tokens: number;
+  color: string;
 }
 
 export default function WhyTokenLimitsMatter({ onComplete }: Props) {
-  const [scenarioPhase, setScenarioPhase] = useState<ScenarioPhase>('intro');
-  const [wrongWayStep, setWrongWayStep] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>('intro');
+  const [clickedScenarios, setClickedScenarios] = useState<Set<string>>(new Set());
+  const [cumulativeTokens, setCumulativeTokens] = useState(0);
   const [viewedTips, setViewedTips] = useState<Set<number>>(new Set());
   const [expandedTip, setExpandedTip] = useState<number | null>(null);
   const [canContinue, setCanContinue] = useState(false);
-  const [simulationComplete, setSimulationComplete] = useState(false);
 
-  const TOKEN_LIMIT = 8000; // ChatGPT 4 limit
-
-  // Wrong way scenario messages - MORE REALISTIC
-  const wrongWayMessages: Message[] = [
+  // AI Models with their token limits (context windows) - Updated October 2025
+  const aiModels: AIModel[] = [
     {
-      role: 'user',
-      content: 'Can you help me analyze this research article about renewable energy?',
-      tokenCount: 50
+      id: 'gpt35',
+      name: 'GPT-3.5 Turbo',
+      icon: '🤖',
+      tokenLimit: 16000,
+      displayLimit: '16,000',
+      description: '~40 pages',
+      barColor: 'from-blue-500 to-blue-400'
     },
     {
-      role: 'ai',
-      content: 'Of course! I\'d be happy to help analyze your research article. Please share it with me.',
-      tokenCount: 70
+      id: 'gpt4o',
+      name: 'GPT-4o',
+      icon: '🧠',
+      tokenLimit: 128000,
+      displayLimit: '128,000',
+      description: '~320 pages',
+      barColor: 'from-cyan-500 to-cyan-400'
     },
     {
-      role: 'user',
-      content: '📄 [Pasting 15-page article: "Renewable Energy Transition in the 21st Century: A Comprehensive Analysis of Solar Panel Efficiency, Implementation Challenges, and Global Policy Frameworks..."] (15 pages total)',
-      tokenCount: 32540 // Way over limit!
+      id: 'gpt5',
+      name: 'GPT-5',
+      icon: '🚀',
+      tokenLimit: 128000,
+      displayLimit: '128,000',
+      description: '~320 pages',
+      barColor: 'from-green-500 to-emerald-400'
     },
     {
-      role: 'ai',
-      content: 'Based on the introduction section, this article examines solar panel efficiency improvements through new nano-coating technology. The research discusses the global shift toward renewable energy systems. For a complete analysis of the methodology, results, and conclusions, could you share those specific sections?',
-      tokenCount: 120
+      id: 'claude',
+      name: 'Claude 3.5 Sonnet',
+      icon: '✨',
+      tokenLimit: 200000,
+      displayLimit: '200,000',
+      description: '~500 pages',
+      barColor: 'from-purple-500 to-purple-400'
     },
     {
-      role: 'user',
-      content: 'Wait, I already pasted the whole article! Did you see the results section on pages 10-12?',
-      tokenCount: 80
-    },
-    {
-      role: 'ai',
-      content: 'I apologize for the confusion. I can only see the introduction and first few pages. Could you paste the results section (pages 10-12) separately so I can analyze it?',
-      tokenCount: 95
+      id: 'gemini',
+      name: 'Gemini 1.5 Pro',
+      icon: '💎',
+      tokenLimit: 2000000,
+      displayLimit: '2,000,000',
+      description: '~5,000 pages',
+      barColor: 'from-pink-500 to-purple-500'
     }
   ];
 
-  // Context messages explaining what's happening at each step
-  const contextMessages: { [key: number]: string } = {
-    0: "👋 A student wants help analyzing a long research paper. This is a normal request.",
-    1: "✅ ChatGPT says yes! Notice the token counter shows only 120 tokens used so far - plenty of room!",
-    2: "⚠️ WATCH THIS: The student pastes their entire 15-page paper (32,540 tokens). But ChatGPT can only handle 8,000 tokens! Watch the Context Window bar below turn red.",
-    3: "🤔 ChatGPT responds but ONLY talks about the introduction. Why? It never saw the rest of the paper - the context window was already full!",
-    4: "😕 The student is confused. They specifically asked about the results section on page 10, but ChatGPT didn't mention it.",
-    5: "💡 ChatGPT admits it can only see the first few pages. The rest was cut off without warning. This is why understanding token limits matters!"
-  };
+  // Interactive scenarios students can click to fill context windows
+  const scenarios: Scenario[] = [
+    {
+      id: 'page',
+      title: '4 double-spaced pages',
+      icon: <FileText className="w-6 h-6" />,
+      description: '~1,000 words',
+      tokens: 1500,
+      color: 'text-blue-400'
+    },
+    {
+      id: 'essay',
+      title: 'Essay (10 pages)',
+      icon: <BookOpen className="w-6 h-6" />,
+      description: '~5,000 words',
+      tokens: 7000,
+      color: 'text-green-400'
+    },
+    {
+      id: 'article',
+      title: 'Article (15 pages)',
+      icon: <FileText className="w-6 h-6" />,
+      description: '~7,500 words',
+      tokens: 10000,
+      color: 'text-orange-400'
+    },
+    {
+      id: 'chat',
+      title: 'Long conversation',
+      icon: <MessageCircle className="w-6 h-6" />,
+      description: '15-20 exchanges (+ AI responses)',
+      tokens: 6000,
+      color: 'text-purple-400'
+    }
+  ];
 
-  // Steps where student must manually click Continue
-  const pausePoints = [2, 3, 5];
-
-  // Check if all tips viewed (now 4 tips)
+  // Check if all tips viewed (4 tips)
   useEffect(() => {
     setCanContinue(viewedTips.size === 4);
   }, [viewedTips]);
+
+  // Handle scenario button click (cumulative) - allows multiple clicks
+  const handleScenarioClick = (scenario: Scenario) => {
+    // ALWAYS add tokens when clicked (allows multiple clicks)
+    setCumulativeTokens((prev) => prev + scenario.tokens);
+
+    // Track that it's been clicked at least once (for checkmark and continue button)
+    if (!clickedScenarios.has(scenario.id)) {
+      setClickedScenarios((prev) => new Set(prev).add(scenario.id));
+    }
+  };
+
+  // Reset all scenarios
+  const handleReset = () => {
+    setClickedScenarios(new Set());
+    setCumulativeTokens(0);
+  };
 
   // Handle tip card click
   const handleTipClick = (tipIndex: number) => {
@@ -95,11 +163,25 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
     setExpandedTip(expandedTip === tipIndex ? null : tipIndex);
   };
 
+  // Calculate fill percentage for a model
+  const getModelFillPercentage = (modelLimit: number): number => {
+    return (cumulativeTokens / modelLimit) * 100;
+  };
+
+  // Get bar color based on fill percentage
+  const getBarColor = (percentage: number): string => {
+    if (percentage < 50) return 'from-green-500 to-green-400';
+    if (percentage < 75) return 'from-yellow-500 to-yellow-400';
+    if (percentage < 90) return 'from-orange-500 to-orange-400';
+    return 'from-red-500 to-red-400';
+  };
+
   // Auto-advance for dev mode
   useEffect(() => {
     const handleDevAutoComplete = () => {
-      setScenarioPhase('tips');
-      setViewedTips(new Set([0, 1, 2, 3])); // All 4 tips
+      setViewMode('tips');
+      setClickedScenarios(new Set(['page', 'essay', 'article', 'chat']));
+      setViewedTips(new Set([0, 1, 2, 3]));
       setCanContinue(true);
     };
 
@@ -107,49 +189,11 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
     return () => window.removeEventListener('dev-auto-complete-activity', handleDevAutoComplete);
   }, []);
 
-  // Auto-advance timer with dynamic word-based timing
-  useEffect(() => {
-    if (scenarioPhase === 'wrong-way') {
-      if (wrongWayStep < wrongWayMessages.length - 1) {
-        // Reset simulation complete flag when replaying
-        setSimulationComplete(false);
-
-        // Check if current step is a pause point - DON'T auto-advance
-        if (pausePoints.includes(wrongWayStep)) {
-          return; // Wait for manual Continue click
-        }
-
-        const currentMessage = wrongWayMessages[wrongWayStep];
-        const messageContent = currentMessage.content || '';
-        const wordCount = messageContent.split(' ').length;
-
-        // Dynamic delay: 1200ms base + 60ms per word (prevents 6-9 second waits)
-        const baseDelay = 1200;
-        const msPerWord = 60;
-        const calculatedDelay = baseDelay + (wordCount * msPerWord);
-
-        // AI messages get minimum 1800ms (more realistic), cap maximum at 4000ms
-        const finalDelay = currentMessage.role === 'ai'
-          ? Math.min(Math.max(calculatedDelay, 1800), 4000)
-          : Math.min(calculatedDelay, 4000);
-
-        const timer = setTimeout(() => {
-          setWrongWayStep(wrongWayStep + 1);
-        }, finalDelay);
-
-        return () => clearTimeout(timer);
-      } else {
-        // Simulation complete - mark it
-        setSimulationComplete(true);
-      }
-    }
-  }, [scenarioPhase, wrongWayStep, wrongWayMessages, pausePoints]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
       <div className="max-w-6xl mx-auto">
-        {/* INTRO SECTION */}
-        {scenarioPhase === 'intro' && (
+        {/* INTRO SECTION WITH INTERACTIVE CONTEXT WINDOW VISUALIZATION */}
+        {viewMode === 'intro' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -161,223 +205,221 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
               <h1 className="text-4xl font-bold text-white mb-4">
                 Why Should You Care About Token Limits?
               </h1>
-              <p className="text-white text-xl max-w-3xl mx-auto">
-                Have you ever pasted a long essay into ChatGPT and gotten a weird, incomplete response? Here's why...
-              </p>
-            </div>
-
-            {/* Model Comparison */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 border-2 border-white/20">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
-                <BarChart3 className="w-6 h-6 text-purple-400" />
-                Different AI Models, Different Limits
-              </h2>
-
-              <div className="space-y-4">
-                <div className="bg-gray-800/50 rounded-lg p-4 border-2 border-gray-600">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">🤖</span>
-                      <span className="text-white font-semibold text-lg">ChatGPT 3.5</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-bold">4,000 tokens</p>
-                      <p className="text-white/70 text-sm">~3 pages</p>
-                    </div>
-                  </div>
-                  <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 w-[10%]" />
-                  </div>
-                </div>
-
-                <div className="bg-blue-900/40 rounded-lg p-4 border-2 border-blue-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">🧠</span>
-                      <span className="text-white font-semibold text-lg">ChatGPT 4</span>
-                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">We'll use this!</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-bold">8,000 tokens</p>
-                      <p className="text-white/70 text-sm">~6 pages</p>
-                    </div>
-                  </div>
-                  <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-400 w-[20%]" />
-                  </div>
-                </div>
-
-                <div className="bg-gray-800/50 rounded-lg p-4 border-2 border-gray-600">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">🔧</span>
-                      <span className="text-white font-semibold text-lg">GitHub Copilot</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-bold">8,000 tokens</p>
-                      <p className="text-white/70 text-sm">~6 pages of code</p>
-                    </div>
-                  </div>
-                  <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-gray-400 w-[20%]" />
-                  </div>
-                </div>
-
-                <div className="bg-gray-800/50 rounded-lg p-4 border-2 border-gray-600">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">✨</span>
-                      <span className="text-white font-semibold text-lg">Claude Sonnet</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-bold">200,000 tokens</p>
-                      <p className="text-white/70 text-sm">~500 pages</p>
-                    </div>
-                  </div>
-                  <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500 w-[50%]" />
-                  </div>
-                </div>
-
-                <div className="bg-gray-800/50 rounded-lg p-4 border-2 border-gray-600">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">💎</span>
-                      <span className="text-white font-semibold text-lg">Gemini 1.5 Pro</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-bold">1,000,000 tokens</p>
-                      <p className="text-white/70 text-sm">~3,000 pages</p>
-                    </div>
-                  </div>
-                  <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 w-full" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-900/30 border border-blue-400 rounded-lg p-4 mt-6">
-                <p className="text-white text-sm">
-                  💡 <strong className="text-yellow-300">What this means:</strong> Bigger limits = more text at once. But what happens when you exceed the limit? Let's find out...
+              <div className="bg-blue-900/40 border-2 border-blue-400 rounded-xl p-6 max-w-4xl mx-auto">
+                <p className="text-white text-lg mb-3">
+                  Have you ever pasted a long essay into ChatGPT and gotten a weird, incomplete response? Here's why...
+                </p>
+                <p className="text-white/90 mb-3">
+                  AI models have <strong className="text-yellow-300">context windows</strong> (token limits) that determine how much they can process at once.
+                </p>
+                <p className="text-white/90">
+                  <strong className="text-yellow-300">Try it yourself:</strong> Click the examples below to see how quickly different models fill up—some max out fast, others have room to spare!
                 </p>
               </div>
             </div>
 
-            {/* Start Button */}
+            {/* Scenario Buttons */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border-2 border-white/20">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">
+                    Add content to the context window:
+                  </h3>
+                  <p className="text-green-300 text-sm font-medium">
+                    💡 Click the same example multiple times to keep adding tokens!
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-white/70 text-sm">Total Tokens</p>
+                    <p className="text-2xl font-bold text-yellow-300">
+                      {cumulativeTokens.toLocaleString()}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    className="bg-red-900/40 border-red-400 text-white hover:bg-red-900/60 hover:text-white"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Reset
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {scenarios.map((scenario) => (
+                  <button
+                    key={scenario.id}
+                    onClick={() => handleScenarioClick(scenario)}
+                    className={`p-4 rounded-lg border-2 transition-all cursor-pointer hover:scale-105 ${
+                      clickedScenarios.has(scenario.id)
+                        ? 'bg-green-900/30 border-green-400 hover:bg-green-800/40 hover:border-green-300'
+                        : 'bg-white/10 border-white/30 hover:bg-white/20 hover:border-white/50'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <div className={scenario.color}>
+                        {scenario.icon}
+                      </div>
+                      <p className="text-white font-semibold text-sm text-center">
+                        {scenario.title}
+                      </p>
+                      <p className="text-white/70 text-xs">
+                        {scenario.description}
+                      </p>
+                      <div className="bg-yellow-900/40 border border-yellow-400 rounded px-2 py-1 mt-1">
+                        <p className="text-yellow-300 text-sm font-bold">
+                          +{scenario.tokens.toLocaleString()} tokens
+                        </p>
+                      </div>
+                      {clickedScenarios.has(scenario.id) && (
+                        <div className="flex items-center gap-1 text-green-400 text-xs font-medium mt-1">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Click again to add more!</span>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-4 bg-gradient-to-r from-green-900/40 to-blue-900/40 border-2 border-green-400 rounded-lg p-4">
+                <p className="text-white font-semibold text-center mb-1">
+                  ⭐ Pro Tip: Keep clicking!
+                </p>
+                <p className="text-white/90 text-sm text-center">
+                  You can click the same content card over and over to keep adding tokens. Watch the bars fill up and exceed their limits!
+                </p>
+              </div>
+            </div>
+
+            {/* Model Comparison Table with Dynamic Bars */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 border-2 border-white/20">
+              <h2 className="text-2xl font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
+                <BarChart3 className="w-6 h-6 text-purple-400" />
+                AI Models & Their Context Windows
+              </h2>
+
+              <div className="space-y-4">
+                {aiModels.map((model) => {
+                  const fillPercentage = getModelFillPercentage(model.tokenLimit);
+                  const isExceeded = fillPercentage > 100;
+                  const displayPercentage = Math.min(fillPercentage, 100);
+                  const barColor = isExceeded ? 'from-red-600 to-red-500' : getBarColor(fillPercentage);
+
+                  return (
+                    <div
+                      key={model.id}
+                      className={`rounded-lg p-4 border-2 transition-all ${
+                        isExceeded
+                          ? 'bg-red-900/40 border-red-400'
+                          : 'bg-gray-800/50 border-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{model.icon}</span>
+                          <div>
+                            <p className="text-white font-semibold text-lg">{model.name}</p>
+                            <p className="text-white/70 text-sm">
+                              {model.displayLimit} tokens ({model.description})
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {isExceeded ? (
+                            <div className="bg-red-600 text-white px-3 py-1 rounded font-bold text-sm">
+                              ⚠️ EXCEEDED
+                            </div>
+                          ) : (
+                            <p className="text-white font-bold text-lg">
+                              {fillPercentage.toFixed(1)}%
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="w-full h-6 bg-gray-700 rounded-full overflow-hidden relative">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${displayPercentage}%` }}
+                          transition={{ duration: 0.5 }}
+                          className={`h-full bg-gradient-to-r ${barColor}`}
+                        />
+                        {isExceeded && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <AlertTriangle className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      {isExceeded && (
+                        <div className="bg-red-900/60 border border-red-400 rounded-lg p-3 mt-3">
+                          <p className="text-red-200 font-bold text-sm mb-2">
+                            ⚠️ Content exceeds limit by {(fillPercentage - 100).toFixed(0)}%
+                          </p>
+                          <p className="text-red-200 text-xs mb-2">
+                            <strong className="text-white">What happens when you exceed the limit:</strong>
+                          </p>
+                          <ul className="text-red-200 text-xs space-y-1 ml-4">
+                            <li>• The AI starts forgetting earlier parts of the conversation</li>
+                            <li>• Responses may be incomplete or cut off mid-sentence</li>
+                            <li>• Answers can become inconsistent or contradictory</li>
+                            <li>• <strong className="text-white">Solution:</strong> Start a new chat or break content into smaller chunks</li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {cumulativeTokens > 0 && (
+                <div className="bg-yellow-900/30 border border-yellow-400 rounded-lg p-4 mt-6">
+                  <h3 className="text-white font-bold mb-2">💡 What This Shows:</h3>
+                  <p className="text-white/90 text-sm">
+                    {cumulativeTokens <= 16000 ? (
+                      <>All models can handle {cumulativeTokens.toLocaleString()} tokens. GPT-3.5 is filling up—keep clicking to see it exceed!</>
+                    ) : cumulativeTokens <= 24500 ? (
+                      <>⚠️ GPT-3.5 (16K) is EXCEEDED! It would cut off earlier parts or refuse input. The other models still have room.</>
+                    ) : cumulativeTokens <= 128000 ? (
+                      <>GPT-3.5 is way over capacity. Newer models (GPT-4o, GPT-5, Claude, Gemini) handle this load easily. Model choice matters!</>
+                    ) : cumulativeTokens <= 200000 ? (
+                      <>⚠️ GPT-4o and GPT-5 (128K) are EXCEEDED! Only Claude and Gemini can handle {cumulativeTokens.toLocaleString()} tokens without losing context.</>
+                    ) : cumulativeTokens <= 2000000 ? (
+                      <>⚠️ Claude (200K) is EXCEEDED! Only Gemini's massive 2M token window remains. This demonstrates why choosing the right tool is critical for huge documents!</>
+                    ) : (
+                      <>🚨 EVEN GEMINI (2M) is EXCEEDED at {cumulativeTokens.toLocaleString()} tokens! At this scale, you'd need to break content into chunks or use specialized document processing systems.</>
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Continue Button */}
             <Button
-              onClick={() => {
-                setScenarioPhase('wrong-way');
-                setWrongWayStep(0);
-                setSimulationComplete(false);
-              }}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-6 text-xl rounded-xl"
+              onClick={() => setViewMode('tips')}
+              disabled={clickedScenarios.size < scenarios.length}
+              className={`w-full py-6 text-xl rounded-xl transition-all ${
+                clickedScenarios.size >= scenarios.length
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white'
+                  : 'bg-gray-700 text-gray-400 cursor-not-allowed opacity-50'
+              }`}
             >
-              Show Me What Happens <ArrowRight className="w-6 h-6 ml-2" />
+              {clickedScenarios.size >= scenarios.length ? (
+                <>
+                  Continue to Smart Tips <ArrowRight className="w-6 h-6 ml-2" />
+                </>
+              ) : (
+                `Try ${scenarios.length - clickedScenarios.size} more ${
+                  scenarios.length - clickedScenarios.size === 1 ? 'example' : 'examples'
+                } to continue`
+              )}
             </Button>
           </motion.div>
         )}
 
-        {/* SCENARIO: THE WRONG WAY (Step-by-step with manual progression) */}
-        {scenarioPhase === 'wrong-way' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6"
-          >
-            {/* PRE-SIMULATION INTRO BOX */}
-            {wrongWayStep === 0 && (
-              <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 border-2 border-blue-500 rounded-xl p-5">
-                <p className="text-white text-center text-sm font-medium">
-                  📚 <strong>WHAT YOU'LL LEARN:</strong> ChatGPT has a 'Context Window' - like a fixed-size container for text.
-                  When you paste too much, it silently cuts off the extra. Watch how this causes confusion...
-                </p>
-              </div>
-            )}
-
-            {/* STATIC NARRATION BOX - MOVED ABOVE SIMULATION */}
-            <div className="bg-blue-900/30 border-2 border-blue-400 rounded-xl p-6 min-h-[120px]">
-              <div className="flex items-start gap-3">
-                <MessageSquare className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
-                <div className="flex-1">
-                  <h3 className="text-blue-300 font-bold text-sm mb-2">💡 WHAT'S HAPPENING</h3>
-                  <AnimatePresence mode="wait">
-                    <motion.p
-                      key={wrongWayStep}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-white text-base leading-relaxed"
-                    >
-                      {contextMessages[wrongWayStep]}
-                    </motion.p>
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
-
-            <ChatGPTSimulation
-              messages={wrongWayMessages}
-              currentStep={wrongWayStep}
-              tokenLimit={TOKEN_LIMIT}
-              title="Token Limits in Action: When AI Can't See Everything"
-              subtitle="Watch what happens when someone tries to paste more text than ChatGPT can handle"
-            />
-
-            {/* Continue Button - shown at pause points */}
-            <AnimatePresence>
-              {pausePoints.includes(wrongWayStep) && !simulationComplete && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="text-center"
-                >
-                  <Button
-                    onClick={() => setWrongWayStep(wrongWayStep + 1)}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg rounded-xl"
-                  >
-                    Continue <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Replay and Continue to Tips - shown after simulation completes */}
-            <AnimatePresence>
-              {simulationComplete && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex flex-col sm:flex-row gap-4 justify-center"
-                >
-                  <Button
-                    onClick={() => {
-                      setWrongWayStep(0);
-                      setSimulationComplete(false);
-                    }}
-                    variant="outline"
-                    className="bg-white/20 border-white/30 text-white hover:bg-white/30 w-full sm:w-auto"
-                  >
-                    <RefreshCw className="w-5 h-5 mr-2" />
-                    Replay Simulation
-                  </Button>
-                  <Button
-                    onClick={() => setScenarioPhase('tips')}
-                    className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-6 text-lg"
-                  >
-                    Continue to the Tips
-                    <ArrowRight className="w-6 h-6 ml-2" />
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-
         {/* SMART TIPS SECTION */}
-        {scenarioPhase === 'tips' && (
+        {viewMode === 'tips' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -439,10 +481,10 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
                 onClick={() => handleTipClick(2)}
               >
                 <ul className="space-y-2 text-white/90">
-                  <li>• <strong className="text-blue-300">ChatGPT 3.5</strong> (3 pages): Quick questions, short conversations</li>
-                  <li>• <strong className="text-blue-300">ChatGPT 4</strong> (6 pages): Essay drafts, homework help</li>
-                  <li>• <strong className="text-purple-300">Claude</strong> (500 pages): Research papers, long documents</li>
-                  <li>• <strong className="text-pink-300">Gemini Pro</strong> (3,000+ pages): Entire books, massive datasets</li>
+                  <li>• <strong className="text-blue-300">GPT-3.5 Turbo</strong> (40 pages): Quick questions, short conversations</li>
+                  <li>• <strong className="text-cyan-300">GPT-4o / GPT-5</strong> (320 pages): Essay drafts, homework help, long discussions</li>
+                  <li>• <strong className="text-purple-300">Claude 3.5 Sonnet</strong> (500 pages): Research papers, long documents</li>
+                  <li>• <strong className="text-pink-300">Gemini 1.5 Pro</strong> (5,000+ pages): Entire books, massive datasets</li>
                   <li>• <strong className="text-yellow-300">Match the tool to your task size!</strong></li>
                 </ul>
               </TipCard>
@@ -503,152 +545,6 @@ export default function WhyTokenLimitsMatter({ onComplete }: Props) {
         )}
       </div>
     </div>
-  );
-}
-
-// ============================================================================
-// CHATGPT SIMULATION COMPONENT
-// ============================================================================
-
-interface ChatGPTSimulationProps {
-  messages: Message[];
-  currentStep: number;
-  tokenLimit: number;
-  title: string;
-  subtitle: string;
-}
-
-function ChatGPTSimulation({
-  messages,
-  currentStep,
-  tokenLimit,
-  title,
-  subtitle
-}: ChatGPTSimulationProps) {
-  const visibleMessages = messages.slice(0, currentStep + 1);
-  const currentTokenCount = visibleMessages.reduce((sum, msg) => sum + (msg.tokenCount || 0), 0);
-  const isOverLimit = currentTokenCount > tokenLimit;
-
-  const getTokenBarColor = () => {
-    const percentage = (currentTokenCount / tokenLimit) * 100;
-    if (percentage < 50) return 'from-green-500 to-green-400';
-    if (percentage < 75) return 'from-yellow-500 to-yellow-400';
-    if (percentage < 90) return 'from-orange-500 to-orange-400';
-    return 'from-red-500 to-red-400';
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
-    >
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
-        <p className="text-white/80 text-lg">{subtitle}</p>
-      </div>
-
-      {/* ChatGPT Interface */}
-      <div className="bg-gray-900 rounded-xl border-2 border-gray-700 overflow-hidden">
-        {/* Top Bar */}
-        <div className="bg-gray-800 border-b border-gray-700 p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span className="ml-4 text-white font-medium">ChatGPT 4</span>
-          </div>
-          <div className={`px-4 py-2 rounded-lg font-bold transition-all ${
-            isOverLimit
-              ? 'bg-red-500/30 text-red-300 border-2 border-red-500 animate-pulse text-base'
-              : 'bg-gray-700 text-white text-sm border border-gray-600'
-          }`}>
-            {isOverLimit
-              ? `⚠️ ${currentTokenCount.toLocaleString()} tokens (EXCEEDS ${tokenLimit.toLocaleString()} limit!)`
-              : `Tokens: ${currentTokenCount.toLocaleString()} / ${tokenLimit.toLocaleString()}`
-            }
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className="p-6 space-y-4 min-h-[400px] max-h-[500px] overflow-y-auto">
-          <AnimatePresence>
-            {visibleMessages.map((message, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {message.role === 'ai' && (
-                  <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0 text-sm">
-                    🤖
-                  </div>
-                )}
-                <div className={`max-w-[70%] rounded-lg p-4 ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-white'
-                }`}>
-                  <p className="text-sm leading-relaxed">{message.content}</p>
-                </div>
-                {message.role === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center flex-shrink-0 text-sm">
-                    👤
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-
-          {/* Token Limit Warning - Only shows at step 5 (final AI admission) */}
-          {isOverLimit && currentStep === 5 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-900/40 border-2 border-red-400 rounded-lg p-4 animate-pulse"
-            >
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="w-8 h-8 text-red-400 flex-shrink-0" />
-                <div>
-                  <p className="text-white font-bold text-lg">⚠️ THE AI IS CONFUSED!</p>
-                  <p className="text-white/90 text-sm mt-2">
-                    The AI just hit its 8,000 token limit. It <strong>only saw the first few pages</strong> of the article.
-                  </p>
-                  <p className="text-white/90 text-sm mt-1">
-                    Everything after that was <strong>silently ignored</strong>. It doesn't even know the rest of the text exists! That's why it's asking for sections you already pasted.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Token Meter */}
-        <div className="bg-gray-800 border-t border-gray-700 p-4">
-          {/* --- ADDED LABEL --- */}
-          <div className="flex justify-between items-center mb-1 px-1">
-            <span className="text-xs font-medium text-white/70">
-              Context Window
-            </span>
-            <span className={`text-xs font-bold ${isOverLimit ? 'text-red-400' : 'text-white/70'}`}>
-              {isOverLimit ? 'LIMIT EXCEEDED' : ''}
-            </span>
-          </div>
-          {/* --- END ADDED LABEL --- */}
-          <div className="w-full h-4 bg-gray-700 rounded-full overflow-hidden">
-            <motion.div
-              className={`h-full bg-gradient-to-r ${getTokenBarColor()}`}
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.min((currentTokenCount / tokenLimit) * 100, 100)}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-        </div>
-      </div>
-    </motion.div>
   );
 }
 

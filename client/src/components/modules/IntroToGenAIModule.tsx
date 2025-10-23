@@ -139,8 +139,12 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   const [exitFeedback, setExitFeedback] = useState('');
   const [exitShowFeedback, setExitShowFeedback] = useState(false);
   const [exitNeedsRetry, setExitNeedsRetry] = useState(false);
+  const [exitAttemptCount, setExitAttemptCount] = useState(0);
+  const [exitShowEscapeHatch, setExitShowEscapeHatch] = useState(false);
 
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
+
+  const MAX_EXIT_ATTEMPTS = 2;
 
   // Question state
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -1345,7 +1349,18 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
             feedback.toLowerCase().includes('insufficient') ||
             feedback.toLowerCase().includes('answer the original question');
 
-          setExitNeedsRetry(isInvalid || feedbackIndicatesRetry);
+          const shouldRetry = isInvalid || feedbackIndicatesRetry;
+          setExitNeedsRetry(shouldRetry);
+
+          // Track attempt count and show escape hatch after MAX_EXIT_ATTEMPTS
+          if (shouldRetry) {
+            const newAttemptCount = exitAttemptCount + 1;
+            setExitAttemptCount(newAttemptCount);
+
+            if (newAttemptCount >= MAX_EXIT_ATTEMPTS) {
+              setExitShowEscapeHatch(true);
+            }
+          }
         } catch (error) {
           setExitFeedback('Excellent reflection! You understand your role as the driver of this powerful technology.');
           setExitShowFeedback(true);
@@ -1361,6 +1376,14 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       setExitShowFeedback(false);
       setExitFeedback('');
       setExitNeedsRetry(false);
+      setExitAttemptCount(0);
+      setExitShowEscapeHatch(false);
+    };
+
+    const handleExitContinueAnyway = () => {
+      // Student chooses to proceed despite validation failures
+      console.log('Student bypassed exit ticket validation after', exitAttemptCount, 'attempts');
+      handlePhaseComplete();
     };
 
     return (
@@ -1457,7 +1480,57 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                 </motion.div>
               )}
 
-              {exitNeedsRetry ? (
+              {/* Escape Hatch - appears after MAX_EXIT_ATTEMPTS failed attempts */}
+              {exitShowEscapeHatch && exitNeedsRetry && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-100 dark:bg-red-900/30 border-2 border-red-400 dark:border-red-700 rounded-lg p-6 mb-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-full p-2 bg-red-200 dark:bg-red-800 flex-shrink-0">
+                      <AlertTriangle className="w-5 h-5 text-red-700 dark:text-red-300" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-red-900 dark:text-red-100 mb-2">
+                        ⚠️ Multiple Attempts Detected
+                      </h4>
+                      <p className="text-red-900 dark:text-red-200 mb-3">
+                        You've tried {exitAttemptCount} times and the AI feedback suggests your response needs improvement.
+                      </p>
+                      <p className="text-red-900 dark:text-red-200 mb-3">
+                        <strong className="text-red-700 dark:text-red-300">You have two options:</strong>
+                      </p>
+                      <ol className="text-red-900 dark:text-red-200 mb-4 space-y-1 ml-4">
+                        <li>1. Try again with a different response that addresses the question</li>
+                        <li>2. Continue anyway and get your certificate</li>
+                      </ol>
+                      <div className="bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-500 dark:border-yellow-600 rounded-lg p-3 mb-4">
+                        <p className="text-yellow-900 dark:text-yellow-200 text-sm">
+                          ⚠️ <strong>Important:</strong> If you continue, your response will be flagged for instructor review. We want to make sure students are engaging thoughtfully with the content.
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={handleExitTryAgain}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Try One More Time
+                        </Button>
+                        <Button
+                          onClick={handleExitContinueAnyway}
+                          className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                        >
+                          Continue Anyway
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Show appropriate buttons based on state - hidden when escape hatch is showing */}
+              {!exitShowEscapeHatch && (exitNeedsRetry ? (
                 <Button
                   onClick={handleExitTryAgain}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -1483,7 +1556,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                     'Submit Exit Ticket'
                   )}
                 </Button>
-              )}
+              ))}
             </CardContent>
           </Card>
         </motion.div>
