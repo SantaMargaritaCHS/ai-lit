@@ -13,7 +13,7 @@ import IntroToGenAIModule from './components/modules/IntroToGenAIModule';
 import ResponsibleEthicalAIModule from './components/modules/ResponsibleEthicalAIModule';
 import UnderstandingLLMsModule from './components/modules/UnderstandingLLMsModule';
 import LLMLimitationsModule from './components/modules/LLMLimitationsModule';
-import { PrivacyDataRightsModule } from './components/modules/PrivacyDataRightsModule';
+import PrivacyDataRightsModule from './components/modules/PrivacyDataRightsModule';
 import AIEnvironmentalImpactModule from './components/modules/AIEnvironmentalImpactModule';
 import IntroductionToPromptingModule from './components/modules/IntroductionToPromptingModule';
 
