@@ -28,7 +28,7 @@ if (!GEMINI_API_KEY) {
   console.error('💡 Run: source /home/runner/workspace/.secrets.local');
   process.exit(1);
 }
-const APP_URL = 'https://AILitStudents.replit.app/module/what-is-ai';
+const APP_URL = 'https://AILitStudents.replit.app/module/ai-environmental-impact';
 
 console.log('🔍 Gemini Vision Inspector Starting...\n');
 
@@ -101,17 +101,31 @@ async function main() {
     // Analyze with Gemini Vision
     console.log('🤖 Analyzing with Gemini Vision API...\n');
 
-    const analysisPrompt = `You are analyzing a screenshot of an AI literacy educational web application for high school students. This is the "What is AI?" module.
+    const analysisPrompt = `You are analyzing a screenshot of an AI literacy educational web application for high school students. This is the "AI Environmental Impact" module.
 
-Please analyze this screenshot and provide:
+Please analyze this screenshot for COLOR CONTRAST and ACCESSIBILITY issues:
 
-1. **What's visible on screen**: Describe what elements you see (buttons, text, forms, etc.)
-2. **Current state**: What page or step of the module is this?
-3. **User actions needed**: What would a user need to do next to progress?
-4. **Developer notes**: Any issues, errors, or UI problems you notice
-5. **Testing recommendations**: How should we test the Gemini API feedback feature from here?
+1. **Text Visibility Issues**: Identify ANY text that is difficult to read due to insufficient contrast with its background. Look for:
+   - Light text on light backgrounds
+   - Dark text on dark backgrounds
+   - Gray text on colored backgrounds
+   - Text on semi-transparent overlays
 
-Be specific and technical. This is for debugging purposes.`;
+2. **WCAG 2.1 AA Compliance**: Check if text meets minimum contrast ratios:
+   - Normal text: 4.5:1 minimum (7:1 optimal)
+   - Large text (18pt+): 3:1 minimum
+
+3. **Specific Problem Areas**: For EACH problematic element, provide:
+   - What it is (button, heading, paragraph, etc.)
+   - Approximate text color and background color you observe
+   - Why it fails (e.g., "light blue text on white background")
+   - Severity (critical/moderate/minor)
+
+4. **Button & Interactive Elements**: Check all buttons, links, and clickable elements for contrast issues
+
+5. **Recommendations**: Provide specific CSS class fixes (e.g., "Change from text-gray-400 to text-white")
+
+Be extremely specific and technical. List EVERY contrast issue you can find, even minor ones.`;
 
     const analysis = await analyzeWithGemini(screenshot, analysisPrompt);
 

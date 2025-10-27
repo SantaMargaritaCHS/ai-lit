@@ -1,0 +1,896 @@
+1
+00:00:00,080 --> 00:00:01,480
+Let's just state the obvious. 
+
+2
+00:00:01,520 --> 00:00:04,040
+We are living through a massive, massive 
+
+3
+00:00:04,040 --> 00:00:05,080
+technological shift. 
+
+4
+00:00:05,120 --> 00:00:06,760
+I mean generative AI. 
+
+5
+00:00:06,840 --> 00:00:08,600
+This isn't just some new feature on 
+
+6
+00:00:08,600 --> 00:00:09,280
+your phone, right? 
+
+7
+00:00:09,320 --> 00:00:11,360
+It feels like we're standing on the edge of 
+
+8
+00:00:11,360 --> 00:00:13,000
+a completely new world. 
+
+9
+00:00:13,360 --> 00:00:16,239
+So as we're all racing headfirst 
+
+10
+00:00:16,239 --> 00:00:19,080
+into this AI driven future, you got to ask 
+
+11
+00:00:19,080 --> 00:00:19,960
+the big question. 
+
+12
+00:00:19,960 --> 00:00:21,440
+What's our guide going to be? 
+
+13
+00:00:21,480 --> 00:00:23,600
+What's the compass we're going to use to navigate 
+
+14
+00:00:23,600 --> 00:00:26,080
+this totally uncharted territory? 
+
+15
+00:00:26,240 --> 00:00:26,800
+All right. 
+
+16
+00:00:26,800 --> 00:00:28,920
+So to really get a handle on what's happening, 
+
+17
+00:00:28,920 --> 00:00:31,000
+we need to be crystal clear about the scale 
+
+18
+00:00:31,000 --> 00:00:31,800
+of this thing. 
+
+19
+00:00:31,840 --> 00:00:33,240
+We are living through a 
+
+20
+00:00:33,240 --> 00:00:35,360
+new industrial revolution. 
+
+21
+00:00:35,400 --> 00:00:37,120
+Seriously, this isn't just 
+
+22
+00:00:37,120 --> 00:00:38,440
+another software update. 
+
+23
+00:00:38,440 --> 00:00:41,280
+It's a fundamental ground up shift in how our 
+
+24
+00:00:41,280 --> 00:00:42,320
+world works. 
+
+25
+00:00:42,320 --> 00:00:45,280
+And that brings us to this really powerful idea 
+
+26
+00:00:45,320 --> 00:00:47,360
+the industrialization of thought. 
+
+27
+00:00:47,400 --> 00:00:49,080
+Just let that sink in for a second. 
+
+28
+00:00:49,120 --> 00:00:51,080
+The first industrial revolution, right? 
+
+29
+00:00:51,120 --> 00:00:54,040
+It was all about machines automating physical work, stuff 
+
+30
+00:00:54,040 --> 00:00:56,160
+you do with your hands while AI is doing 
+
+31
+00:00:56,160 --> 00:00:57,320
+the exact same thing. 
+
+32
+00:00:57,320 --> 00:01:00,080
+But for cognitive and creative work, the very things 
+
+33
+00:01:00,080 --> 00:01:01,930
+we always thought were uniquely human. 
+
+34
+00:01:01,930 --> 00:01:03,010
+And you know what? 
+
+35
+00:01:03,010 --> 00:01:05,810
+The parallels between the 19th century and right now 
+
+36
+00:01:05,850 --> 00:01:07,650
+are just uncanny. 
+
+37
+00:01:07,690 --> 00:01:08,690
+I mean, look at this. 
+
+38
+00:01:08,690 --> 00:01:10,890
+Back then we automated manual labor. 
+
+39
+00:01:10,890 --> 00:01:13,050
+Now we're automating cognitive labor. 
+
+40
+00:01:13,050 --> 00:01:14,930
+Instead of learning how to run a machine. 
+
+41
+00:01:14,930 --> 00:01:16,850
+We're all learning prompt engineering. 
+
+42
+00:01:16,850 --> 00:01:19,250
+And the big worries have shifted from things like 
+
+43
+00:01:19,250 --> 00:01:20,890
+factory safety to, you guessed 
+
+44
+00:01:20,890 --> 00:01:22,370
+it, algorithmic bias. 
+
+45
+00:01:22,410 --> 00:01:24,610
+The tech is totally different, but the core issue 
+
+46
+00:01:24,610 --> 00:01:27,530
+it's the same a massive society wide shift that 
+
+47
+00:01:27,530 --> 00:01:29,850
+we absolutely have to pay attention to. 
+
+48
+00:01:29,850 --> 00:01:31,450
+And the challenges here 
+
+49
+00:01:31,450 --> 00:01:32,970
+they are huge. 
+
+50
+00:01:33,010 --> 00:01:35,690
+This isn't just one problem with an easy fix. 
+
+51
+00:01:35,690 --> 00:01:36,690
+No way. 
+
+52
+00:01:36,690 --> 00:01:38,370
+It's a complex, tangled 
+
+53
+00:01:38,370 --> 00:01:39,850
+up ethical minefield. 
+
+54
+00:01:39,850 --> 00:01:42,610
+We're talking about everything from artists and writers potentially 
+
+55
+00:01:42,610 --> 00:01:44,890
+being displaced to the very erosion 
+
+56
+00:01:44,890 --> 00:01:46,010
+of human dignity. 
+
+57
+00:01:46,050 --> 00:01:47,890
+And on top of that, we're trying to navigate 
+
+58
+00:01:47,890 --> 00:01:49,450
+hidden biases in the code. 
+
+59
+00:01:49,490 --> 00:01:52,210
+Major privacy issues and a world where it's getting 
+
+60
+00:01:52,210 --> 00:01:54,050
+harder and harder to tell what's real 
+
+61
+00:01:54,050 --> 00:01:55,130
+from what's fake. 
+
+62
+00:01:55,130 --> 00:01:58,050
+So, okay, when you're staring down a future this 
+
+63
+00:01:58,050 --> 00:01:59,370
+complicated, we're on Earth. 
+
+64
+00:01:59,370 --> 00:02:01,390
+Do you even start to look for answers? 
+
+65
+00:02:01,430 --> 00:02:04,030
+Well, it turns out sometimes the best way to 
+
+66
+00:02:04,070 --> 00:02:05,990
+see the road ahead is to look in the 
+
+67
+00:02:05,990 --> 00:02:07,950
+rearview mirror and we'll leave it or not. 
+
+68
+00:02:07,990 --> 00:02:10,150
+The 19th century might just have the playbook we've 
+
+69
+00:02:10,190 --> 00:02:11,150
+been looking for. 
+
+70
+00:02:11,350 --> 00:02:14,070
+Now, this historical guide comes from a pretty 
+
+71
+00:02:14,070 --> 00:02:15,190
+unexpected place. 
+
+72
+00:02:15,230 --> 00:02:17,710
+See, back in 1891, Pope Leo 
+
+73
+00:02:18,070 --> 00:02:20,070
+VII confronted the first industrial 
+
+74
+00:02:20,070 --> 00:02:21,110
+revolution head on. 
+
+75
+00:02:21,110 --> 00:02:23,870
+And today, the current pope is doing the 
+
+76
+00:02:23,870 --> 00:02:26,670
+same thing with the AI revolution, drawing on 
+
+77
+00:02:26,710 --> 00:02:28,390
+that exact same tradition. 
+
+78
+00:02:28,430 --> 00:02:31,270
+The parallel here is just it's really powerful. 
+
+79
+00:02:31,710 --> 00:02:34,310
+Okay, so back in 1891, Pope Leo 
+
+80
+00:02:34,310 --> 00:02:37,310
+released this incredibly important document called Rerum 
+
+81
+00:02:37,310 --> 00:02:39,990
+novarum, which literally means of new things. 
+
+82
+00:02:39,990 --> 00:02:42,350
+It was his direct response to all the new 
+
+83
+00:02:42,350 --> 00:02:43,470
+things of his time. 
+
+84
+00:02:43,470 --> 00:02:46,350
+And look, this was not some anti-technology 
+
+85
+00:02:46,350 --> 00:02:48,550
+rant telling everyone to tear down the factories. 
+
+86
+00:02:48,550 --> 00:02:49,430
+Not at all. 
+
+87
+00:02:49,430 --> 00:02:51,070
+It was a moral framework. 
+
+88
+00:02:51,070 --> 00:02:53,590
+It was designed to push back against the extremes. 
+
+89
+00:02:53,630 --> 00:02:56,350
+You know, the wild, unregulated capitalism that was 
+
+90
+00:02:56,350 --> 00:02:57,310
+chewing up workers. 
+
+91
+00:02:57,310 --> 00:02:59,910
+And on the other side, state controlled socialism. 
+
+92
+00:03:00,000 --> 00:03:01,880
+That kind of erased the individual. 
+
+93
+00:03:01,920 --> 00:03:04,240
+It was all about finding a middle path that 
+
+94
+00:03:04,240 --> 00:03:06,960
+put the dignity of the worker front and center. 
+
+95
+00:03:06,960 --> 00:03:08,920
+So what was the actual 
+
+96
+00:03:08,920 --> 00:03:10,320
+philosophy behind this? 
+
+97
+00:03:10,360 --> 00:03:12,920
+Well, it was built on this set of really 
+
+98
+00:03:12,920 --> 00:03:14,760
+timeless ethical ideas called 
+
+99
+00:03:14,760 --> 00:03:16,160
+Catholic Social Teaching. 
+
+100
+00:03:16,160 --> 00:03:18,440
+And this isn't about some outdated rulebook 
+
+101
+00:03:18,440 --> 00:03:19,480
+for old factories. 
+
+102
+00:03:19,480 --> 00:03:22,160
+Think of it more like a tough, durable foundation 
+
+103
+00:03:22,160 --> 00:03:24,120
+that hammers home one single point. 
+
+104
+00:03:24,120 --> 00:03:26,760
+Above all else, human beings have to be at 
+
+105
+00:03:26,760 --> 00:03:29,520
+the absolute center of any system we create. 
+
+106
+00:03:29,520 --> 00:03:31,200
+It doesn't matter if that system is made of 
+
+107
+00:03:31,200 --> 00:03:33,760
+steam and gears or data and algorithms. 
+
+108
+00:03:34,240 --> 00:03:36,160
+All right, principle number one. 
+
+109
+00:03:36,160 --> 00:03:38,800
+And it's the big one human dignity. 
+
+110
+00:03:38,800 --> 00:03:41,760
+It's this simple but really profound idea that every 
+
+111
+00:03:41,760 --> 00:03:43,760
+single person has value. 
+
+112
+00:03:43,800 --> 00:03:44,760
+Period. 
+
+113
+00:03:44,880 --> 00:03:47,520
+Your worth isn't tied to how productive you are 
+
+114
+00:03:47,520 --> 00:03:50,080
+or how efficient some algorithm thinks you are. 
+
+115
+00:03:50,120 --> 00:03:52,000
+So here's the bottom line for the age of 
+
+116
+00:03:52,000 --> 00:03:54,000
+AI, you can't be reduced to just 
+
+117
+00:03:54,000 --> 00:03:54,760
+a data set. 
+
+118
+00:03:54,800 --> 00:03:56,840
+You can't be rejected for a loan or a 
+
+119
+00:03:56,840 --> 00:03:59,000
+job by a machine without a human being in 
+
+120
+00:03:59,000 --> 00:03:59,560
+the loop. 
+
+121
+00:03:59,560 --> 00:04:02,410
+And this quote from Pope John Paul II just 
+
+122
+00:04:02,410 --> 00:04:03,770
+captures it perfectly. 
+
+123
+00:04:03,810 --> 00:04:06,450
+Our dignity comes from who we are, not from 
+
+124
+00:04:06,450 --> 00:04:07,370
+what we produce. 
+
+125
+00:04:07,410 --> 00:04:08,130
+Wow. 
+
+126
+00:04:08,210 --> 00:04:11,210
+In an age where AI could literally automate everything, 
+
+127
+00:04:11,210 --> 00:04:13,450
+that's a principle we just cannot afford to lose 
+
+128
+00:04:13,450 --> 00:04:14,250
+track of. 
+
+129
+00:04:14,610 --> 00:04:16,770
+Okay, next up, principle number two 
+
+130
+00:04:16,810 --> 00:04:17,690
+the common good. 
+
+131
+00:04:17,730 --> 00:04:18,730
+So what does that mean? 
+
+132
+00:04:18,730 --> 00:04:21,690
+Basically that our technology, our society, it has 
+
+133
+00:04:21,690 --> 00:04:23,170
+to be set up in a way that allows 
+
+134
+00:04:23,170 --> 00:04:25,530
+everyone a chance to thrive, not just, you know, 
+
+135
+00:04:25,610 --> 00:04:27,250
+a handful of tech billionaires. 
+
+136
+00:04:27,250 --> 00:04:29,770
+Innovation can't just be for the innovators. 
+
+137
+00:04:29,810 --> 00:04:31,610
+The whole point is to create a world where 
+
+138
+00:04:31,610 --> 00:04:33,650
+the entire community can flourish. 
+
+139
+00:04:33,810 --> 00:04:36,490
+And that leads us perfectly into the third 
+
+140
+00:04:36,490 --> 00:04:38,330
+principle solidarity. 
+
+141
+00:04:38,370 --> 00:04:40,450
+Now, this is a pretty radical idea. 
+
+142
+00:04:40,450 --> 00:04:42,730
+It's the notion that we have a shared collective 
+
+143
+00:04:42,730 --> 00:04:44,370
+responsibility for each other. 
+
+144
+00:04:44,410 --> 00:04:47,130
+The problems that AI creates, they're not someone 
+
+145
+00:04:47,130 --> 00:04:48,330
+else's problem to solve. 
+
+146
+00:04:48,370 --> 00:04:49,730
+They're our problem. 
+
+147
+00:04:49,730 --> 00:04:51,970
+So when an algorithm is biased against a certain 
+
+148
+00:04:51,970 --> 00:04:54,530
+group of people, solidarity means we are all on 
+
+149
+00:04:54,530 --> 00:04:56,410
+the hook to fix it together. 
+
+150
+00:04:56,570 --> 00:04:58,850
+So all of this sounds great in theory, right? 
+
+151
+00:04:58,890 --> 00:04:59,750
+Human dignity. 
+
+152
+00:04:59,750 --> 00:05:00,670
+The common good. 
+
+153
+00:05:00,670 --> 00:05:01,230
+Awesome. 
+
+154
+00:05:01,230 --> 00:05:03,550
+But how do you actually get from these big 
+
+155
+00:05:03,550 --> 00:05:05,590
+ideas to a concrete game plan 
+
+156
+00:05:05,590 --> 00:05:06,790
+for AI developers? 
+
+157
+00:05:06,830 --> 00:05:09,470
+Well, this isn't just some dusty old philosophy. 
+
+158
+00:05:09,470 --> 00:05:12,070
+These ideas are being put into real world action 
+
+159
+00:05:12,070 --> 00:05:12,910
+right now. 
+
+160
+00:05:13,030 --> 00:05:15,350
+And like I said, it's already happening 
+
+161
+00:05:15,350 --> 00:05:16,310
+back in 2020. 
+
+162
+00:05:16,350 --> 00:05:18,110
+The Vatican teamed up with some of the biggest 
+
+163
+00:05:18,110 --> 00:05:20,310
+names in tech to launch something called the Rome 
+
+164
+00:05:20,310 --> 00:05:21,870
+Call for AI ethics. 
+
+165
+00:05:21,910 --> 00:05:24,750
+This is a real global initiative, and its goal 
+
+166
+00:05:24,750 --> 00:05:27,150
+is to get everyone on the same page committed 
+
+167
+00:05:27,150 --> 00:05:30,150
+to making sure AI development always, always puts 
+
+168
+00:05:30,150 --> 00:05:31,230
+people first. 
+
+169
+00:05:31,310 --> 00:05:33,350
+And just look at who's involved here. 
+
+170
+00:05:33,390 --> 00:05:35,390
+We're talking about the Vatican sitting down at the 
+
+171
+00:05:35,390 --> 00:05:36,950
+table with tech giants like 
+
+172
+00:05:36,950 --> 00:05:38,590
+Microsoft and IBM. 
+
+173
+00:05:38,710 --> 00:05:41,230
+I mean, that's a pretty remarkable partnership, isn't it? 
+
+174
+00:05:41,270 --> 00:05:43,950
+You've got this ancient institution working with the very 
+
+175
+00:05:43,950 --> 00:05:46,390
+architects of our digital future, all focused on a 
+
+176
+00:05:46,390 --> 00:05:48,230
+single, shared ethical vision. 
+
+177
+00:05:48,310 --> 00:05:51,190
+This is exactly where those big principles become a 
+
+178
+00:05:51,190 --> 00:05:52,390
+practical playbook. 
+
+179
+00:05:52,430 --> 00:05:54,990
+The Rome Call translates those core values into a 
+
+180
+00:05:54,990 --> 00:05:56,630
+really actionable game plan. 
+
+181
+00:05:56,630 --> 00:05:59,390
+So human dignity, that becomes the rule that AI 
+
+182
+00:05:59,430 --> 00:05:59,910
+has to be in. 
+
+183
+00:06:00,000 --> 00:06:01,640
+Inclusive and serve everyone. 
+
+184
+00:06:01,680 --> 00:06:04,080
+The common good that demands that these systems have 
+
+185
+00:06:04,080 --> 00:06:06,160
+to be transparent so we can actually understand how 
+
+186
+00:06:06,160 --> 00:06:07,800
+they work, and solidarity. 
+
+187
+00:06:07,800 --> 00:06:10,440
+That's reflected in the non-negotiable idea that a human 
+
+188
+00:06:10,440 --> 00:06:12,600
+being must always, always be ultimately 
+
+189
+00:06:12,600 --> 00:06:14,120
+responsible and accountable. 
+
+190
+00:06:14,160 --> 00:06:16,040
+See, these aren't just vague wishes, 
+
+191
+00:06:16,040 --> 00:06:17,400
+they're concrete steps. 
+
+192
+00:06:17,880 --> 00:06:20,040
+Okay, so that brings us to the path forward. 
+
+193
+00:06:20,080 --> 00:06:23,000
+We've got this absolutely mind blowing technology on one 
+
+194
+00:06:23,000 --> 00:06:25,800
+hand and this ancient, timeless ethical framework on the 
+
+195
+00:06:25,800 --> 00:06:28,240
+other, the choice we face as a society. 
+
+196
+00:06:28,320 --> 00:06:30,040
+It's actually pretty clear when you lay it out 
+
+197
+00:06:30,040 --> 00:06:30,720
+like that. 
+
+198
+00:06:30,720 --> 00:06:33,000
+And the question it all boils down 
+
+199
+00:06:33,000 --> 00:06:34,080
+to is this. 
+
+200
+00:06:34,160 --> 00:06:36,600
+Are we going to choose wisdom over pure, 
+
+201
+00:06:36,600 --> 00:06:38,040
+unfiltered speed? 
+
+202
+00:06:38,120 --> 00:06:40,920
+It's a simple question, but it has absolutely massive 
+
+203
+00:06:40,920 --> 00:06:42,760
+consequences for the kind of future we're 
+
+204
+00:06:42,760 --> 00:06:43,840
+all building together. 
+
+205
+00:06:43,840 --> 00:06:46,720
+And a recent address from the current Pope 
+
+206
+00:06:46,720 --> 00:06:49,200
+really gives us the ultimate test for any of 
+
+207
+00:06:49,200 --> 00:06:50,120
+this new tech. 
+
+208
+00:06:50,320 --> 00:06:52,960
+The yardstick we use for AI can't just be, 
+
+209
+00:06:53,000 --> 00:06:55,600
+hey, is it useful or is it efficient? 
+
+210
+00:06:55,640 --> 00:06:58,400
+The ultimate test has to be whether it's centered 
+
+211
+00:06:58,400 --> 00:07:00,600
+on the dignity of the human person, on our 
+
+212
+00:07:00,600 --> 00:07:03,320
+ability to thrive, and on our shared values. 
+
+213
+00:07:03,440 --> 00:07:05,400
+So when you step back and look at it, 
+
+214
+00:07:05,400 --> 00:07:08,000
+it really feels like we've been handed this ancient 
+
+215
+00:07:08,000 --> 00:07:09,960
+compass to help us navigate a very, 
+
+216
+00:07:09,960 --> 00:07:11,160
+very modern problem. 
+
+217
+00:07:11,160 --> 00:07:13,800
+And it's pointing toward a clear path, one that 
+
+218
+00:07:13,800 --> 00:07:15,480
+puts people first. 
+
+219
+00:07:15,800 --> 00:07:18,760
+The only question left really is this 
+
+220
+00:07:18,760 --> 00:07:21,160
+in a world that is so obsessed with profit 
+
+221
+00:07:21,160 --> 00:07:22,240
+and pace. 
+
+222
+00:07:22,280 --> 00:07:24,360
+Do we have the courage to actually follow where 
+
+223
+00:07:24,360 --> 00:07:25,960
+that compass is pointing? 
+
+224
+00:07:26,000 --> 00:07:27,960
+That's the choice we all have to make. 
+

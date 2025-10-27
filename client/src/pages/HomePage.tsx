@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText } from 'lucide-react';
+import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText, ChevronUp, ChevronDown } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { ModuleOutline } from '../components/ModuleOutline';
+import { saveModuleOrder, loadModuleOrder, clearModuleOrder, hasCustomModuleOrder } from '../lib/moduleOrderPersistence';
 
 const modules = [
   {
@@ -84,7 +85,17 @@ export default function HomePage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [sortOrder, setSortOrder] = useState<'default' | 'alphabetical' | 'level'>('default');
   const [outlineModuleId, setOutlineModuleId] = useState<string | null>(null);
+  const [reorderMode, setReorderMode] = useState(false);
+  const [customModuleOrder, setCustomModuleOrder] = useState<string[]>([]);
   const { userName, clearUserName, clearModuleName } = useUser();
+
+  // Load custom module order on mount
+  useEffect(() => {
+    const savedOrder = loadModuleOrder();
+    if (savedOrder) {
+      setCustomModuleOrder(savedOrder);
+    }
+  }, []);
 
   const copyModuleUrl = (e: React.MouseEvent, moduleId: string) => {
     e.preventDefault();
@@ -118,6 +129,44 @@ export default function HomePage() {
     setOutlineModuleId(moduleId);
   };
 
+  const moveModuleUp = (e: React.MouseEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (index === 0) return; // Already at top
+
+    const currentModules = getSortedModules();
+    const newOrder = [...currentModules];
+    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+
+    const newModuleIds = newOrder.map(m => m.id);
+    console.log('Moving up - New order:', newModuleIds);
+    setCustomModuleOrder(newModuleIds);
+    saveModuleOrder(newModuleIds);
+  };
+
+  const moveModuleDown = (e: React.MouseEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const currentModules = getSortedModules();
+    if (index === currentModules.length - 1) return; // Already at bottom
+
+    const newOrder = [...currentModules];
+    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+
+    const newModuleIds = newOrder.map(m => m.id);
+    console.log('Moving down - New order:', newModuleIds);
+    setCustomModuleOrder(newModuleIds);
+    saveModuleOrder(newModuleIds);
+  };
+
+  const resetModuleOrder = () => {
+    clearModuleOrder();
+    setCustomModuleOrder([]);
+    setReorderMode(false);
+  };
+
   const getSortedModules = () => {
     const modulesCopy = [...modules];
     switch (sortOrder) {
@@ -127,6 +176,17 @@ export default function HomePage() {
         const levelOrder = { 'Beginner': 0, 'Intermediate': 1, 'Advanced': 2 };
         return modulesCopy.sort((a, b) => levelOrder[a.level] - levelOrder[b.level]);
       default:
+        // Apply custom order if it exists
+        if (customModuleOrder.length > 0) {
+          return modulesCopy.sort((a, b) => {
+            const indexA = customModuleOrder.indexOf(a.id);
+            const indexB = customModuleOrder.indexOf(b.id);
+            // If module not in custom order, put it at the end
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+          });
+        }
         return modulesCopy;
     }
   };
@@ -197,10 +257,56 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {getSortedModules().map((module) => {
+          {getSortedModules().map((module, index) => {
             const Icon = module.icon;
+            const sortedModules = getSortedModules();
+            const isFirst = index === 0;
+            const isLast = index === sortedModules.length - 1;
+
             return (
-              <div key={module.id} className="relative group">
+              <div key={module.id} className="relative group" style={{ paddingTop: reorderMode ? '20px' : '0' }}>
+                {/* Reorder Arrows - Only visible in reorder mode */}
+                {reorderMode && (
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-50 flex gap-1 bg-white rounded-lg shadow-lg p-1.5 border-2 border-blue-300">
+                    <button
+                      onClick={(e) => {
+                        console.log('Up button clicked for index:', index);
+                        moveModuleUp(e, index);
+                      }}
+                      disabled={isFirst}
+                      className={`p-1.5 rounded transition-colors ${
+                        isFirst
+                          ? 'text-gray-300 cursor-not-allowed bg-gray-50'
+                          : 'text-blue-700 hover:bg-blue-100 bg-blue-50 cursor-pointer'
+                      }`}
+                      aria-label={`Move ${module.title} up`}
+                      aria-disabled={isFirst}
+                      title={isFirst ? 'Already at top' : 'Move up'}
+                      type="button"
+                    >
+                      <ChevronUp className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        console.log('Down button clicked for index:', index);
+                        moveModuleDown(e, index);
+                      }}
+                      disabled={isLast}
+                      className={`p-1.5 rounded transition-colors ${
+                        isLast
+                          ? 'text-gray-300 cursor-not-allowed bg-gray-50'
+                          : 'text-blue-700 hover:bg-blue-100 bg-blue-50 cursor-pointer'
+                      }`}
+                      aria-label={`Move ${module.title} down`}
+                      aria-disabled={isLast}
+                      title={isLast ? 'Already at bottom' : 'Move down'}
+                      type="button"
+                    >
+                      <ChevronDown className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
+
                 <Link
                   href={`/module/${module.id}`}
                   className="block"
@@ -276,11 +382,46 @@ export default function HomePage() {
             </button>
             
             {showAdvanced && (
-              <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                <p className="text-xs text-gray-600 mb-3">
-                  Clear module-specific names for testing:
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
+              <div className="mt-4 p-4 bg-gray-100 rounded-lg space-y-4">
+                {/* Reorder Mode Toggle */}
+                <div className="border-b border-gray-300 pb-4">
+                  <p className="text-xs text-gray-600 mb-3">
+                    Module reordering (developer only):
+                  </p>
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      onClick={() => setReorderMode(!reorderMode)}
+                      className={`px-3 py-2 text-xs rounded transition-colors ${
+                        reorderMode
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                          : 'bg-white hover:bg-gray-50 border border-gray-300 text-gray-700'
+                      }`}
+                    >
+                      {reorderMode ? '✓ Reorder Mode Active' : 'Enable Reorder Mode'}
+                    </button>
+                    {hasCustomModuleOrder() && (
+                      <button
+                        onClick={resetModuleOrder}
+                        className="px-3 py-2 text-xs bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                        title="Reset to default order"
+                      >
+                        Reset Order
+                      </button>
+                    )}
+                  </div>
+                  {reorderMode && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Use ↑↓ arrows on cards to reorder. Changes save automatically.
+                    </p>
+                  )}
+                </div>
+
+                {/* Name Clearing Section */}
+                <div>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Clear module-specific names for testing:
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
                   {modules.map((module) => (
                     <button
                       key={module.id}
@@ -304,6 +445,7 @@ export default function HomePage() {
                   >
                     Clear All Names
                   </button>
+                </div>
                 </div>
               </div>
             )}

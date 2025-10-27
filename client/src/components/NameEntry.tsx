@@ -9,12 +9,34 @@ import { User } from 'lucide-react';
 interface NameEntryProps {
   activityTitle: string;
   onNameSubmit: (name: string) => void;
+  moduleId?: string;
 }
 
-export function NameEntry({ activityTitle, onNameSubmit }: NameEntryProps) {
+// Module-specific theme colors
+const themeColors: Record<string, { background: string; backgroundDark: string; gradient: string; gradientHover: string; icon: string }> = {
+  'ai-environmental-impact': {
+    background: 'from-green-50 to-emerald-100',
+    backgroundDark: 'dark:from-green-900 dark:to-emerald-900',
+    gradient: 'from-green-600 to-emerald-600',
+    gradientHover: 'hover:from-green-700 hover:to-emerald-700',
+    icon: 'from-green-500 to-emerald-500'
+  },
+  'default': {
+    background: 'from-blue-50 to-indigo-100',
+    backgroundDark: 'dark:from-blue-900 dark:to-indigo-900',
+    gradient: 'from-blue-500 to-purple-500',
+    gradientHover: 'hover:from-blue-600 hover:to-purple-600',
+    icon: 'from-blue-500 to-purple-500'
+  }
+};
+
+export function NameEntry({ activityTitle, onNameSubmit, moduleId }: NameEntryProps) {
   const [name, setName] = useState('');
   const [acknowledged, setAcknowledged] = useState(false);
   const [error, setError] = useState('');
+
+  // Get theme colors for this module (or use default)
+  const theme = themeColors[moduleId || 'default'] || themeColors['default'];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,10 +60,10 @@ export function NameEntry({ activityTitle, onNameSubmit }: NameEntryProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 p-4">
+    <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${theme.background} ${theme.backgroundDark} p-4`}>
       <Card className="w-full max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardHeader className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-4 mx-auto">
+          <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r ${theme.icon} rounded-full mb-4 mx-auto`}>
             <User className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="tracking-tight text-2xl font-bold text-gray-900 dark:text-white">
@@ -92,7 +114,7 @@ export function NameEntry({ activityTitle, onNameSubmit }: NameEntryProps) {
             <Button
               type="submit"
               disabled={!name.trim() || !acknowledged}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full bg-gradient-to-r ${theme.gradient} ${theme.gradientHover} text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               Start Learning
             </Button>

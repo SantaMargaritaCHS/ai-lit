@@ -567,9 +567,9 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
             </div>
 
             <div className="bg-orange-500/10 border border-orange-500/30 p-4 rounded-lg">
-              <p className="text-sm text-orange-200">
+              <p className="text-sm text-orange-50">
                 <AlertCircle className="w-4 h-4 inline mr-2" />
-                <strong>Key Insight:</strong> Small individual actions multiply across institutions. 
+                <strong>Key Insight:</strong> Small individual actions multiply across institutions.
                 Understanding scale helps us make informed decisions about AI usage.
               </p>
             </div>
@@ -626,7 +626,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
                 <CheckCircle className="w-4 h-4 inline mr-2" />
                 <strong>Good News:</strong> {step.additionalContext || 'Training happens only once per model. The ongoing usage cost (what you saw earlier) is much smaller. Still, understanding the full picture helps us appreciate both the capabilities and responsibilities of AI.'}
               </p>
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-200 mt-2">
                 Source: "Making AI Less 'Thirsty'" study, University of California Riverside (2023)
               </p>
             </div>
@@ -664,7 +664,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
                     <Sparkles className="w-6 h-6 text-green-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <h4 className="font-semibold text-secondary mb-2">AI Feedback</h4>
-                      <p className="text-green-100">{reflectionFeedback}</p>
+                      <p className="text-white">{reflectionFeedback}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -752,7 +752,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
                 {step.id === 'practical-solutions' && (
                   <div className="mt-4 p-4 bg-green-soft rounded-lg">
                     <h4 className="font-semibold text-secondary mb-2">Quick Efficiency Tips:</h4>
-                    <ul className="text-sm text-green-100 space-y-1">
+                    <ul className="text-sm text-white space-y-1">
                       <li>• Create all weekly materials in one session instead of daily</li>
                       <li>• Save and reuse effective prompts</li>
                       <li>• Choose text over images when possible</li>
@@ -794,7 +794,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
                       <innovation.icon className="w-8 h-8 text-green-400" />
                       <h3 className="text-xl font-semibold text-secondary">{innovation.title}</h3>
                     </div>
-                    <p className="text-green-100">{innovation.description}</p>
+                    <p className="text-white">{innovation.description}</p>
                   </motion.div>
                 ))}
               </div>
@@ -876,7 +876,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
           <Badge variant="outline" className="bg-card-hover border-primary">
             Step {currentStep + 1} of {guidedSteps.length}
           </Badge>
-          <span className="text-sm text-gray-400">{Math.round(progress)}% Complete</span>
+          <span className="text-sm text-gray-700">{Math.round(progress)}% Complete</span>
         </div>
         <Progress value={progress} className="w-full" />
       </div>
@@ -899,7 +899,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
               <CheckCircle className="w-4 h-4" />
               <span>Remember</span>
             </h3>
-            <div className="space-y-1 text-sm text-green-300">
+            <div className="space-y-1 text-sm text-white">
               {currentStep >= 4 && <p>• Every AI query has a real environmental cost</p>}
               {currentStep >= 6 && <p>• Images and videos use significantly more resources than text</p>}
               {currentStep >= 8 && <p>• Clean energy innovations are making AI more sustainable</p>}

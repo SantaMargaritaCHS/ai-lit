@@ -50,6 +50,7 @@ export default function ModulePage({ moduleId, moduleMap }: ModulePageProps) {
     return (
       <NameEntry
         activityTitle={moduleNames[moduleId] || 'AI Learning Module'}
+        moduleId={moduleId}
         onNameSubmit={(name) => setModuleName(moduleId, name)}
       />
     );
