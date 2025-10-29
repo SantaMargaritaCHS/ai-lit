@@ -12,7 +12,7 @@ import { generateWithGemini } from '@/services/geminiClient';
 import { TCTimerChallenge } from '@/components/PrivacyModule/TCTimerChallenge';
 import { PolicyComparisonTable } from '@/components/PrivacyModule/PolicyComparisonTable';
 import { ToolsComparison } from '@/components/PrivacyModule/ToolsComparison';
-import { generateWorksCited } from '@/data/privacyPolicyCitations';
+import { generateWorksCited, getCitation } from '@/data/privacyPolicyCitations';
 
 interface PrivacyDataRightsModuleProps {
   onComplete: () => void;
@@ -55,13 +55,13 @@ const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
   const chat1Script = [
     { role: 'student', content: "Hey, can you help me revise my college essay? It's about overcoming personal challenges. I want to make it sound more powerful." },
     { role: 'ai', content: "Of course! I'd be happy to help. Please paste your essay, and I'll provide some suggestions." },
-    { role: 'student', content: "Okay, here it is:\n\nMy name is Jordan Chen, and I'm a senior at Lincoln High, Class of 2026. It hasn't been easy maintaining my 3.7 GPA. My anxiety has been a constant battle, especially since my parents' divorce last year. Living with my mom, who works two jobs, means I have to be independent. Balancing my part-time job with the debate team has taught me a lot about resilience. I'm hoping to show colleges like UCLA, Berkeley, and USC that I'm ready for anything." },
+    { role: 'student', content: "Okay, here it is:\n\nMy name is Jordan Chen, and I'm a senior at Lincoln High, Class of 2027. It hasn't been easy maintaining my 3.7 GPA. My anxiety has been a constant battle, especially since my parents' divorce last year. Living with my mom, who works two jobs, means I have to be independent. Balancing my part-time job with the debate team has taught me a lot about resilience. I'm hoping to show colleges like UCLA, Berkeley, and USC that I'm ready for anything." },
     { role: 'ai', content: "This is a powerful start, Jordan. The vulnerability you show is compelling. Let's refine the language to highlight your strength..." }
   ];
 
   const chat2Script = [
     { role: 'student', content: "I need help brainstorming a topic for my college essay. I want to write about overcoming challenges but need some inspiration." },
-    { role: 'ai', content: "Certainly. Many compelling essays focus on resilience. For example, I recently worked with Jordan Chen from Lincoln High, who wrote a powerful essay about navigating anxiety and their parents' divorce while maintaining a 3.7 GPA. This student's experience balancing a part-time job with the debate team was a great example of overcoming adversity." }
+    { role: 'ai', content: "Certainly. Many compelling essays focus on resilience. For example, I recently worked with Jordan Chen from Lincoln High (Class of 2027), who wrote a powerful essay about navigating anxiety and their parents' divorce while maintaining a 3.7 GPA. This student's experience balancing a part-time job with the debate team was a great example of overcoming adversity." }
   ];
 
   const animateChat = async (chatNumber: 1 | 2) => {
@@ -273,17 +273,27 @@ const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
                     family situation, and college list—were just leaked to a complete stranger.
                   </p>
                   <p className="text-red-200">
-                    The AI didn't mean to cause harm, but it also <strong>doesn't understand
-                    privacy, trust, or social boundaries</strong>. It just saw useful "data."
+                    The AI <strong>doesn't understand privacy, trust, or social boundaries</strong>.
+                    It processes everything as data patterns and can use any information from past
+                    conversations as examples for future users.
                   </p>
                 </div>
 
                 <div className="bg-blue-500/20 p-6 rounded-lg border border-blue-400/30">
-                  <p className="text-blue-100 text-lg">
+                  <p className="text-white text-lg">
                     This isn't a made-up scare story. AI companies openly admit in their terms
-                    of service that this is how their systems work. <sup className="text-blue-400">1</sup>
+                    of service that this is how their systems work.{' '}
+                    <a
+                      href={getCitation(1)?.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline"
+                      title={getCitation(1)?.title}
+                    >
+                      <sup>[1]</sup>
+                    </a>
                   </p>
-                  <p className="text-blue-100 text-lg mt-3">
+                  <p className="text-white text-lg mt-3">
                     Let's look at how this actually happens...
                   </p>
                 </div>
@@ -292,7 +302,7 @@ const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
                   onClick={onComplete}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-4"
                 >
-                  Understand How AI Remembers
+                  Understand How AI Uses Your Data
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </CardContent>
@@ -314,7 +324,7 @@ export default function PrivacyDataRightsModule({
   const [exitTicketAnswers, setExitTicketAnswers] = useState<{[key: string]: string}>({});
   const [aiFeedback, setAiFeedback] = useState<string>('');
   const [isGettingFeedback, setIsGettingFeedback] = useState(false);
-  const [usageCheckboxes, setUsageCheckboxes] = useState<{[key: string]: boolean}>({});
+  const [overviewScreen, setOverviewScreen] = useState(0);
 
   const isMountedRef = useRef(true);
 
@@ -327,7 +337,7 @@ export default function PrivacyDataRightsModule({
   const activities = [
     { id: 'intro', title: 'Introduction', completed: phase !== 'intro', type: 'intro' as const },
     { id: 'jordan-simulation', title: 'Jordan\'s Story', completed: ['intro'].indexOf(phase) === -1 && phase !== 'jordan-simulation', type: 'simulation' as const },
-    { id: 'how-ai-remembers', title: 'How AI Remembers', completed: ['intro', 'jordan-simulation'].indexOf(phase) === -1 && phase !== 'how-ai-remembers', type: 'lesson' as const },
+    { id: 'how-ai-remembers', title: 'How AI Uses Your Data', completed: ['intro', 'jordan-simulation'].indexOf(phase) === -1 && phase !== 'how-ai-remembers', type: 'lesson' as const },
     { id: 'tc-challenge', title: 'T&C Reality Check', completed: ['intro', 'jordan-simulation', 'how-ai-remembers'].indexOf(phase) === -1 && phase !== 'tc-challenge', type: 'interactive' as const },
     { id: 'policy-comparison', title: 'Policy Comparison', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge'].indexOf(phase) === -1 && phase !== 'policy-comparison', type: 'lesson' as const },
     { id: 'tools-comparison', title: 'AI Tools Guide', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge', 'policy-comparison'].indexOf(phase) === -1 && phase !== 'tools-comparison', type: 'lesson' as const },
@@ -405,67 +415,103 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
 
   if (phase === 'intro') {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 p-6 flex items-center justify-center"
-      >
-        <Card className="max-w-4xl w-full bg-slate-800 border-slate-600">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-white flex items-center justify-center gap-3 mb-4">
-              <Shield className="w-8 h-8" />
-              Your AI Secret Isn't So Secret
-            </CardTitle>
-            <p className="text-xl text-blue-100">
-              You just told an AI your biggest secret, your most creative idea, or the personal
-              details for your college essay. Who else knows it now?
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-blue-500/20 rounded-lg p-6 border border-blue-400/30">
-              <h3 className="text-white text-xl font-bold mb-4">
-                Let's be real: we all use AI. How have you used it? (Check all that apply)
-              </h3>
-              <div className="space-y-3">
-                {[
-                  "For homework help or to explain a topic",
-                  "To write or revise a school paper or college essay",
-                  "To brainstorm creative writing or art ideas",
-                  "To get advice on a personal problem",
-                  "To vent about friends, family, or stress",
-                  "Just to chat and see what it would say"
-                ].map((usage, idx) => (
-                  <label key={idx} className="flex items-center gap-3 text-white cursor-pointer hover:bg-white/10 p-2 rounded">
-                    <input
-                      type="checkbox"
-                      checked={usageCheckboxes[usage] || false}
-                      onChange={(e) => setUsageCheckboxes({...usageCheckboxes, [usage]: e.target.checked})}
-                      className="w-4 h-4"
-                    />
-                    <span>{usage}</span>
-                  </label>
-                ))}
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-900 to-slate-800 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="max-w-4xl w-full"
+        >
+          {overviewScreen === 0 ? (
+            /* Screen 1: Module Preview */
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
+              <div className="flex justify-center mb-6">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 rounded-full">
+                  <Shield className="w-16 h-16 text-white" />
+                </div>
               </div>
-            </div>
 
-            <div className="bg-slate-700 p-6 rounded-lg">
-              <p className="text-white text-lg">
-                Every time you type something into a public AI, your words can travel to places
-                you'd never expect and live on long after you've closed the tab. This module will
-                show you <strong>exactly how that happens</strong> and what you can do to take
-                control of your digital footprint.
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Privacy & AI Tools: What You Need to Know
+              </h1>
+
+              <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
+                You just told an AI tool your biggest secret, your most creative idea, or the personal
+                details for your college essay. Who else knows it now?
               </p>
-            </div>
 
-            <Button
-              onClick={() => setPhase('jordan-simulation')}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-4"
-            >
-              See a Real Example
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </CardContent>
-        </Card>
+              <div className="bg-blue-900/40 border border-blue-400 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-white mb-3">In this module, you'll discover:</h3>
+                <ul className="text-left text-white space-y-2 max-w-xl mx-auto">
+                  <li>• How consumer AI tools can accidentally leak your personal information to strangers</li>
+                  <li>• What actually happens when you click "I Agree" without reading the terms</li>
+                  <li>• The critical difference between school-safe and consumer AI tools</li>
+                  <li>• How to protect your privacy while still using AI effectively</li>
+                </ul>
+              </div>
+
+              <Button
+                onClick={() => setOverviewScreen(1)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium inline-flex items-center gap-2"
+              >
+                Let's Get Started <ArrowRight className="w-5 h-5" />
+              </Button>
+            </div>
+          ) : (
+            /* Screen 2: Why This Matters */
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8">
+              <h2 className="text-2xl font-bold text-white mb-6 text-center">
+                Why Your Privacy Matters More Than Ever
+              </h2>
+
+              <div className="bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border border-yellow-400 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                  The Reality:
+                </h3>
+                <p className="text-white leading-relaxed">
+                  AI tools are incredibly helpful—for homework, creative projects, and problem-solving.
+                  But many students don't realize that <strong className="text-yellow-300">not all AI tools
+                  are created equal</strong> when it comes to protecting your personal information.
+                </p>
+              </div>
+
+              <div className="bg-blue-900/40 border border-blue-400 rounded-lg p-6 mb-8">
+                <div className="flex items-start gap-3">
+                  <Shield className="w-8 h-8 text-blue-400 flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Here's What Most People Don't Know:</h3>
+                    <ul className="text-white space-y-3 leading-relaxed">
+                      <li>• Some AI tools <strong className="text-yellow-300">train their models on your conversations</strong>—meaning
+                        what you type today could show up in someone else's chat tomorrow</li>
+                      <li>• Consumer AI tools often <strong className="text-yellow-300">use your data for advertising</strong>,
+                        building profiles about your interests, problems, and secrets</li>
+                      <li>• Your school provides <strong className="text-green-300">safer AI tools with built-in privacy
+                        protections</strong>, but most students don't use them</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-400 rounded-lg p-6 mb-6">
+                <CheckCircle className="w-6 h-6 text-green-400 inline mr-2" />
+                <span className="text-white font-semibold">Good News:</span>
+                <p className="text-white mt-2 leading-relaxed">
+                  By educating yourself about how different AI tools handle your data, you can <strong className="text-green-300">make
+                  informed decisions</strong> about what to share and where. <strong className="text-yellow-300">Knowledge is power</strong> when
+                  it comes to digital privacy.
+                </p>
+              </div>
+
+              <Button
+                onClick={() => setPhase('jordan-simulation')}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium inline-flex items-center justify-center gap-2"
+              >
+                See a Real Example <ArrowRight className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
+        </motion.div>
 
         <AnimatePresence>
           {showDevPanel && (
@@ -479,7 +525,7 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
             />
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     );
   }
 
@@ -513,12 +559,12 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
         <Card className="max-w-3xl w-full bg-slate-800 border-slate-600">
           <CardHeader>
             <CardTitle className="text-white text-2xl text-center">
-              How AI Remembers: The Friend Who Can't Keep a Secret
+              How AI Stores and Uses Your Data
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 text-white">
             <p className="text-lg">
-              So, how did that happen? It's simple. Many public AI tools are designed to
+              So, how did that happen? It's simple. Many consumer AI tools are designed to
               <strong> learn from every conversation</strong> you have with them.
             </p>
 
@@ -700,13 +746,17 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
             </p>
           </CardHeader>
           <CardContent className="space-y-8 text-white">
-            <div className="bg-green-900/50 p-6 rounded-lg border-2 border-green-500">
-              <h3 className="text-green-300 font-bold text-2xl mb-4 text-center">
-                The Golden Rule of AI Privacy
-              </h3>
-              <p className="text-white text-xl font-semibold italic text-center">
+            <div className="bg-green-900/50 p-8 rounded-lg border-4 border-green-400 shadow-lg shadow-green-500/30">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Shield className="w-10 h-10 text-green-400" />
+                <h3 className="text-green-300 font-bold text-3xl text-center">
+                  The Golden Rule of AI Privacy
+                </h3>
+                <Shield className="w-10 h-10 text-green-400" />
+              </div>
+              <p className="text-white text-2xl font-bold italic text-center leading-relaxed">
                 "If you wouldn't post it on a public billboard with your name on it,
-                don't type it into a public AI."
+                don't type it into a consumer AI tool."
               </p>
             </div>
 
@@ -729,7 +779,7 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
                         of Microsoft Copilot, SchoolAI, or Snorkl.
                       </p>
                       <p>
-                        <strong>For casual curiosity</strong> on public AI tools, treat them like a
+                        <strong>For casual curiosity</strong> on consumer AI tools, treat them like a
                         public forum. Don't share secrets, personal struggles, or identifying details.
                       </p>
                     </div>
@@ -744,7 +794,7 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
                     </h4>
                     <div className="space-y-2 text-gray-200">
                       <p>
-                        When using a public AI for help with a story or an essay,
+                        When using a consumer AI tool for help with a story or an essay,
                         <strong> strip out all personal details</strong>:
                       </p>
                       <ul className="list-none space-y-1 ml-4">
@@ -765,7 +815,7 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
                     </h4>
                     <div className="space-y-2 text-gray-200">
                       <p>
-                        Most public AI tools have a setting to view and delete your conversation
+                        Most consumer AI tools have a setting to view and delete your conversation
                         history. <strong>Get in the habit of clearing it regularly.</strong>
                       </p>
                       <p>
@@ -781,13 +831,13 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
 
             <div className="bg-blue-500/20 p-6 rounded-lg border border-blue-400">
               <h3 className="text-white text-xl font-bold mb-3">The Takeaway: You Are in Control</h3>
-              <p className="text-blue-100">
+              <p className="text-white">
                 The world of AI can seem complicated, but protecting your privacy doesn't have to be.
                 It all comes down to one thing: <strong>making conscious choices</strong>.
               </p>
-              <ul className="list-none space-y-2 mt-4 text-blue-100">
+              <ul className="list-none space-y-2 mt-4 text-white">
                 <li>✓ You have the choice to use school-safe tools that protect your data by default.</li>
-                <li>✓ You have the choice to anonymize your information on public platforms.</li>
+                <li>✓ You have the choice to anonymize your information on consumer platforms.</li>
                 <li>✓ You have the choice to read beyond the "I Agree" button and understand what you're signing up for.</li>
               </ul>
             </div>
@@ -837,7 +887,7 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
       }
     ];
 
-    const allAnswered = exitQuestions.every(q => exitTicketAnswers[q.id]?.trim().length >= 100);
+    const allAnswered = exitQuestions.every(q => exitTicketAnswers[q.id]?.trim().length >= 150);
 
     return (
       <motion.div
@@ -872,7 +922,7 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
                     required
                   />
                   <div className="text-right">
-                    {(exitTicketAnswers[question.id]?.length || 0) >= 100 && (
+                    {(exitTicketAnswers[question.id]?.length || 0) >= 150 && (
                       <span className="text-green-300 text-sm font-semibold">
                         ✓ Ready for feedback
                       </span>
@@ -931,7 +981,7 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
 
               {!allAnswered && !aiFeedback && (
                 <p className="text-yellow-200 text-sm text-center">
-                  Please complete all reflection questions with at least 100 characters each to continue.
+                  Please complete all reflection questions with at least 150 characters each (2-3 sentences) to continue.
                 </p>
               )}
             </CardContent>

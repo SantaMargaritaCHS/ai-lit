@@ -1,852 +1,1424 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  ArrowRight, 
-  Award, 
-  CheckCircle, 
-  Droplets, 
-  Leaf, 
-  AlertCircle,
-  Zap,
-  Lightbulb,
-  Sun,
-  Atom,
-  Wind,
-  ChevronRight,
+import {
+  Droplets,
+  Leaf,
+  ArrowRight,
   Sparkles,
-  Info,
-  Loader2
+  Loader,
+  AlertCircle,
+  CheckCircle,
+  CheckCircle2,
+  ChevronRight,
+  Zap,
+  Cloud
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumVideoPlayer } from '@/components/PremiumVideoPlayer';
-import { ExitTicket } from '@/components/ExitTicket';
-import { motion } from 'framer-motion';
-// Developer mode is now handled by the UniversalDevModeProvider
-import { UniversalDevPanel } from '@/components/UniversalDevPanel';
+import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
 import { useDevMode } from '@/context/DevModeContext';
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
+import { saveProgress, loadProgress, clearProgress } from '@/lib/progressPersistence';
+import EnvironmentalCalculator from '@/components/EnvironmentalModule/EnvironmentalCalculator';
+import EnvironmentalImpactMatrix from '@/components/EnvironmentalModule/EnvironmentalImpactMatrix';
+import SimplifiedSolutionsSorter from '@/components/EnvironmentalModule/SimplifiedSolutionsSorter';
+import { Certificate } from '@/components/Certificate';
 
-// Video configuration
-const VIDEO_URL = 'https://firebasestorage.googleapis.com/v0/b/ai-literacy-platform-175d4.firebasestorage.app/o/Videos%2FHow%20AI%20Is%20Guzzling%20Our%20Water%20Supply.mp4?alt=media&token=cb353217-8baf-4778-bd8c-bb0468685f7f';
+const MODULE_ID = 'ai-environmental-impact';
 
-const VIDEO_SEGMENTS = [
-  {
-    id: 'segment-1',
-    title: 'The Hidden Water Crisis',
-    description: 'Understanding how AI systems consume water for cooling',
-    start: 0,
-    end: -1, // Play entire video in one segment
-    source: VIDEO_URL,
-    mandatory: true,
-    crossfade: false,
-    allowSkipWithinChapters: false,
-    reflection: false
-  }
-];
-
-// Updated steps with educator-focused examples
-const guidedSteps = [
-  {
-    id: 'intro',
-    title: 'The Hidden Cost of AI',
-    type: 'intro',
-    content: 'Every AI query you make requires real resources. Let\'s explore what happens when you use AI tools in your classroom.',
-    icon: AlertCircle
-  },
-  {
-    id: 'video-section',
-    title: 'Understanding AI\'s Water Usage',
-    type: 'video',
-    content: 'Watch this important video about how AI systems consume water for cooling. Pay attention to the real-world impacts on communities.',
-    icon: Droplets
-  },
-  {
-    id: 'educator-question',
-    title: 'Your Classroom AI Usage',
-    type: 'question',
-    content: 'In a typical week, how many times might YOU use AI tools for lesson planning, grading, or creating materials?',
-    options: [
-      'Less than 10 times',
-      '10-25 times',
-      '25-50 times',
-      'More than 50 times'
-    ],
-    correctAnswer: -1 // No correct answer, just reflection
-  },
-  {
-    id: 'daily-water',
-    title: 'Your Daily AI Water Use',
-    type: 'question',
-    content: 'You use AI tools about 20 times today for lesson planning, grading, and creating materials. According to recent research, how much water does this consume?',
-    options: [
-      'Less than a teaspoon',
-      'About one 12-ounce water bottle',
-      'About 3-5 standard water bottles',
-      'About 10 water bottles'
-    ],
-    correctAnswer: 1,
-    explanation: {
-      correct: 'Correct! According to 2024 research from the University of California, Riverside, each AI query uses approximately 0.3-10ml of water for cooling data centers. For 20 queries, that\'s about 6-200ml total - roughly equivalent to one 12-ounce (355ml) bottle of water. While this seems small, multiply it by millions of users daily!',
-      incorrect: 'Not quite. Recent studies show that 20 AI queries use about 6-200ml of water total - approximately one standard 12-ounce bottle. The exact amount depends on the data center location and cooling efficiency.'
-    }
-  },
-  {
-    id: 'school-impact',
-    title: 'School-Wide AI Impact',
-    type: 'question',
-    content: 'Your school has 50 teachers, each using AI tools 20 times daily for a full school year (180 days). How many standard 12-ounce water bottles worth of water does this represent?',
-    options: [
-      'About 500 bottles',
-      'About 5,000 bottles', 
-      'About 18,000 bottles',
-      'About 50,000 bottles'
-    ],
-    correctAnswer: 2,
-    explanation: {
-      correct: 'That\'s right! With 50 teachers × 20 queries × 180 days = 180,000 total queries. At 0.3-10ml per query, that\'s 54-1,800 liters total. Using the mid-range estimate, this equals about 5,000 standard 12-ounce bottles - enough to fill a small swimming pool!',
-      incorrect: 'Let\'s calculate: 50 teachers using AI 20 times daily for 180 school days equals 180,000 queries. At current rates, this uses approximately 5,000 twelve-ounce water bottles worth of water for data center cooling.'
-    }
-  },
-  {
-    id: 'image-generation',
-    title: 'AI Images vs Text',
-    type: 'question', 
-    content: 'Creating one AI-generated image (like a classroom poster or worksheet visual) uses significantly more resources than text generation. How much more water does generating ONE image use compared to writing a text-based lesson plan?',
-    options: [
-      'About the same',
-      'About 10 times more',
-      'About 30-50 times more',
-      'About 100 times more'
-    ],
-    correctAnswer: 2,
-    explanation: {
-      correct: 'Correct! AI image generation is extremely resource-intensive. According to 2024 research, generating one image can use 30-50 times more computational resources than text generation, translating to proportionally more water usage for cooling.',
-      incorrect: 'Image generation is far more resource-intensive. Research shows it uses 30-50 times more resources than text generation due to the complex calculations required to create visual content.'
-    }
-  },
-  {
-    id: 'video-cost',
-    title: 'The Cost of AI Video',
-    type: 'reveal',
-    content: 'Creating just ONE minute of AI-generated educational video (like an animated science explanation):',
-    waterBottles: 45, // Estimated for 1-minute AI video
-    energyComparison: 'Same electricity as running 5 classroom projectors for 8 hours',
-    realWorldExample: 'That\'s over 22 gallons - enough to fill a small classroom aquarium!'
-  },
-  {
-    id: 'training-cost',
-    title: 'The Hidden Cost: AI Training',
-    type: 'reveal',
-    content: 'Before an AI model like ChatGPT can answer questions, it must be trained - a one-time process with massive environmental impact. Here\'s what it took to train GPT-3:',
-    waterBottles: 1970000, // 700,000 liters ÷ 0.355 liters per 12oz bottle
-    energyComparison: 'Equal to 120 American homes\' entire annual electricity usage',
-    realWorldExample: 'The 700,000 liters of water used would fill 280 average American swimming pools',
-    additionalContext: 'This is a ONE-TIME cost to create the model. The daily usage we discussed earlier is separate and ongoing.'
-  },
-  {
-    id: 'educator-reflection',
-    title: 'Teaching Environmental Awareness',
-    type: 'reflection',
-    content: 'Why is it important for your students to understand AI\'s environmental impact? How will you incorporate this knowledge into your teaching while still leveraging AI\'s educational benefits?',
-    isReflectionStep: true
-  },
-  {
-    id: 'practical-solutions',
-    title: 'Sustainable AI Practices for Educators',
-    type: 'solutions',
-    content: 'Based on research, which teaching approach would MOST effectively reduce your AI environmental footprint while maintaining educational benefits?',
-    options: [
-      'Stop using AI tools in education entirely',
-      'Batch similar tasks (like creating all week\'s materials at once), write specific prompts to reduce iterations, and teach students these efficiency practices',
-      'Only use AI for major projects once per semester',
-      'Continue using AI without considering environmental impact'
-    ],
-    correctAnswer: 1,
-    explanation: {
-      correct: 'Excellent choice! Research shows that batching tasks can reduce AI queries by up to 70%. Writing detailed, specific prompts reduces back-and-forth iterations. Teaching these practices to students creates a multiplier effect - imagine if every student learned to use AI efficiently!',
-      incorrect: 'The most effective approach is teaching efficient AI use: batch similar tasks together, write clear prompts that work on the first try, and share these practices with students. This can reduce environmental impact by 70% while keeping all the educational benefits.'
-    }
-  },
-  {
-    id: 'renewable-hope',
-    title: 'The Clean Energy Revolution',
-    type: 'renewable',
-    content: 'Major tech companies are investing billions in clean energy to power AI sustainably. Here are the latest developments as of 2024-2025:',
-    innovations: [
-      { 
-        icon: Sun, 
-        title: 'Solar + Battery Storage', 
-        description: 'Google announced a "power first" approach in December 2024, building data centers next to new clean energy plants. Microsoft signed a 10.5 gigawatt renewable deal with Brookfield for 2026-2030.' 
-      },
-      { 
-        icon: Atom, 
-        title: 'Nuclear Renaissance', 
-        description: 'Microsoft is reopening Three Mile Island (renamed Crane Clean Energy Center) by 2027 to power AI data centers with 835 megawatts of carbon-free energy. The 20-year deal marks the first U.S. nuclear plant restart.' 
-      },
-      { 
-        icon: Wind, 
-        title: 'Wind Power Expansion', 
-        description: 'Amazon, Microsoft, and Google have committed to 100% renewable energy by 2025-2030. Data centers are moving to regions with abundant wind resources like the Midwest.' 
-      },
-      { 
-        icon: Zap, 
-        title: 'Advanced Cooling', 
-        description: 'New liquid cooling systems and AI-optimized data center designs are reducing water usage by up to 50% compared to traditional cooling methods.' 
-      }
-    ]
-  },
-  {
-    id: 'renewable-reflection',
-    title: 'Your Role in Sustainable AI',
-    type: 'reflection',
-    content: 'Knowing that tech companies are investing in renewable energy but it will take years to fully implement, how will you balance using AI\'s educational benefits with environmental responsibility in your classroom? Consider both immediate actions you can take and how you\'ll teach students about this issue.',
-    isReflectionStep: true
-  },
-  {
-    id: 'exit-ticket',
-    title: 'Check Your Understanding',
-    type: 'exit-ticket',
-    content: 'Before receiving your certificate, let\'s reflect on what you\'ve learned about AI\'s environmental impact and sustainable practices.'
-  }
-];
+// Video URLs (5 separate files - note the double spaces in BBC filenames)
+// Using relative Firebase Storage paths (not gs:// URLs) for PremiumVideoPlayer compatibility
+const VIDEO_URLS = {
+  bbcPart1: 'Videos/Student Videos/AI and the Environment/How AI uses our drinking water  - Part 1.mp4',
+  bbcPart2: 'Videos/Student Videos/AI and the Environment/How AI uses our drinking water  - Part 2.mp4',
+  bbcPart3: 'Videos/Student Videos/AI and the Environment/How AI uses our drinking water  - Part 3.mp4',
+  animated: 'Videos/Student Videos/AI and the Environment/AI_s_Hidden_Water_Bill.mp4',
+  hiddenCost: 'Videos/Student Videos/AI and the Environment/The_Hidden_Cost_of_an_AI_Click.mp4',
+};
 
 interface AIEnvironmentalImpactModuleProps {
   onComplete: () => void;
   userName?: string;
 }
 
-export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI Explorer" }: AIEnvironmentalImpactModuleProps) {
-  // Get isDevMode from context
-  const { isDevModeActive: isDevMode } = useDevMode();
+export default function AIEnvironmentalImpactModule({ onComplete, userName = "Student" }: AIEnvironmentalImpactModuleProps) {
+  const { isDevModeActive } = useDevMode();
+  const { registerActivity, clearRegistry } = useActivityRegistry();
 
-  // ActivityRegistry hooks
-  const { registerActivity, clearRegistry, goToActivity } = useActivityRegistry();
+  // Segment state
+  const [currentSegment, setCurrentSegment] = useState(0);
+  const [completedSegments, setCompletedSegments] = useState<number[]>([]);
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [reflectionText, setReflectionText] = useState('');
+  // Hidden Cost Quiz state (Segment 2)
+  const [hiddenCostAnswer, setHiddenCostAnswer] = useState<string | null>(null);
+  const [showHiddenCostFeedback, setShowHiddenCostFeedback] = useState(false);
+
+  // Quiz state (Segment 5 - was Segment 2)
+  const [quizAnswer, setQuizAnswer] = useState<string | null>(null);
+  const [showQuizFeedback, setShowQuizFeedback] = useState(false);
+
+  // Reflection state (Segment 11 - was Segment 7) - with AI validation
+  const [reflection, setReflection] = useState('');
   const [reflectionFeedback, setReflectionFeedback] = useState('');
-  const [isGettingFeedback, setIsGettingFeedback] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [exitTicketComplete, setExitTicketComplete] = useState(false);
-  const [currentVideoSegment, setCurrentVideoSegment] = useState(0);
+  const [reflectionNeedsRetry, setReflectionNeedsRetry] = useState(false);
+  const [isGeneratingReflectionFeedback, setIsGeneratingReflectionFeedback] = useState(false);
+  const [showReflectionFeedback, setShowReflectionFeedback] = useState(false);
+  const [reflectionAttemptCount, setReflectionAttemptCount] = useState(0);
+  const [showReflectionEscapeHatch, setShowReflectionEscapeHatch] = useState(false);
 
-  const activities = guidedSteps.map((step, index) => ({
-    id: `step-${index}`,
-    title: step.title,
-    type: step.type as 'intro' | 'quiz' | 'reflection' | 'video' | 'interactive' | 'exit-ticket',
-    completed: index < currentStep,
-    current: index === currentStep
-  }));
+  // Exit ticket state (Segment 15 - was Segment 11) - with AI validation
+  const [exitTicket1, setExitTicket1] = useState('');
+  const [exitTicket2, setExitTicket2] = useState('');
+  const [exitTicket1Feedback, setExitTicket1Feedback] = useState('');
+  const [exitTicket2Feedback, setExitTicket2Feedback] = useState('');
+  const [exitTicket1NeedsRetry, setExitTicket1NeedsRetry] = useState(false);
+  const [exitTicket2NeedsRetry, setExitTicket2NeedsRetry] = useState(false);
+  const [isGeneratingExitTicketFeedback, setIsGeneratingExitTicketFeedback] = useState(false);
+  const [showExitTicketFeedback, setShowExitTicketFeedback] = useState(false);
+  const [exitTicketAttemptCount, setExitTicketAttemptCount] = useState(0);
+  const [showExitTicketEscapeHatch, setShowExitTicketEscapeHatch] = useState(false);
 
-  // Dev mode placeholders - will be provided by context
-  const showDevPanel = false;
+  // Certificate state
+  const [showCertificate, setShowCertificate] = useState(false);
 
-  // Temporary dev mode handlers (to be replaced by context)
-  const devHandlers = {
-    onJumpToActivity: (index: number) => {
-      setCurrentStep(index);
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-      setReflectionText('');
-      setReflectionFeedback('');
-    },
-    onCompleteAll: () => {
-      setCurrentStep(guidedSteps.length - 1);
-      setExitTicketComplete(true);
-      onComplete();
-    },
-    onReset: () => {
-      setCurrentStep(0);
-      setAnswers({});
-      setReflectionText('');
-      setReflectionFeedback('');
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-      setExitTicketComplete(false);
-    }
-  };
+  const MAX_ATTEMPTS = 2;
+  const MIN_REFLECTION_LENGTH = 150;
+  const MIN_EXIT_TICKET_LENGTH = 100;
 
-  const step = guidedSteps[currentStep];
-  const progress = ((currentStep + 1) / guidedSteps.length) * 100;
+  // Segment definitions (16 total after adding intro + 3 new segments)
+  const segments = [
+    { id: 0, title: 'Welcome to Module', type: 'intro' as const },
+    { id: 1, title: 'The Hidden Cost (Hook)', type: 'video' as const },
+    { id: 2, title: 'What Do You Think?', type: 'quiz' as const },
+    { id: 3, title: 'The Answer Revealed', type: 'video' as const },
+    { id: 4, title: 'The Drop (BBC Part 1)', type: 'video' as const },
+    { id: 5, title: 'Quick Quiz', type: 'quiz' as const },
+    { id: 6, title: 'Why So Thirsty? (BBC Part 2)', type: 'video' as const },
+    { id: 7, title: 'Beyond Water: Energy & Carbon', type: 'interactive' as const },
+    { id: 8, title: 'The Big Picture (BBC Part 3)', type: 'video' as const },
+    { id: 9, title: 'Environmental Calculator', type: 'interactive' as const },
+    { id: 10, title: 'Comparison Matrix', type: 'interactive' as const },
+    { id: 11, title: 'Student Reflection', type: 'reflection' as const },
+    { id: 12, title: 'The Paradox & Future', type: 'video' as const },
+    { id: 13, title: 'AI Solutions Sorting', type: 'interactive' as const },
+    { id: 14, title: 'Your Most Efficient Tool', type: 'video' as const },
+    { id: 15, title: 'Exit Ticket', type: 'exit-ticket' as const },
+  ];
 
-  // Register activities with ActivityRegistry on mount
+  // Register activities for Developer Mode
   useEffect(() => {
-    console.log('🔧 [AIEnvironmentalImpactModule]: Registering activities...');
     clearRegistry();
-
-    guidedSteps.forEach((step, index) => {
-      const activityRegistration = {
-        id: step.id,
-        type: step.type === 'exit-ticket' ? 'certificate' :
-              step.type === 'video' ? 'video' :
-              step.type === 'reflection' ? 'reflection' :
-              step.type === 'intro' ? 'interactive' :
-              'quiz',
-        title: step.title,
-        completed: index < currentStep
-      };
-      console.log(`📝 Registering activity: ${activityRegistration.id} (${activityRegistration.type})`);
-      registerActivity(activityRegistration);
+    segments.forEach((segment, index) => {
+      registerActivity({
+        id: `segment-${segment.id}`,
+        type: segment.type,
+        name: segment.title,
+        completed: completedSegments.includes(index),
+      });
     });
-  }, []); // Only register once on mount to avoid loops
+  }, []);
 
-  // Listen for dev panel navigation commands
+  // Listen for Developer Mode navigation
   useEffect(() => {
     const handleGoToActivity = (event: CustomEvent) => {
       const activityIndex = event.detail;
-      console.log(`🎯 [AIEnvironmentalImpactModule]: Received goToActivity command for index ${activityIndex}`);
-
-      // Logic to navigate to the specific activity based on index
-      if (activityIndex >= 0 && activityIndex < guidedSteps.length) {
-        setCurrentStep(activityIndex);
-        setSelectedAnswer(null);
-        setShowExplanation(false);
-        setReflectionText('');
-        setReflectionFeedback('');
-        console.log(`✅ Jumped to activity ${activityIndex}`);
+      if (activityIndex >= 0 && activityIndex < segments.length) {
+        setCurrentSegment(activityIndex);
       }
     };
 
     window.addEventListener('goToActivity', handleGoToActivity as EventListener);
+    return () => window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
+  }, []);
 
-    return () => {
-      window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
-    };
+  // Progress persistence
+  useEffect(() => {
+    const activityStates = segments.map((s, i) => ({
+      id: `segment-${s.id}`,
+      title: s.title,
+      completed: false,
+    }));
+    const progress = loadProgress(MODULE_ID, activityStates);
+    if (progress) {
+      // Resume from saved progress
+      setCurrentSegment(progress.currentActivity);
+      setCompletedSegments(
+        segments
+          .map((_, index) => index)
+          .filter(index => index < progress.currentActivity)
+      );
+    }
   }, []);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentStep]);
+    if (currentSegment > 0) {
+      const activityStates = segments.map((s, i) => ({
+        id: `segment-${s.id}`,
+        title: s.title,
+        completed: completedSegments.includes(i),
+      }));
+      saveProgress(MODULE_ID, currentSegment, activityStates);
+    }
+  }, [currentSegment, completedSegments]);
 
-  const handleNext = () => {
-    // Skip validation in dev mode
-    if (isDevMode || currentStep < guidedSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-      setReflectionText('');
-      setReflectionFeedback('');
-    } else if (exitTicketComplete) {
-      onComplete();
+  const handleNextSegment = () => {
+    if (!completedSegments.includes(currentSegment)) {
+      setCompletedSegments([...completedSegments, currentSegment]);
+    }
+
+    if (currentSegment < segments.length - 1) {
+      setCurrentSegment(currentSegment + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Module complete - show certificate
+      setShowCertificate(true);
     }
   };
 
-  const handleAnswer = (answerIndex: number) => {
-    setSelectedAnswer(answerIndex);
-    setShowExplanation(true);
-    setAnswers({ ...answers, [step.id]: answerIndex });
+  // Hidden Cost Quiz handlers (Segment 2)
+  const handleHiddenCostAnswer = (answer: string) => {
+    setHiddenCostAnswer(answer);
+    setShowHiddenCostFeedback(true);
   };
 
-  const handleReflectionSubmit = async () => {
-    if (reflectionText.trim()) {
-      setIsGettingFeedback(true);
-      
-      try {
-        // Get AI feedback for reflection
-        const response = await fetch('/api/ai-feedback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            activityType: 'reflection',
-            activityTitle: 'AI Environmental Impact',
-            question: step.content,
-            answer: reflectionText
-          })
-        });
+  // Quiz handlers (Segment 5)
+  const handleQuizAnswer = (answer: string) => {
+    setQuizAnswer(answer);
+    setShowQuizFeedback(true);
+  };
 
-        if (response.ok) {
-          const data = await response.json();
-          setReflectionFeedback(data.feedback);
-          console.log('Reflection AI feedback:', data);
-        } else {
-          console.error('Failed to get reflection feedback');
-          setReflectionFeedback('Thank you for your thoughtful reflection on teaching environmental awareness!');
+  // Reflection handlers with AI validation
+  const handleSubmitReflection = async () => {
+    setIsGeneratingReflectionFeedback(true);
+    setReflectionNeedsRetry(false);
+
+    try {
+      const aiFeedback = await generateEducationFeedback(
+        reflection.trim(),
+        "Data centers impact water, energy, and carbon emissions. Who should be most responsible for reducing these impacts: tech companies, governments, or individual users? Explain your reasoning with specific examples."
+      );
+
+      const finalFeedback = aiFeedback && aiFeedback.trim().length > 0
+        ? aiFeedback
+        : "Thank you for reflecting on the responsibility for AI's environmental impact. Understanding different stakeholder roles is crucial.";
+
+      setReflectionFeedback(finalFeedback);
+
+      const feedbackIndicatesRetry =
+        aiFeedback.toLowerCase().includes('does not address') ||
+        aiFeedback.toLowerCase().includes('please re-read') ||
+        aiFeedback.toLowerCase().includes('inappropriate language') ||
+        aiFeedback.toLowerCase().includes('off-topic') ||
+        aiFeedback.toLowerCase().includes('must elaborate') ||
+        aiFeedback.toLowerCase().includes('insufficient') ||
+        aiFeedback.toLowerCase().includes('needs more depth') ||
+        aiFeedback.toLowerCase().includes('random text') ||
+        aiFeedback.toLowerCase().includes('monitored for inappropriate') ||
+        aiFeedback.toLowerCase().includes('answer the original question');
+
+      if (feedbackIndicatesRetry) {
+        setReflectionNeedsRetry(true);
+        const newAttemptCount = reflectionAttemptCount + 1;
+        setReflectionAttemptCount(newAttemptCount);
+
+        if (newAttemptCount >= MAX_ATTEMPTS) {
+          setShowReflectionEscapeHatch(true);
         }
-      } catch (error) {
-        console.error('Error getting reflection feedback:', error);
-        setReflectionFeedback('Thank you for sharing your thoughts on this important topic!');
-      } finally {
-        setIsGettingFeedback(false);
-        setAnswers({ ...answers, [step.id]: reflectionText });
+      } else {
+        setReflectionNeedsRetry(false);
       }
+
+      setShowReflectionFeedback(true);
+    } catch (error) {
+      console.error('[Reflection] Error:', error);
+      setReflectionFeedback("Thank you for your thoughtful reflection on AI's environmental impact.");
+      setReflectionNeedsRetry(false);
+      setShowReflectionFeedback(true);
+    } finally {
+      setIsGeneratingReflectionFeedback(false);
     }
   };
 
-  const handleVideoSegmentComplete = () => {
-    console.log('🎬 Video segment completed - auto-advancing to next step');
-    // Auto-advance to next step after video completion
-    setCurrentStep(currentStep + 1);
+  const handleReflectionTryAgain = () => {
+    setReflection('');
+    setReflectionFeedback('');
+    setShowReflectionFeedback(false);
+    setReflectionNeedsRetry(false);
+    setReflectionAttemptCount(0);
+    setShowReflectionEscapeHatch(false);
   };
 
-  const handleAllVideosComplete = () => {
-    console.log('🎬 All video segments completed - auto-advancing to next step');
-    // Auto-advance to next step after all videos complete
-    setCurrentStep(currentStep + 1);
+  const handleReflectionContinueAnyway = () => {
+    console.log('Student bypassed reflection validation after', reflectionAttemptCount, 'attempts');
+    handleNextSegment();
   };
 
-  const renderStepContent = () => {
-    switch (step.type) {
-      case 'intro':
-        return (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <div className="bg-gradient-to-r from-blue-500/20 to-green-500/20 p-6 rounded-lg">
-              {step.icon && <step.icon className="w-12 h-12 text-green-400 mb-4" />}
-              <p className="text-lg text-secondary leading-relaxed">{step.content}</p>
-            </div>
-            <div className="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-lg">
-              <p className="text-sm text-secondary">
-                <AlertCircle className="w-4 h-4 inline mr-2" />
-                This module contains important information about AI's environmental impact, 
-                but also highlights exciting innovations in clean energy.
-              </p>
-            </div>
-            <Button onClick={handleNext} className="w-full bg-green-600 hover:bg-green-700">
-              Start Learning <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </motion.div>
-        );
+  // Exit ticket handlers with AI validation
+  const handleSubmitExitTicket = async () => {
+    setIsGeneratingExitTicketFeedback(true);
+    setExitTicket1NeedsRetry(false);
+    setExitTicket2NeedsRetry(false);
 
-      case 'video':
-        return (
-          <div className="space-y-4">
-            <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg mb-4">
-              <p className="text-sm text-muted">
-                <Droplets className="w-4 h-4 inline mr-2" />
-                {step.content}
-              </p>
-            </div>
-            
-            <PremiumVideoPlayer
-              videoUrl={VIDEO_URL}
-              videoId="ai-environmental-impact"
-              segments={VIDEO_SEGMENTS}
-              onSegmentComplete={handleVideoSegmentComplete}
-              onModuleComplete={handleAllVideosComplete}
-              enableSubtitles={true}
-              hideSegmentNavigator={true}
-              allowSeeking={false}
-            />
+    try {
+      const [feedback1, feedback2] = await Promise.all([
+        generateEducationFeedback(
+          exitTicket1.trim(),
+          "What is one intentional choice you can make next time you use an AI tool to be more mindful of its environmental cost?"
+        ),
+        generateEducationFeedback(
+          exitTicket2.trim(),
+          "What's a project where you could choose to use your own creativity instead of an AI tool?"
+        ),
+      ]);
 
-            {/* Auto-advance after video completion - no manual button needed */}
+      const finalFeedback1 = feedback1 && feedback1.trim().length > 0
+        ? feedback1
+        : "Thank you for sharing your commitment to mindful AI usage.";
+
+      const finalFeedback2 = feedback2 && feedback2.trim().length > 0
+        ? feedback2
+        : "Great idea to use your own creativity! Your imagination is completely sustainable.";
+
+      setExitTicket1Feedback(finalFeedback1);
+      setExitTicket2Feedback(finalFeedback2);
+
+      const checkRejection = (text: string) =>
+        text.toLowerCase().includes('does not address') ||
+        text.toLowerCase().includes('please re-read') ||
+        text.toLowerCase().includes('inappropriate language') ||
+        text.toLowerCase().includes('off-topic') ||
+        text.toLowerCase().includes('must elaborate') ||
+        text.toLowerCase().includes('insufficient') ||
+        text.toLowerCase().includes('needs more depth') ||
+        text.toLowerCase().includes('random text') ||
+        text.toLowerCase().includes('monitored for inappropriate') ||
+        text.toLowerCase().includes('answer the original question');
+
+      const retry1 = checkRejection(feedback1);
+      const retry2 = checkRejection(feedback2);
+
+      setExitTicket1NeedsRetry(retry1);
+      setExitTicket2NeedsRetry(retry2);
+
+      if (retry1 || retry2) {
+        const newAttemptCount = exitTicketAttemptCount + 1;
+        setExitTicketAttemptCount(newAttemptCount);
+
+        if (newAttemptCount >= MAX_ATTEMPTS) {
+          setShowExitTicketEscapeHatch(true);
+        }
+      }
+
+      setShowExitTicketFeedback(true);
+    } catch (error) {
+      console.error('[Exit Ticket] Error:', error);
+      setExitTicket1Feedback("Thank you for your thoughtful response.");
+      setExitTicket2Feedback("Great idea to use your own creativity!");
+      setExitTicket1NeedsRetry(false);
+      setExitTicket2NeedsRetry(false);
+      setShowExitTicketFeedback(true);
+    } finally {
+      setIsGeneratingExitTicketFeedback(false);
+    }
+  };
+
+  const handleExitTicketTryAgain = () => {
+    setExitTicket1('');
+    setExitTicket2('');
+    setExitTicket1Feedback('');
+    setExitTicket2Feedback('');
+    setShowExitTicketFeedback(false);
+    setExitTicket1NeedsRetry(false);
+    setExitTicket2NeedsRetry(false);
+    setExitTicketAttemptCount(0);
+    setShowExitTicketEscapeHatch(false);
+  };
+
+  const handleExitTicketContinueAnyway = () => {
+    console.log('Student bypassed exit ticket validation after', exitTicketAttemptCount, 'attempts');
+    handleNextSegment();
+  };
+
+  // Render functions for new segments
+  const renderIntro = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto"
+    >
+      <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 via-blue-50 to-cyan-50">
+        <CardHeader>
+          <div className="flex items-center gap-3 mb-4">
+            <Leaf className="w-12 h-12 text-green-600" />
+            <CardTitle className="text-3xl font-bold text-gray-900">
+              AI's Environmental Impact
+            </CardTitle>
           </div>
-        );
+        </CardHeader>
+        <CardContent className="space-y-6 text-gray-900">
+          <p className="text-lg leading-relaxed">
+            Welcome, {userName}! Every time you use AI, there's a hidden environmental cost. In this module, you'll discover what it takes to power the AI tools you use every day—and learn how to use them more sustainably.
+          </p>
 
-      case 'question':
-        return (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6"
+          <div className="bg-white p-6 rounded-lg border border-green-200 shadow-sm">
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900">
+              <AlertCircle className="w-6 h-6 text-blue-600" />
+              The Hidden Story Behind AI
+            </h3>
+            <p className="text-gray-800 leading-relaxed mb-4">
+              AI tools like ChatGPT, DALL-E, and Gemini feel instant and free. But behind every query, image, or response is a massive data center consuming real-world resources.
+            </p>
+            <p className="text-gray-800 leading-relaxed">
+              This module reveals the environmental footprint of AI and shows you how small changes in how we use these tools can make a big difference.
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-100 to-green-100 p-6 rounded-lg border border-green-300">
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900">
+              <Sparkles className="w-6 h-6 text-green-600" />
+              What You'll Learn
+            </h3>
+            <ul className="space-y-3 text-gray-800">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span><strong>The hidden cost:</strong> Discover what every AI query actually consumes</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span><strong>Behind the scenes:</strong> See what happens in data centers to power AI</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span><strong>Your personal impact:</strong> Calculate your own AI environmental footprint</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span><strong>Make better choices:</strong> Learn how to use AI more sustainably</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span><strong>Future solutions:</strong> Innovations making AI more environmentally friendly</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-300">
+            <p className="text-sm text-gray-800 flex items-start gap-2">
+              <Leaf className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <span><strong>Good news:</strong> Tech companies are investing billions in renewable energy and efficient cooling systems. Understanding the problem is the first step toward solutions!</span>
+            </p>
+          </div>
+
+          <Button
+            onClick={handleNextSegment}
+            size="lg"
+            className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
           >
-            <p className="text-lg text-secondary">{step.content}</p>
-            
-            {/* Context clarification for school-impact step */}
-            {step.id === 'school-impact' && (
-              <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg mt-4">
-                <p className="text-sm text-muted">
-                  <Info className="w-4 h-4 inline mr-2" />
-                  <strong>Context:</strong> This water is used for cooling data centers that run AI services. 
-                  The actual amount varies based on location, season, and cooling technology used.
-                </p>
-              </div>
-            )}
-            
-            <div className="space-y-3">
-              {step.options?.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(index)}
-                  disabled={showExplanation}
-                  className={`w-full p-4 text-left rounded-lg transition-all duration-300 ${
-                    selectedAnswer === index
-                      ? step.correctAnswer === -1 || index === step.correctAnswer
-                        ? 'bg-green-500/20 border-2 border-green-500'
-                        : 'bg-red-500/20 border-2 border-red-500'
-                      : 'bg-card hover:bg-card-hover border border-primary'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-primary">{option}</span>
-                    {showExplanation && selectedAnswer === index && (
-                      step.correctAnswer === -1 || index === step.correctAnswer ? (
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                      ) : (
-                        <AlertCircle className="w-5 h-5 text-red-400" />
-                      )
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
+            <ChevronRight className="mr-2 w-5 h-5" />
+            Start Module
+          </Button>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 
-            {showExplanation && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
+  const renderAnimatedHook = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Sparkles className="w-6 h-6 text-purple-600" />
+          The Hidden Cost
+        </CardTitle>
+        <p className="text-gray-700 mt-2">
+          Let's ask a big question: What's the real cost of using AI?
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <PremiumVideoPlayer
+          videoUrl={VIDEO_URLS.animated}
+          videoId="env-impact-animated-hook"
+          segments={[
+            {
+              id: 'animated-hook',
+              title: 'The Hidden Cost - Part 1',
+              start: 0,
+              end: 34,
+              source: VIDEO_URLS.animated,
+              description: "What's the hidden cost of AI?",
+              mandatory: true,
+            }
+          ]}
+          onSegmentComplete={() => {}}
+          onModuleComplete={handleNextSegment}
+          enableSubtitles={true}
+          hideSegmentNavigator={true}
+          allowSeeking={false}
+        />
+      </CardContent>
+    </Card>
+  );
+
+  const renderHiddenCostQuiz = () => {
+    const options = [
+      {
+        id: 'financial',
+        emoji: '💰',
+        title: 'Financial Cost',
+        description: 'AI companies lose money on free services',
+        isCorrect: false,
+        explanation: "While AI is expensive to run, this isn't the environmental cost the video explores. The real hidden cost affects our planet's resources.",
+        color: 'from-yellow-400 to-orange-500'
+      },
+      {
+        id: 'water',
+        emoji: '💧',
+        title: 'Water Usage',
+        description: 'Data centers need massive amounts of water for cooling',
+        isCorrect: true,
+        explanation: "Correct! Every AI query requires water to cool the servers. A single conversation with ChatGPT can use as much water as a water bottle. This hidden environmental cost is what the video reveals.",
+        color: 'from-blue-400 to-cyan-500'
+      },
+      {
+        id: 'battery',
+        emoji: '⚡',
+        title: 'Device Battery',
+        description: 'AI drains phone and laptop batteries faster',
+        isCorrect: false,
+        explanation: "While AI does use your device's battery, the much larger hidden cost happens in data centers far away, where servers require enormous amounts of resources to run.",
+        color: 'from-yellow-300 to-yellow-500'
+      },
+      {
+        id: 'bandwidth',
+        emoji: '🌐',
+        title: 'Internet Bandwidth',
+        description: 'AI queries slow down your internet connection',
+        isCorrect: false,
+        explanation: "AI queries do use bandwidth, but the significant hidden environmental cost occurs in the data centers processing your request, not in your internet connection.",
+        color: 'from-purple-400 to-indigo-500'
+      }
+    ];
+
+    return (
+      <Card className="max-w-5xl mx-auto">
+        <CardHeader className="text-center pb-2">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="mb-4"
+          >
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-10 h-10 text-white" />
+            </div>
+          </motion.div>
+          <CardTitle className="text-3xl font-bold text-gray-900 mb-3">
+            What Do You Think?
+          </CardTitle>
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
+            AI tools like ChatGPT and image generators seem free and instant. But there's a <strong>hidden environmental cost</strong> behind every query.
+          </p>
+          <p className="text-lg text-gray-600 mt-2">
+            Make your best guess before we reveal the answer!
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            {options.map((option, index) => (
+              <motion.button
+                key={option.id}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-blue-500/10 p-4 rounded-lg"
+                transition={{ delay: index * 0.1 }}
+                onClick={() => handleHiddenCostAnswer(option.id)}
+                disabled={showHiddenCostFeedback}
+                className={`group relative p-6 text-left rounded-xl border-3 transition-all transform hover:scale-105 ${
+                  hiddenCostAnswer === option.id
+                    ? option.isCorrect
+                      ? 'border-green-500 bg-green-50 shadow-lg'
+                      : 'border-yellow-500 bg-yellow-50 shadow-lg'
+                    : 'border-gray-300 bg-white hover:border-gray-400 hover:shadow-md'
+                } ${!showHiddenCostFeedback ? 'cursor-pointer' : 'cursor-default'}`}
               >
-                <p className="text-muted">
-                  {step.correctAnswer === -1 
-                    ? "Thank you for reflecting on your AI usage. Every bit of awareness helps!"
-                    : step.explanation
-                    ? (selectedAnswer === step.correctAnswer 
-                       ? step.explanation.correct 
-                       : step.explanation.incorrect)
-                    : (selectedAnswer === step.correctAnswer
-                       ? "Correct! You understand the scale of AI's resource consumption."
-                       : "Not quite. The actual impact might surprise you!")}
-                </p>
-                
-                {/* Teaching tip for image-generation step */}
-                {step.id === 'image-generation' && (
-                  <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                    <p className="text-sm text-secondary">
-                      <strong>Teaching Tip:</strong> Consider whether you really need an AI-generated image, 
-                      or if existing images, simple drawings, or text descriptions might work just as well 
-                      for your educational goals.
+                <div className="flex items-start gap-4">
+                  <div className={`flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br ${option.color} flex items-center justify-center text-3xl shadow-md`}>
+                    {option.emoji}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+                      {option.title}
+                      {showHiddenCostFeedback && hiddenCostAnswer === option.id && (
+                        option.isCorrect ? (
+                          <CheckCircle className="w-6 h-6 text-green-600" />
+                        ) : (
+                          <AlertCircle className="w-6 h-6 text-yellow-600" />
+                        )
+                      )}
+                    </h3>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {option.description}
                     </p>
                   </div>
+                </div>
+
+                {showHiddenCostFeedback && hiddenCostAnswer === option.id && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-4 pt-4 border-t-2 border-gray-300"
+                  >
+                    <p className="text-sm text-gray-800 leading-relaxed">
+                      <strong className={option.isCorrect ? 'text-green-700' : 'text-yellow-700'}>
+                        {option.isCorrect ? '✓ Explanation:' : 'Not quite:'}
+                      </strong> {option.explanation}
+                    </p>
+                  </motion.div>
                 )}
-              </motion.div>
-            )}
+              </motion.button>
+            ))}
+          </div>
 
-            {showExplanation && (
-              <Button onClick={handleNext} className="w-full bg-green-600 hover:bg-green-700">
-                Continue <ArrowRight className="w-4 h-4 ml-2" />
+          {showHiddenCostFeedback && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="pt-4"
+            >
+              <Button onClick={handleNextSegment} size="lg" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg py-6">
+                Watch the Answer Revealed
+                <ArrowRight className="ml-2 w-6 h-6" />
               </Button>
-            )}
-          </motion.div>
-        );
+            </motion.div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
-      case 'reveal':
+  const renderAnimatedReveal = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Droplets className="w-6 h-6 text-blue-600" />
+          The Answer Revealed
+        </CardTitle>
+        <p className="text-gray-700 mt-2">
+          Here's the hidden environmental cost of AI
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-sm text-gray-700">
+            Watch as the video reveals the answer to our question!
+          </p>
+        </div>
+
+        <PremiumVideoPlayer
+          videoUrl={VIDEO_URLS.animated}
+          videoId="env-impact-animated-reveal"
+          segments={[
+            {
+              id: 'animated-reveal',
+              title: 'The Hidden Cost - Answer',
+              start: 34,
+              end: 49.5,
+              source: VIDEO_URLS.animated,
+              description: "The answer revealed",
+              mandatory: true,
+            }
+          ]}
+          onSegmentComplete={() => {}}
+          onModuleComplete={handleNextSegment}
+          enableSubtitles={true}
+          hideSegmentNavigator={true}
+          allowSeeking={false}
+        />
+      </CardContent>
+    </Card>
+  );
+
+  const renderSegment = () => {
+    const segment = segments[currentSegment];
+
+    switch (currentSegment) {
+      // Segment 0: Welcome/Intro Page
+      case 0:
+        return renderIntro();
+
+      // Segment 1: Animated Hook (0-34s)
+      case 1:
+        return renderAnimatedHook();
+
+      // Segment 2: Hidden Cost Quiz
+      case 2:
+        return renderHiddenCostQuiz();
+
+      // Segment 3: Animated Answer Reveal (34-49.5s)
+      case 3:
+        return renderAnimatedReveal();
+
+      // Segment 4: The Drop (Hook) - BBC Part 1 (was Segment 0)
+      case 4:
         return (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <p className="text-lg text-secondary">{step.content}</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Water Usage */}
-              <div className="bg-blue-500/20 p-4 rounded-lg border border-blue-500/30">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Droplets className="w-6 h-6 text-blue-400" />
-                  <h3 className="font-semibold text-muted">Water Usage</h3>
-                </div>
-                <p className="text-2xl font-bold text-primary">{step.waterBottles} bottles</p>
-                <p className="text-sm text-secondary">{step.realWorldExample}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Droplets className="w-6 h-6 text-blue-600" />
+                The "Drop": Every AI Query Has a Cost
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Watch this video to discover the hidden environmental cost of AI
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  This video will show you how a single AI query uses a small "drop" of water - and how that scales up exponentially.
+                </p>
               </div>
 
-              {/* Energy Usage */}
-              <div className="bg-yellow-500/20 p-4 rounded-lg border border-yellow-500/30">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Zap className="w-6 h-6 text-yellow-400" />
-                  <h3 className="font-semibold text-secondary">Energy Usage</h3>
-                </div>
-                <p className="text-sm text-secondary">{step.energyComparison}</p>
-              </div>
-
-              {/* Impact Scale */}
-              <div className="bg-green-500/20 p-4 rounded-lg border border-green-500/30">
-                <div className="flex items-center space-x-2 mb-2">
-                  <AlertCircle className="w-6 h-6 text-green-400" />
-                  <h3 className="font-semibold text-secondary">Scale</h3>
-                </div>
-                <p className="text-sm text-secondary">This is just ONE school. Imagine nationwide impact!</p>
-              </div>
-            </div>
-
-            <div className="bg-orange-500/10 border border-orange-500/30 p-4 rounded-lg">
-              <p className="text-sm text-orange-50">
-                <AlertCircle className="w-4 h-4 inline mr-2" />
-                <strong>Key Insight:</strong> Small individual actions multiply across institutions.
-                Understanding scale helps us make informed decisions about AI usage.
-              </p>
-            </div>
-
-            <Button onClick={handleNext} className="w-full bg-green-600 hover:bg-green-700">
-              Continue Learning <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </motion.div>
-        );
-
-      case 'training':
-        return (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <p className="text-lg text-secondary">{step.content}</p>
-            
-            <div className="bg-red-soft p-6 rounded-lg border border-red-500/30">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Water Usage */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Droplets className="w-8 h-8 text-blue-400" />
-                    <h3 className="text-xl font-semibold text-muted">Training Water Cost</h3>
-                  </div>
-                  <p className="text-3xl font-bold text-primary">{step.waterBottles?.toLocaleString()} bottles</p>
-                  <p className="text-sm text-secondary">{step.realWorldExample}</p>
-                </div>
-
-                {/* Energy Usage */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Zap className="w-8 h-8 text-yellow-400" />
-                    <h3 className="text-xl font-semibold text-secondary">Training Energy Cost</h3>
-                  </div>
-                  <p className="text-sm text-secondary">{step.energyComparison}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 p-4 bg-purple-soft rounded-lg">
-              <p className="text-sm text-muted">
-                <strong>Important Context:</strong> While training costs are enormous, they're 
-                spread across billions of users over years. Your individual usage contributes 
-                to ongoing operational costs (water for cooling), not training costs. However, 
-                as AI models get larger and more powerful, these training costs continue to grow.
-              </p>
-            </div>
-
-            <div className="bg-green-soft p-4 rounded-lg">
-              <p className="text-sm text-secondary">
-                <CheckCircle className="w-4 h-4 inline mr-2" />
-                <strong>Good News:</strong> {step.additionalContext || 'Training happens only once per model. The ongoing usage cost (what you saw earlier) is much smaller. Still, understanding the full picture helps us appreciate both the capabilities and responsibilities of AI.'}
-              </p>
-              <p className="text-xs text-gray-200 mt-2">
-                Source: "Making AI Less 'Thirsty'" study, University of California Riverside (2023)
-              </p>
-            </div>
-
-            <Button onClick={handleNext} className="w-full bg-green-600 hover:bg-green-700">
-              Continue <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </motion.div>
-        );
-
-      case 'reflection':
-        return (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <p className="text-lg text-secondary">{step.content}</p>
-            
-            <div className="space-y-4">
-              <Textarea
-                value={reflectionText}
-                onChange={(e) => setReflectionText(e.target.value)}
-                placeholder="Share your thoughts on teaching environmental awareness..."
-                className="min-h-[120px] bg-card border-primary placeholder:text-muted"
+              <PremiumVideoPlayer
+                videoUrl={VIDEO_URLS.bbcPart1}
+                videoId="environmental-segment-0"
+                segments={[
+                  {
+                    id: 'bbc-part-1',
+                    title: 'The Drop: Every AI Query Has a Cost',
+                    start: 0,
+                    end: -1,
+                    source: VIDEO_URLS.bbcPart1,
+                    description: 'Introduction to AI water usage',
+                    mandatory: true,
+                  }
+                ]}
+                onSegmentComplete={() => {}}
+                onModuleComplete={handleNextSegment}
+                enableSubtitles={true}
+                hideSegmentNavigator={true}
+                allowSeeking={false}
               />
-              
-              {reflectionFeedback && (
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 5: Quick Quiz (was Segment 1)
+      case 5:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900">
+                Quick Quiz: Understanding the Exponential Ladder
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Test your understanding of AI's environmental costs
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-lg text-gray-900">
+                You need a header image for a school project. Which of these choices would use the most environmental resources?
+              </p>
+
+              <div className="space-y-3">
+                {[
+                  { id: 'A', text: 'Writing a text prompt to ask for ideas' },
+                  { id: 'B', text: 'Generating a single AI image' },
+                  { id: 'C', text: 'Generating a 1-minute AI video for the header', correct: true },
+                ].map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleQuizAnswer(option.id)}
+                    disabled={showQuizFeedback}
+                    className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
+                      quizAnswer === option.id
+                        ? option.correct
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-red-500 bg-red-50'
+                        : 'border-gray-300 bg-white hover:border-blue-400'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-900 font-medium">({option.id}) {option.text}</span>
+                      {showQuizFeedback && quizAnswer === option.id && (
+                        option.correct ? (
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <AlertCircle className="w-5 h-5 text-red-600" />
+                        )
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {showQuizFeedback && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-r from-green-500/20 to-blue-500/20 p-4 rounded-lg border border-green-500/30"
+                  className={`border-2 rounded-lg p-6 ${
+                    quizAnswer === 'C'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-yellow-500 bg-yellow-50'
+                  }`}
                 >
-                  <div className="flex items-start space-x-3">
-                    <Sparkles className="w-6 h-6 text-green-400 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-secondary mb-2">AI Feedback</h4>
-                      <p className="text-white">{reflectionFeedback}</p>
-                    </div>
-                  </div>
+                  {quizAnswer === 'C' ? (
+                    <p className="text-gray-900">
+                      <strong>Correct!</strong> Video generation uses exponentially more resources than images, which use more than text.
+                      The "exponential ladder" goes: Text → Image → Video, with each step using 10-50x more resources.
+                    </p>
+                  ) : (
+                    <p className="text-gray-900">
+                      <strong>Not quite.</strong> Video generation uses the most resources - exponentially more than images or text.
+                      The correct answer is (C). Video can use 100x more computational power than generating text!
+                    </p>
+                  )}
                 </motion.div>
               )}
-              
-              {!reflectionFeedback && (
-                <Button 
-                  onClick={handleReflectionSubmit} 
-                  disabled={!reflectionText.trim() || isGettingFeedback}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50"
+
+              {showQuizFeedback && (
+                <Button onClick={handleNextSegment} size="lg" className="w-full bg-green-600 hover:bg-green-700 text-white">
+                  Continue
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 6: Why So Thirsty? - BBC Part 2 (was Segment 2)
+      case 6:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Droplets className="w-6 h-6 text-blue-600" />
+                Why So Thirsty? The Technical Explanation
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Understand WHY AI systems need so much water for cooling
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  This video explains the technical reason: AI chips get extremely hot and require liquid cooling systems that use clean drinking water.
+                </p>
+              </div>
+
+              <PremiumVideoPlayer
+                videoUrl={VIDEO_URLS.bbcPart2}
+                videoId="environmental-segment-2"
+                segments={[
+                  {
+                    id: 'bbc-part-2',
+                    title: 'Why So Thirsty? The Technical Explanation',
+                    start: 0,
+                    end: -1,
+                    source: VIDEO_URLS.bbcPart2,
+                    description: 'How AI chips get hot and require liquid cooling',
+                    mandatory: true,
+                  }
+                ]}
+                onSegmentComplete={() => {}}
+                onModuleComplete={handleNextSegment}
+                enableSubtitles={true}
+                hideSegmentNavigator={true}
+                allowSeeking={false}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 7: Beyond Water - Energy & Carbon (Text Card) (was Segment 3)
+      case 7:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Zap className="w-6 h-6 text-yellow-600" />
+                Beyond Water: Energy & Carbon
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Water isn't the only environmental cost of AI
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Zap className="w-8 h-8 text-yellow-600" />
+                    <h3 className="text-xl font-bold text-gray-900">Massive Energy Use</h3>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">
+                    Data centers use enormous amounts of <strong>electricity</strong> - enough to power
+                    thousands of homes. In 2023, global data centers used as much electricity as the entire country of Argentina.
+                  </p>
+                </div>
+
+                <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Cloud className="w-8 h-8 text-green-600" />
+                    <h3 className="text-xl font-bold text-gray-900">Carbon Emissions</h3>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">
+                    This electricity generates <strong>carbon emissions</strong> that contribute to climate change.
+                    Training GPT-3 produced as much CO₂ as 120 American homes use in an entire year.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-6">
+                <p className="text-gray-900 leading-relaxed">
+                  <strong className="text-blue-900">The Full Picture:</strong> AI's environmental impact includes water for cooling,
+                  electricity to run the servers, and carbon emissions from generating that electricity. Let's explore the scale of these impacts.
+                </p>
+              </div>
+
+              <Button onClick={handleNextSegment} size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                Continue to The Big Picture
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 8: The Big Picture - Animated (was Segment 4)
+      case 8:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Leaf className="w-6 h-6 text-green-600" />
+                The Big Picture: Training Costs & Community Impact
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                See how AI's environmental impact scales from one user to entire communities
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  This segment shows the massive one-time cost to train AI models and the real-world impact on towns like The Dalles, Oregon.
+                </p>
+              </div>
+
+              <PremiumVideoPlayer
+                videoUrl={VIDEO_URLS.animated}
+                videoId="environmental-segment-4"
+                segments={[
+                  {
+                    id: 'big-picture',
+                    title: 'The Big Picture',
+                    start: 154,
+                    end: 213,
+                    source: VIDEO_URLS.animated,
+                    description: 'Training costs and community impact',
+                    mandatory: true,
+                  }
+                ]}
+                onSegmentComplete={() => {}}
+                onModuleComplete={handleNextSegment}
+                enableSubtitles={true}
+                hideSegmentNavigator={true}
+                allowSeeking={false}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 9: Environmental Calculator (was Segment 5)
+      case 9:
+        return <EnvironmentalCalculator onComplete={handleNextSegment} />;
+
+      // Segment 10: Comparison Matrix (was Segment 6)
+      case 10:
+        return <EnvironmentalImpactMatrix onComplete={handleNextSegment} />;
+
+      // Segment 11: Student Reflection (with AI validation) (was Segment 7)
+      case 11:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-purple-600" />
+                Critical Thinking: Who Should Be Responsible?
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Reflect on who should manage AI's environmental impact
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6">
+                <p className="text-gray-900 text-lg font-semibold mb-4">
+                  Data centers impact water, energy, and carbon emissions. Who do you think should be MOST responsible for reducing these impacts?
+                </p>
+                <ul className="space-y-2 text-gray-700">
+                  <li>• <strong>Tech companies</strong> (who build and run data centers)</li>
+                  <li>• <strong>Governments</strong> (who regulate industries)</li>
+                  <li>• <strong>Individual users</strong> (people like you who use AI)</li>
+                </ul>
+                <p className="text-gray-700 mt-4">
+                  Explain your reasoning with specific examples from what you've learned.
+                </p>
+              </div>
+
+              <Textarea
+                value={reflection}
+                onChange={(e) => setReflection(e.target.value)}
+                disabled={showReflectionFeedback && !reflectionNeedsRetry}
+                placeholder="Explain who you think should be most responsible and why. Use specific examples from the module..."
+                rows={6}
+                className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
+              />
+
+              <p className="text-xs text-gray-600">
+                {reflection.length >= MIN_REFLECTION_LENGTH
+                  ? '✓ Ready for AI feedback'
+                  : `${reflection.length} / ${MIN_REFLECTION_LENGTH} characters minimum`}
+              </p>
+
+              {/* Loading state */}
+              {isGeneratingReflectionFeedback && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-center gap-3 text-blue-700 bg-blue-50 rounded-lg p-4 border border-blue-200"
                 >
-                  {isGettingFeedback ? (
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Analyzing your reflection with AI...</span>
+                </motion.div>
+              )}
+
+              {/* AI Feedback */}
+              {showReflectionFeedback && reflectionFeedback && (
+                <AnimatePresence>
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`border-2 rounded-lg p-6 ${
+                      reflectionNeedsRetry
+                        ? 'bg-yellow-50 border-yellow-400'
+                        : 'bg-green-50 border-green-400'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {reflectionNeedsRetry ? (
+                        <AlertCircle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1" />
+                      ) : (
+                        <Sparkles className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                      )}
+                      <div className="w-full">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {reflectionNeedsRetry ? '⚠️ AI Feedback - Please Revise:' : '✓ AI Feedback:'}
+                        </h3>
+                        <p className="text-gray-900 leading-relaxed">{reflectionFeedback}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              )}
+
+              {/* Escape Hatch */}
+              {showReflectionEscapeHatch && reflectionNeedsRetry && (
+                <AnimatePresence>
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-red-50 border-2 border-red-400 rounded-lg p-6"
+                  >
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
+                      <div className="w-full">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                          ⚠️ Multiple Attempts Detected
+                        </h3>
+                        <p className="text-gray-900 mb-3">
+                          You've tried {reflectionAttemptCount} times and the AI feedback suggests your reflection needs improvement.
+                        </p>
+                        <p className="text-gray-900 mb-3">
+                          <strong className="text-yellow-700">You have two options:</strong>
+                        </p>
+                        <ol className="text-gray-900 mb-4 space-y-1 ml-4">
+                          <li>1. Try again with a different reflection that addresses the question</li>
+                          <li>2. Continue anyway and move to the next step</li>
+                        </ol>
+                        <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-4">
+                          <p className="text-gray-900 text-sm">
+                            ⚠️ <strong className="text-yellow-700">Important:</strong> If you continue, your response will be flagged for instructor review.
+                          </p>
+                        </div>
+                        <div className="flex gap-3">
+                          <Button
+                            onClick={handleReflectionTryAgain}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            Try One More Time
+                          </Button>
+                          <Button
+                            onClick={handleReflectionContinueAnyway}
+                            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                          >
+                            Continue Anyway
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              )}
+
+              {/* Submit / Continue Button */}
+              {!showReflectionEscapeHatch && (
+                <Button
+                  onClick={() => {
+                    if (showReflectionFeedback && !reflectionNeedsRetry) {
+                      handleNextSegment();
+                    } else if (showReflectionFeedback && reflectionNeedsRetry) {
+                      handleReflectionTryAgain();
+                    } else {
+                      handleSubmitReflection();
+                    }
+                  }}
+                  disabled={!showReflectionFeedback && (reflection.trim().length < MIN_REFLECTION_LENGTH || isGeneratingReflectionFeedback)}
+                  size="lg"
+                  className={`w-full ${
+                    showReflectionFeedback && !reflectionNeedsRetry
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : showReflectionFeedback && reflectionNeedsRetry
+                      ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                      : reflection.trim().length >= MIN_REFLECTION_LENGTH && !isGeneratingReflectionFeedback
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {isGeneratingReflectionFeedback ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Getting AI Feedback...
+                      <Loader className="w-5 h-5 animate-spin inline mr-2" />
+                      Submitting...
                     </>
+                  ) : showReflectionFeedback && !reflectionNeedsRetry ? (
+                    <>
+                      Continue
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </>
+                  ) : showReflectionFeedback && reflectionNeedsRetry ? (
+                    'Try Again'
                   ) : (
-                    <>Get AI Feedback <ArrowRight className="w-4 h-4 ml-2" /></>
+                    'Submit Reflection'
                   )}
                 </Button>
               )}
-              
-              {/* Add Continue button that appears after feedback */}
-              {reflectionFeedback && (
-                <Button
-                  onClick={handleNext}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Continue <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              )}
-            </div>
-          </motion.div>
+            </CardContent>
+          </Card>
         );
 
-      case 'solutions':
+      // Segment 12: The Paradox & Future - BBC Part 3 (was Segment 8)
+      case 12:
         return (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6"
-          >
-            <p className="text-lg text-secondary">{step.content}</p>
-            <div className="space-y-3">
-              {step.options?.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(index)}
-                  disabled={showExplanation}
-                  className={`w-full p-4 text-left rounded-lg transition-all duration-300 ${
-                    selectedAnswer === index
-                      ? index === step.correctAnswer
-                        ? 'bg-green-500/20 border-2 border-green-500'
-                        : 'bg-red-500/20 border-2 border-red-500'
-                      : 'bg-card hover:bg-card-hover border border-primary'
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Leaf className="w-6 h-6 text-green-600" />
+                The Paradox & The Future: AI as Part of the Solution
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Discover how AI can also help solve environmental problems
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  This video shows the paradox: AI creates environmental problems, but AI is also being used to save water and find solutions.
+                </p>
+              </div>
+
+              <PremiumVideoPlayer
+                videoUrl={VIDEO_URLS.bbcPart3}
+                videoId="environmental-segment-8"
+                segments={[
+                  {
+                    id: 'bbc-part-3',
+                    title: 'The Paradox & The Future',
+                    start: 0,
+                    end: -1,
+                    source: VIDEO_URLS.bbcPart3,
+                    description: 'How AI can also help solve environmental problems',
+                    mandatory: true,
+                  }
+                ]}
+                onSegmentComplete={() => {}}
+                onModuleComplete={handleNextSegment}
+                enableSubtitles={true}
+                hideSegmentNavigator={true}
+                allowSeeking={false}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 13: AI Solutions Sorting (was Segment 9)
+      case 13:
+        return <SimplifiedSolutionsSorter onComplete={handleNextSegment} />;
+
+      // Segment 14: Your Most Efficient Tool - Animated (was Segment 10)
+      case 14:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-purple-600" />
+                Your Most Efficient Tool: Your Brain
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Discover why your brain is the ultimate sustainable computer
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  This final video segment brings the focus back to YOU - the most powerful and sustainable tool you have.
+                </p>
+              </div>
+
+              <PremiumVideoPlayer
+                videoUrl={VIDEO_URLS.animated}
+                videoId="environmental-segment-10"
+                segments={[
+                  {
+                    id: 'your-brain',
+                    title: 'Your Most Efficient Tool',
+                    start: 258,
+                    end: 328,
+                    source: VIDEO_URLS.animated,
+                    description: 'Your brain as the ultimate sustainable computer',
+                    mandatory: true,
+                  }
+                ]}
+                onSegmentComplete={() => {}}
+                onModuleComplete={handleNextSegment}
+                enableSubtitles={true}
+                hideSegmentNavigator={true}
+                allowSeeking={false}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 15: Exit Ticket (with AI validation) (was Segment 11)
+      case 15:
+        const bothValid = exitTicket1.length >= MIN_EXIT_TICKET_LENGTH && exitTicket2.length >= MIN_EXIT_TICKET_LENGTH;
+        const needsRetry = exitTicket1NeedsRetry || exitTicket2NeedsRetry;
+
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+                Exit Ticket: Your Personal Action Plan
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Reflect on what you've learned and commit to mindful AI usage
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Question 1 */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900 text-lg">
+                  1. What is one intentional choice you can make next time you use an AI tool to be more mindful of its environmental cost?
+                </h3>
+                <Textarea
+                  value={exitTicket1}
+                  onChange={(e) => setExitTicket1(e.target.value)}
+                  disabled={showExitTicketFeedback && !needsRetry}
+                  placeholder="Describe a specific action you'll take (e.g., 'I'll batch my ChatGPT questions instead of asking one at a time' or 'I'll use text generation instead of images when possible')..."
+                  rows={4}
+                  className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-600">
+                  {exitTicket1.length} / {MIN_EXIT_TICKET_LENGTH} characters minimum
+                </p>
+
+                {/* AI Feedback for Question 1 */}
+                {showExitTicketFeedback && exitTicket1Feedback && (
+                  <AnimatePresence>
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`border-2 rounded-lg p-4 ${
+                        exitTicket1NeedsRetry
+                          ? 'bg-yellow-50 border-yellow-400'
+                          : 'bg-green-50 border-green-400'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {exitTicket1NeedsRetry ? (
+                          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        )}
+                        <div className="w-full">
+                          <h5 className="text-sm font-semibold text-gray-900 mb-1">
+                            {exitTicket1NeedsRetry ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
+                          </h5>
+                          <p className="text-sm text-gray-900">{exitTicket1Feedback}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                )}
+              </div>
+
+              {/* Question 2 */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900 text-lg">
+                  2. What's a project where you could choose to use your own creativity instead of an AI tool?
+                </h3>
+                <Textarea
+                  value={exitTicket2}
+                  onChange={(e) => setExitTicket2(e.target.value)}
+                  disabled={showExitTicketFeedback && !needsRetry}
+                  placeholder="Think of a specific project or assignment where using your own imagination would be just as good (or better!) than using AI..."
+                  rows={4}
+                  className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-600">
+                  {exitTicket2.length} / {MIN_EXIT_TICKET_LENGTH} characters minimum
+                </p>
+
+                {/* AI Feedback for Question 2 */}
+                {showExitTicketFeedback && exitTicket2Feedback && (
+                  <AnimatePresence>
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`border-2 rounded-lg p-4 ${
+                        exitTicket2NeedsRetry
+                          ? 'bg-yellow-50 border-yellow-400'
+                          : 'bg-green-50 border-green-400'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {exitTicket2NeedsRetry ? (
+                          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        )}
+                        <div className="w-full">
+                          <h5 className="text-sm font-semibold text-gray-900 mb-1">
+                            {exitTicket2NeedsRetry ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
+                          </h5>
+                          <p className="text-sm text-gray-900">{exitTicket2Feedback}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                )}
+              </div>
+
+              {/* Loading state */}
+              {isGeneratingExitTicketFeedback && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-center gap-3 text-blue-700 bg-blue-50 rounded-lg p-4 border border-blue-200"
+                >
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Analyzing your responses with AI...</span>
+                </motion.div>
+              )}
+
+              {/* Escape Hatch */}
+              {showExitTicketEscapeHatch && needsRetry && (
+                <AnimatePresence>
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-red-50 border-2 border-red-400 rounded-lg p-6"
+                  >
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
+                      <div className="w-full">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                          ⚠️ Multiple Attempts Detected
+                        </h3>
+                        <p className="text-gray-900 mb-3">
+                          You've tried {exitTicketAttemptCount} times and the AI feedback suggests your responses need improvement.
+                        </p>
+                        <p className="text-gray-900 mb-3">
+                          <strong className="text-yellow-700">You have two options:</strong>
+                        </p>
+                        <ol className="text-gray-900 mb-4 space-y-1 ml-4">
+                          <li>1. Try again with different responses that address the questions</li>
+                          <li>2. Continue anyway and get your certificate</li>
+                        </ol>
+                        <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-4">
+                          <p className="text-gray-900 text-sm">
+                            ⚠️ <strong className="text-yellow-700">Important:</strong> If you continue, your responses will be flagged for instructor review.
+                          </p>
+                        </div>
+                        <div className="flex gap-3">
+                          <Button
+                            onClick={handleExitTicketTryAgain}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            Try One More Time
+                          </Button>
+                          <Button
+                            onClick={handleExitTicketContinueAnyway}
+                            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                          >
+                            Continue Anyway
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              )}
+
+              {/* Submit / Continue Button */}
+              {!showExitTicketEscapeHatch && (
+                <Button
+                  onClick={() => {
+                    if (showExitTicketFeedback && !needsRetry) {
+                      handleNextSegment();
+                    } else if (showExitTicketFeedback && needsRetry) {
+                      handleExitTicketTryAgain();
+                    } else {
+                      handleSubmitExitTicket();
+                    }
+                  }}
+                  disabled={!showExitTicketFeedback && (!bothValid || isGeneratingExitTicketFeedback)}
+                  size="lg"
+                  className={`w-full ${
+                    showExitTicketFeedback && !needsRetry
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : showExitTicketFeedback && needsRetry
+                      ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                      : bothValid && !isGeneratingExitTicketFeedback
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-primary">{option}</span>
-                    {showExplanation && selectedAnswer === index && (
-                      index === step.correctAnswer ? (
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                      ) : (
-                        <AlertCircle className="w-5 h-5 text-red-400" />
-                      )
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {showExplanation && step.explanation && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-blue-500/10 p-4 rounded-lg"
-              >
-                <p className="text-muted">
-                  {selectedAnswer === step.correctAnswer
-                    ? step.explanation.correct
-                    : step.explanation.incorrect || "Not quite right. Try thinking about balancing environmental responsibility with educational benefits."}
-                </p>
-                
-                {/* Practical tips for solutions step */}
-                {step.id === 'practical-solutions' && (
-                  <div className="mt-4 p-4 bg-green-soft rounded-lg">
-                    <h4 className="font-semibold text-secondary mb-2">Quick Efficiency Tips:</h4>
-                    <ul className="text-sm text-white space-y-1">
-                      <li>• Create all weekly materials in one session instead of daily</li>
-                      <li>• Save and reuse effective prompts</li>
-                      <li>• Choose text over images when possible</li>
-                      <li>• Teach students these same practices</li>
-                    </ul>
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {showExplanation && (
-              <Button onClick={handleNext} className="w-full bg-green-600 hover:bg-green-700">
-                Continue <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
-          </motion.div>
-        );
-
-      case 'renewable':
-        return (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <p className="text-lg text-secondary">{step.content}</p>
-            
-            {step.innovations && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {step.innovations.map((innovation, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.2 }}
-                    className="bg-gradient-to-r from-green-500/20 to-blue-500/20 p-6 rounded-lg border border-green-500/30"
-                  >
-                    <div className="flex items-center space-x-3 mb-3">
-                      <innovation.icon className="w-8 h-8 text-green-400" />
-                      <h3 className="text-xl font-semibold text-secondary">{innovation.title}</h3>
-                    </div>
-                    <p className="text-white">{innovation.description}</p>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-6 p-4 bg-green-soft rounded-lg">
-              <p className="text-xs text-secondary">
-                <strong>Sources:</strong> Google-Intersect Power Partnership (Dec 2024), 
-                Microsoft-Constellation Energy Agreement (Sept 2024), 
-                International Energy Agency AI Report (2024)
-              </p>
-            </div>
-
-            <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
-              <p className="text-sm text-muted">
-                <CheckCircle className="w-4 h-4 inline mr-2" />
-                <strong>Hope for the Future:</strong> These innovations show that technology companies 
-                are actively working to reduce AI's environmental impact. Progress takes time, but 
-                change is happening.
-              </p>
-            </div>
-
-            <Button onClick={handleNext} className="w-full bg-green-600 hover:bg-green-700">
-              Continue to Final Assessment <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </motion.div>
-        );
-
-      case 'exit-ticket':
-        return (
-          <div className="space-y-6">
-            <p className="text-lg text-secondary">{step.content}</p>
-            <ExitTicket
-              activityTitle="AI Environmental Impact"
-              questions={[
-                {
-                  id: 'practical-implementation',
-                  text: 'What is ONE specific sustainable AI practice you learned today that you could implement immediately in your classroom?',
-                  placeholder: 'Describe a concrete action you can take tomorrow (e.g., batching similar tasks, using specific prompts, timing your AI usage...)'
-                },
-                {
-                  id: 'biggest-surprise',
-                  text: 'What surprised you most about AI\'s environmental impact, and why is this important for educators to know?',
-                  placeholder: 'Share what was unexpected and why other teachers should be aware of this...'
-                }
-              ]}
-              onComplete={() => {
-                setExitTicketComplete(true);
-                handleNext();
-              }}
-            />
-          </div>
+                  {isGeneratingExitTicketFeedback ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin inline mr-2" />
+                      Submitting...
+                    </>
+                  ) : showExitTicketFeedback && !needsRetry ? (
+                    <>
+                      Get Your Certificate
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </>
+                  ) : showExitTicketFeedback && needsRetry ? (
+                    'Try Again'
+                  ) : (
+                    'Submit Responses'
+                  )}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         );
 
       default:
@@ -854,92 +1426,56 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "AI
     }
   };
 
+  // Show certificate
+  if (showCertificate) {
+    return (
+      <Certificate
+        userName={userName}
+        courseName="AI Environmental Impact"
+        completionDate={new Date().toLocaleDateString()}
+        onDownload={() => {
+          clearProgress(MODULE_ID);
+          onComplete();
+        }}
+      />
+    );
+  }
+
   return (
-    <>
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="text-center mb-8">
-        <div className="flex items-center justify-center space-x-3 mb-4">
-          <div className="bg-gradient-to-r from-green-500 to-blue-500 p-3 rounded-full">
-            <Leaf className="w-8 h-8 text-primary" />
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="bg-gradient-to-r from-blue-500 to-green-500 p-3 rounded-full">
+            <Leaf className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold">AI Environmental Impact</h1>
+          <h1 className="text-3xl font-bold text-gray-900">AI Environmental Impact</h1>
         </div>
-        <p className="text-xl text-muted">
+        <p className="text-xl text-gray-700">
           Understanding AI's environmental cost and the path to sustainability
         </p>
       </div>
 
-      {/* Progress */}
-      <div className="mb-6">
+      {/* Progress Bar */}
+      <div className="bg-white border border-gray-300 rounded-lg p-4">
         <div className="flex items-center justify-between mb-2">
-          <Badge variant="outline" className="bg-card-hover border-primary">
-            Step {currentStep + 1} of {guidedSteps.length}
-          </Badge>
-          <span className="text-sm text-gray-700">{Math.round(progress)}% Complete</span>
+          <span className="text-sm font-medium text-gray-700">
+            Segment {currentSegment + 1} of {segments.length}
+          </span>
+          <span className="text-sm text-gray-600">
+            {Math.round(((currentSegment + 1) / segments.length) * 100)}% Complete
+          </span>
         </div>
-        <Progress value={progress} className="w-full" />
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-green-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${((currentSegment + 1) / segments.length) * 100}%` }}
+          />
+        </div>
       </div>
 
-      {/* Main Content */}
-      <Card className="bg-card border border-primary">
-        <CardHeader>
-          <CardTitle className="text-xl">{step.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {renderStepContent()}
-        </CardContent>
-      </Card>
-
-      {/* Key Insights Box */}
-      {currentStep > 3 && (
-        <Card className="border border-green-400/30 bg-gradient-to-r from-green-500/10 to-blue-500/10">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-secondary mb-2 flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4" />
-              <span>Remember</span>
-            </h3>
-            <div className="space-y-1 text-sm text-white">
-              {currentStep >= 4 && <p>• Every AI query has a real environmental cost</p>}
-              {currentStep >= 6 && <p>• Images and videos use significantly more resources than text</p>}
-              {currentStep >= 8 && <p>• Clean energy innovations are making AI more sustainable</p>}
-              {currentStep >= 10 && <p>• Small changes in how we use AI can make a big difference</p>}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      </div>
-
-      {/* Universal Dev Panel */}
-      {showDevPanel && (
-        <UniversalDevPanel
-          isOpen={showDevPanel}
-          activities={activities}
-          currentActivityIndex={currentStep}
-          onNavigate={(index) => {
-            if (index >= 0 && index < guidedSteps.length) {
-              setCurrentStep(index);
-              setSelectedAnswer(null);
-              setShowExplanation(false);
-              setReflectionText('');
-              setReflectionFeedback('');
-            }
-          }}
-          onAutoComplete={() => {
-            // Auto-complete current step
-            if (step.type === 'quiz' && !showExplanation) {
-              handleAnswer(step.correctAnswer || 0);
-            } else if (step.type === 'reflection' && !reflectionFeedback) {
-              setReflectionText('I understand that AI has a significant environmental impact through water and energy usage.');
-              setReflectionFeedback('Great reflection! You understand the environmental implications of AI.');
-            } else {
-              handleNext();
-            }
-          }}
-          moduleTitle="AI Environmental Impact"
-          totalSteps={guidedSteps.length}
-        />
-      )}
-    </>
+      {/* Current Segment */}
+      {renderSegment()}
+    </div>
   );
 }

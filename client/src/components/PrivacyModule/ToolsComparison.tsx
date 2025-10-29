@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Shield, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
 import { getToolsByCategory, AITool } from '@/data/aiToolsPrivacyData';
 import { getCitation } from '@/data/privacyPolicyCitations';
 
@@ -185,7 +185,7 @@ export const ToolsComparison: React.FC<ToolsComparisonProps> = ({
           <div className="bg-red-900/30 border-2 border-red-500 rounded-lg p-4 mb-6">
             <h3 className="text-red-300 text-2xl font-bold mb-2 flex items-center gap-2">
               <AlertTriangle className="w-6 h-6" />
-              Consumer Tools: Use with Extreme Caution
+              Consumer Tools: Use with Caution
             </h3>
             <p className="text-red-100 text-sm">
               These are consumer-grade tools where your data is often the price of admission.
@@ -193,7 +193,7 @@ export const ToolsComparison: React.FC<ToolsComparisonProps> = ({
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-slate-700">
             {consumerTools.map(renderTool)}
           </div>
 
@@ -230,7 +230,7 @@ export const ToolsComparison: React.FC<ToolsComparisonProps> = ({
           <div className="bg-red-900/30 border-2 border-red-500 rounded-lg p-4 mb-6">
             <h3 className="text-red-300 text-xl font-bold mb-2 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5" />
-              Consumer Tools - Use with Caution
+              Consumer Tools: Use with Caution
             </h3>
             <p className="text-red-100 text-sm">
               "Free" tools where your data is the product.
@@ -238,6 +238,28 @@ export const ToolsComparison: React.FC<ToolsComparisonProps> = ({
           </div>
           <div className="space-y-4">
             {consumerTools.map(renderTool)}
+          </div>
+        </div>
+      </div>
+
+      {/* Badge Legend */}
+      <div className="bg-slate-700/50 p-4 rounded-lg border border-slate-500 mt-6">
+        <h3 className="text-white text-sm font-bold mb-3 flex items-center gap-2">
+          <Info className="w-4 h-4" />
+          Understanding the Badges
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div className="flex items-start gap-2">
+            <Badge className="bg-red-600 text-white flex-shrink-0">Trains on Data</Badge>
+            <span className="text-gray-300">Your conversations are used to improve the AI model (can be shared with other users)</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <Badge className="bg-orange-600 text-white flex-shrink-0">Ad Targeting</Badge>
+            <span className="text-gray-300">Your chats are analyzed to show you personalized advertisements</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <Badge className="bg-blue-600 text-white flex-shrink-0">13+</Badge>
+            <span className="text-gray-300">Age restriction - minimum age required to use the service</span>
           </div>
         </div>
       </div>

@@ -23,8 +23,6 @@ export const TCTimerChallenge: React.FC<TCTimerChallengeProps> = ({ onComplete }
         setCountdown(countdown - 1);
       }, 1000);
       return () => clearTimeout(timer);
-    } else if (stage === 'challenge' && countdown === 0) {
-      setTimeout(() => setStage('reveal'), 1000);
     }
   }, [stage, countdown]);
 
@@ -125,6 +123,52 @@ export const TCTimerChallenge: React.FC<TCTimerChallengeProps> = ({ onComplete }
                     </p>
                   </div>
 
+                  {/* Simulated Terms of Service - Scrollable */}
+                  <div className="bg-slate-900 border-2 border-slate-600 rounded-lg p-4 h-64 overflow-y-auto text-left">
+                    <p className="text-gray-300 text-xs leading-relaxed font-mono">
+                      <strong className="text-white block mb-2">SNAPCHAT TERMS OF SERVICE</strong>
+                      <strong className="text-white block mb-2">Last Updated: October 2025</strong>
+
+                      <span className="block mt-3">
+                        These Terms of Service ("Terms") govern your access to and use of Snapchat and other products and services we may offer (collectively, the "Services"). Please read these Terms carefully, and contact us if you have any questions. By clicking "I Agree" or by accessing or using our Services, you agree to be bound by these Terms and by our Privacy Policy.
+                      </span>
+
+                      <strong className="text-white block mt-4 mb-2">1. WHO CAN USE THE SERVICES</strong>
+                      <span className="block mt-2">
+                        No one under 13 is allowed to create an account or use the Services. We may offer additional Services with additional terms that may require you to be even older to use them. Additional information regarding children's privacy can be found in our Privacy Center. If you are below the age of 18 (or the age of legal majority in your country), you may only use the Services with the prior consent of your parent or legal guardian. Please be sure your parent or legal guardian has reviewed and discussed these Terms with you before you start using the Services.
+                      </span>
+
+                      <strong className="text-white block mt-4 mb-2">2. RIGHTS WE GRANT YOU</strong>
+                      <span className="block mt-2">
+                        Snap Inc. grants you a personal, worldwide, royalty-free, non-assignable, nonexclusive, revocable, and non-sublicensable license to access and use the Services. This license is for the sole purpose of letting you use and enjoy the Services' benefits in a way that these Terms and our usage policies, such as our Community Guidelines, allow. Any software that we provide you may automatically download and install upgrades, updates, or other new features. You may be able to adjust these automatic downloads through your device's settings.
+                      </span>
+
+                      <strong className="text-white block mt-4 mb-2">3. RIGHTS YOU GRANT US</strong>
+                      <span className="block mt-2">
+                        Many of our Services let you create, upload, post, send, receive, and store content. When you do that, you retain whatever ownership rights in that content you had to begin with. But you grant us a license to use that content. How broad that license is depends on which Services you use and the Settings you have selected. For all content you submit to the Services other than content you submit to Live, Local, or any other crowd-sourced Service, you grant Snap Inc. and our affiliates a worldwide, royalty-free, sublicensable, and transferable license to host, store, cache, use, display, reproduce, modify, adapt, edit, publish, analyze, transmit, and distribute that content. This license is for the limited purpose of operating, developing, providing, promoting, and improving the Services and researching and developing new ones.
+                      </span>
+
+                      <strong className="text-white block mt-4 mb-2">4. ADDITIONAL TERMS FOR SPECIFIC SERVICES</strong>
+                      <span className="block mt-2">
+                        Given the breadth of our Services, we sometimes need to craft additional terms and conditions for specific Services. When you use those Services, those additional terms become part of your agreement with us. For example, if you use or purchase certain other Services, such as consumer goods, additional community-based Services, or certain ecommerce Services, you will be subject to additional terms and conditions in connection with those Services, which will be presented to you for your acceptance before we deliver such Services. If any part of those additional terms conflicts with these Terms, the additional terms will prevail.
+                      </span>
+
+                      <strong className="text-white block mt-4 mb-2">5. PRIVACY</strong>
+                      <span className="block mt-2">
+                        Your privacy matters to us. You can learn how your information is handled when you use our Services by reading our Privacy Policy. We encourage you to give the Privacy Policy a careful look because, by using our Services, you agree that Snap Inc. can collect, use, and share your information consistent with that policy. If you are using the Services on behalf of an organization or entity ("Organization"), you are agreeing to these Terms for that Organization and representing to Snap Inc. that you have the authority to bind the Organization to these Terms. In that case, "you" and "your" will also refer to the Organization.
+                      </span>
+
+                      <strong className="text-white block mt-4 mb-2">6. CONTENT MODERATION</strong>
+                      <span className="block mt-2">
+                        Much of the content on our Services is produced by users, publishers, and other third parties. Whether that content is posted publicly or sent privately, the content is the sole responsibility of the person or Organization that submitted it. Although Snap reserves the right to review, moderate, or remove all content that appears on the Services, we do not necessarily review all of it. So we cannot—and do not—guarantee that other users or the content they provide through the Services will comply with our Terms, Community Guidelines, or other terms.
+                      </span>
+
+                      <span className="block mt-4 text-gray-500 italic">
+                        [This continues for approximately 15,000 more words covering topics including: Account Security, Data Charges and Mobile Phones, Third-Party Services, Disclaimers, Limitation of Liability, Arbitration, Venue and Choice of Law, Severability, Final Terms, Contact Information, and much more...]
+                      </span>
+                    </p>
+                  </div>
+
                   {!userClickedAgree && countdown > 0 && (
                     <Button
                       onClick={handleAgreeClick}
@@ -143,6 +187,21 @@ export const TCTimerChallenge: React.FC<TCTimerChallengeProps> = ({ onComplete }
                       <p className="text-yellow-300 font-bold">
                         That's what we thought! Moving on...
                       </p>
+                    </motion.div>
+                  )}
+
+                  {countdown === 0 && !userClickedAgree && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Button
+                        onClick={() => setStage('reveal')}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-6 mt-4"
+                      >
+                        Time's Up! See What Happens Next
+                      </Button>
                     </motion.div>
                   )}
                 </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText, ChevronUp, ChevronDown } from 'lucide-react';
+import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText, ChevronUp, ChevronDown, Compass } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { ModuleOutline } from '../components/ModuleOutline';
 import { saveModuleOrder, loadModuleOrder, clearModuleOrder, hasCustomModuleOrder } from '../lib/moduleOrderPersistence';
@@ -77,6 +77,15 @@ const modules = [
     duration: '20 min',
     icon: MessageSquare,
     color: 'bg-pink-500',
+  },
+  {
+    id: 'ancient-compass-ai-ethics',
+    title: 'AI Ethics: An Ancient Compass',
+    description: 'Explore AI ethics through Catholic Social Teaching principles: Human Dignity, Common Good, and Solidarity.',
+    level: 'Intermediate',
+    duration: '25 min',
+    icon: Compass,
+    color: 'bg-indigo-600',
   },
 ];
 

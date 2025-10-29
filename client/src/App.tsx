@@ -7,7 +7,7 @@ import { ActivityRegistryProvider } from './context/ActivityRegistryContext';
 import { UniversalDevModeProvider } from './components/UniversalDevModeProvider';
 import { ThemeProvider } from './context/ThemeContext';
 
-// Import the 8 modules
+// Import the 9 modules
 import WhatIsAIModule from './components/WhatIsAIModule/WhatIsAIModule';
 import IntroToGenAIModule from './components/modules/IntroToGenAIModule';
 import ResponsibleEthicalAIModule from './components/modules/ResponsibleEthicalAIModule';
@@ -16,6 +16,7 @@ import LLMLimitationsModule from './components/modules/LLMLimitationsModule';
 import PrivacyDataRightsModule from './components/modules/PrivacyDataRightsModule';
 import AIEnvironmentalImpactModule from './components/modules/AIEnvironmentalImpactModule';
 import IntroductionToPromptingModule from './components/modules/IntroductionToPromptingModule';
+import AncientCompassModule from './components/modules/AncientCompassModule';
 
 const moduleMap = {
   'what-is-ai': WhatIsAIModule,
@@ -26,6 +27,7 @@ const moduleMap = {
   'privacy-data-rights': PrivacyDataRightsModule,
   'ai-environmental-impact': AIEnvironmentalImpactModule,
   'introduction-to-prompting': IntroductionToPromptingModule,
+  'ancient-compass-ai-ethics': AncientCompassModule,
 };
 
 function App() {

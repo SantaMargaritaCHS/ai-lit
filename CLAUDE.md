@@ -63,10 +63,13 @@ node scripts/gemini-vision-inspector.js
 │   ├── utils/aiEducationFeedback.ts  # Validation & safety
 │   └── services/geminiClient.ts    # Gemini API config
 ├── .claude/
+│   ├── agents/                  # 7 specialized Claude Code agents (NEW: mcp-debugger)
 │   └── guides/                  # Detailed implementation guides
 ├── scripts/
+│   ├── mcp/                     # MCP automated testing scripts (NEW)
 │   ├── gemini-vision-inspector.js  # AI-powered UI testing
 │   └── analyze-console-logs.js     # Log analysis tool
+├── test-reports/mcp/            # MCP test results (gitignored)
 └── screenshots/                 # Temporary (gitignored)
 ```
 
@@ -104,7 +107,9 @@ useEffect(() => {
 }, []);
 ```
 
-**Status**: 7/8 modules integrated (ResponsibleEthicalAIModule skipped - no activities)
+**Status**: 8/8 modules integrated
+- ✅ What Is AI, Intro to Gen AI, Understanding LLMs, LLM Limitations, Privacy & Data Rights, AI Environmental Impact, Introduction to Prompting, Ancient Compass
+- ⏹️ Responsible Ethical AI Module skipped (no activities to register)
 
 ## 🔍 Gemini Vision Testing
 
@@ -177,6 +182,34 @@ npx tsc --noEmit     # Type check
 - Include certificate generation at completion
 - Use shadcn/ui components + Tailwind CSS
 - Large modules (>2000 lines) should be split
+
+### Video URL Patterns
+
+**CRITICAL: Firebase Storage Path Format**
+
+Always use relative paths starting with `Videos/` for PremiumVideoPlayer compatibility:
+
+✅ **CORRECT:**
+```typescript
+const VIDEO_URLS = {
+  part1: 'Videos/Student Videos/Topic/video.mp4',
+  part2: 'Videos/Student Videos/Topic/video2.mp4'
+};
+```
+
+❌ **WRONG (causes playback failures):**
+```typescript
+// DO NOT use gs:// protocol URLs
+const videoUrl = 'gs://ai-literacy-platform-175d4.firebasestorage.app/Videos/...';
+```
+
+**Why:** PremiumVideoPlayer only converts paths starting with `Videos/` using the `getVideoUrl()` function from `videoService.ts`. The `gs://` protocol is not supported by browsers and won't be converted to HTTPS URLs.
+
+**Pattern Usage:**
+- ✅ AI Environmental Impact, Introduction to Prompting - Use relative paths
+- ⚠️ Understanding LLMs, Intro to Gen AI, Ancient Compass - Use full HTTPS URLs (legacy pattern, works but verbose)
+
+**Recommendation:** Standardize on relative paths for all new modules.
 
 ### Code Quality
 - Remove all `console.log` in production
@@ -343,7 +376,12 @@ Gemini feedback containing ANY of these phrases triggers retry:
 - ✅ Understanding LLMs - `ExitTicketLLM.tsx`
 - ✅ What Is AI - `VideoReflectionActivity.tsx`
 - ✅ Intro to Gen AI - `IntroToGenAIModule.tsx` (exit ticket)
-- ⏳ 5 remaining modules need implementation
+- ✅ AI Environmental Impact - `AIEnvironmentalImpactModule.tsx` (Reflection + Exit Ticket)
+- ✅ Ancient Compass - 3 activities:
+  - `RevolutionComparisonChart.tsx` (reflection question)
+  - `StakeholderPerspectives.tsx` (2 reflection questions)
+  - `EthicalDilemmaScenarios.tsx` (scenario responses)
+- ⏳ 3 remaining modules need implementation (Intro to LLMs, LLM Limitations, Introduction to Prompting)
 
 ### Files & Documentation
 
@@ -424,7 +462,13 @@ onDownload={() => clearProgress(MODULE_ID)}
 4. Module structure change → Reset
 5. Certificate download → Clear progress
 
-**Status**: 1/8 modules (What Is AI implemented)
+**Status**: 5/8 modules implemented
+- ✅ What Is AI
+- ✅ Intro to Gen AI
+- ✅ Ancient Compass
+- ✅ AI Environmental Impact
+- ✅ Introduction to Prompting
+- ⏳ 3 remaining modules (Understanding LLMs, LLM Limitations, Intro to LLMs)
 
 **Detailed Guide**: `.claude/guides/progress-persistence.md`
 
@@ -435,10 +479,22 @@ onDownload={() => clearProgress(MODULE_ID)}
 2. LLMLimitationsModule (2078 lines)
 3. IntroToGenAIModule (1730 lines)
 
+**Recent Module Completions:**
+- ✅ **AI Environmental Impact Module** - Complete rebuild (Dec 2024)
+  - Old: 945-line educator-focused → New: 1,152-line student-focused
+  - 12 video segments across 4 files (3 BBC parts + 1 animated with time-coded segments)
+  - 3 interactive components: EnvironmentalCalculator, EnvironmentalImpactMatrix, SimplifiedSolutionsSorter
+  - Full AI validation + 2-attempt escape hatch (Reflection + Exit Ticket)
+  - Developer Mode + Progress Persistence integrated
+  - Video management: relative Firebase Storage paths (`Videos/...`)
+
 **Validation Status:**
-- ✅ What Is AI - Full validation
-- ✅ Understanding LLMs - 100 char minimum
-- ⚠️ 6 modules need validation review
+- ✅ What Is AI - Full validation + escape hatch
+- ✅ Understanding LLMs - 100 char minimum + escape hatch
+- ✅ Intro to Gen AI - Full validation + escape hatch
+- ✅ AI Environmental Impact - Full validation + escape hatch (Reflection + Exit Ticket)
+- ✅ Ancient Compass - AI validation + escape hatch (3 activities: RevolutionComparisonChart, StakeholderPerspectives, EthicalDilemmaScenarios)
+- ⏳ 3 modules need validation implementation (Intro to LLMs, LLM Limitations, Introduction to Prompting)
 
 ## 🚦 Quick Status Checks
 
@@ -456,6 +512,63 @@ find client/src -name "*.tsx" -exec wc -l {} \; | sort -rn | head -10
 grep -r "console.log" client/src --include="*.tsx" --include="*.ts" | wc -l
 ```
 
+## 🤖 Specialized Agents
+
+**Location**: `.claude/agents/` (7 agents + README)
+
+**Available Agents:**
+- **accessibility-tester** - WCAG 2.1 AA audits (contrast ratios, semantic HTML)
+- **refactoring-specialist** - Break down large modules (preserves patterns)
+- **code-reviewer** - Platform-specific code review (patterns, quality, accessibility)
+- **frontend-developer** - Build educational modules (self-contained, Dev Mode, validation)
+- **qa-expert** - Comprehensive testing (Dev Mode, Progress Persistence, AI validation)
+- **documentation-engineer** - Maintain CLAUDE.md and guides
+- **mcp-debugger** - Automated browser testing via Railway MCP server (all 10 suites)
+
+**Quick Usage:**
+- Simply mention agent by name or describe the task
+- Example: "accessibility-tester, please audit the Privacy module"
+- See `.claude/agents/README.md` for workflows and examples
+
+## 🧪 MCP Remote Testing
+
+**MCP Server**: https://puppeteer-js-production-49f3.up.railway.app
+**Purpose**: Automated browser testing on production URL (https://AILitStudents.replit.app)
+
+**Quick Usage:**
+- "MCP debugger, run full regression tests"
+- "MCP debugger, test ancient-compass module"
+- "MCP debugger, check accessibility compliance"
+
+**10 Test Suites:**
+1. Platform Integrity (module loading, TypeScript, routing)
+2. Developer Mode Validation (activation, navigation, persistence)
+3. Progress Persistence (save/resume/clear, anti-cheat)
+4. AI Validation System (pre-filter, Gemini API, escape hatch)
+5. Video Playback (URL validation, controls, completion)
+6. Accessibility Compliance (contrast ratios, semantic HTML, keyboard nav)
+7. Module-Specific Validation (certificates, quizzes, reflections)
+8. Responsive Design (4 breakpoints)
+9. Cross-Browser Compatibility (Chrome, Firefox, Safari)
+10. Performance & Quality (load time, bundle size, memory)
+
+**Test Scripts:**
+```bash
+npm run mcp:health        # Check MCP server status
+npm run mcp:smoke        # Fast smoke test (~3 min)
+npm run mcp:full         # Full regression (~18 min)
+npm run mcp:module       # Test specific module
+npm run mcp:accessibility # Accessibility audit
+```
+
+**Auto-Collaboration**: MCP debugger automatically invokes specialized agents based on findings:
+- Accessibility violations → accessibility-tester
+- Code quality issues → code-reviewer
+- Large files detected → refactoring-specialist (suggested)
+- Complex failures → qa-expert
+
+**See**: `.claude/agents/mcp-debugger.md` and `.claude/guides/mcp-testing.md` for comprehensive documentation
+
 ## 📚 Common Tasks
 
 **Add New Module:**
@@ -470,10 +583,18 @@ grep -r "console.log" client/src --include="*.tsx" --include="*.ts" | wc -l
 
 **Add Reflection Activity:**
 1. Import validation: `isNonsensical`, `generateEducationFeedback`
-2. Set `minResponseLength = 100`
-3. Implement two-layer validation
-4. NO bypass button
+2. Set `minResponseLength = 100` (or 150 for deeper reflections)
+3. Implement two-layer validation (pre-filter + AI feedback)
+4. Add 2-attempt escape hatch (see escape hatch section)
 5. Test with gibberish, inappropriate content, prompt injection
+6. Consider activity-specific validation context (e.g., "revolution comparison" vs "general reflection")
+
+**Video Management in Modules:**
+- Use relative paths: `Videos/Student Videos/Topic/file.mp4`
+- Use PremiumVideoPlayer for segmented content
+- Document time codes in comments for time-coded segments
+- Test video loading on production URL before committing
+- For multiple video files, use descriptive constant names (e.g., `bbcPart1`, `bbcPart2`, `animated`)
 
 ## 🤝 Collaboration Guidelines
 

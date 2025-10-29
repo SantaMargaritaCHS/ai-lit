@@ -84,7 +84,7 @@ export const aiTools: AITool[] = [
       "Teacher controls and monitoring"
     ],
     recommendations: "Safe for school use if provided by your district. Good for getting feedback on assignments while protecting privacy.",
-    citationIds: [17, 18],
+    citationIds: [17],
     dataTraining: false,
     personalizedAds: false,
     dataRetention: "Can be deleted by school"
@@ -103,11 +103,12 @@ export const aiTools: AITool[] = [
       "Conversations used to train AI models by default",
       "Must actively opt-out (not automatic)",
       "Human reviewers can read your conversations",
-      "30-day retention even after 'deletion'",
+      "Deleted conversations retained for 30 days before permanent removal",
       "No FERPA or COPPA compliance"
     ],
     recommendations: "AVOID for personal information, school work with real names, or anything sensitive. Use 'Temporary Chats' feature or ChatGPT Pro if you must use it. Better yet: use your school-provided AI tool instead.",
     citationIds: [13, 19],
+    ageRestriction: "13+",
     dataTraining: true,
     personalizedAds: false,
     dataRetention: "Indefinite (used for training)"
@@ -131,6 +132,7 @@ export const aiTools: AITool[] = [
     ],
     recommendations: "Better than Free/Plus if you disable 'Improve the model for everyone' in settings, but school-provided tools are still safer and free.",
     citationIds: [13, 19],
+    ageRestriction: "13+",
     dataTraining: false, // if you change settings
     personalizedAds: false,
     dataRetention: "Can opt-out of training"
@@ -152,6 +154,7 @@ export const aiTools: AITool[] = [
     ],
     recommendations: "AVOID for anything personal. Treat it like a public conversation that advertisers can read. Never share secrets, mental health struggles, or identifying information.",
     citationIds: [11, 12, 20],
+    ageRestriction: "13+",
     dataTraining: true,
     personalizedAds: true,
     dataRetention: "Indefinite (until manual deletion)"
@@ -172,7 +175,8 @@ export const aiTools: AITool[] = [
       "NO end-to-end encryption"
     ],
     recommendations: "EXTREMELY HIGH RISK. Never share real names, schools, personal problems, or anything you wouldn't want published online. Employees WILL read it.",
-    citationIds: [], // Add Character.AI specific citations if found
+    citationIds: [21, 22],
+    ageRestriction: "13+",
     dataTraining: true,
     personalizedAds: true,
     dataRetention: "Permanent (only deletion: close account)"
@@ -184,7 +188,7 @@ export const aiTools: AITool[] = [
     category: "consumer",
     privacyRating: "low",
     description: "Google's AI chatbot with deep integration into your Google account and services.",
-    whatItMeans: "If you use Gmail, YouTube, Google Search, etc., Gemini connects all that data together to build a profile of you.",
+    whatItMeans: "If you use Gmail, YouTube, Google Search, etc., Gemini connects all that data together to build a profile of you. Gemini may use your conversations to improve its models unless you disable this in settings, but it will always use your data for personalized advertising.",
     privacyRisks: [
       "Links to your entire Google account",
       "Cross-service data sharing (Gmail, YouTube, Search, Maps)",
@@ -194,6 +198,7 @@ export const aiTools: AITool[] = [
     ],
     recommendations: "Use a separate Google account (not your school or personal one) if you must use it. Never discuss anything you wouldn't want in your Google ad profile.",
     citationIds: [], // Add Gemini-specific citations
+    ageRestriction: "18+",
     dataTraining: true,
     personalizedAds: true,
     dataRetention: "Linked to Google account (indefinite)"
@@ -219,6 +224,7 @@ export const aiTools: AITool[] = [
     ],
     recommendations: "Best consumer chatbot for privacy, but school tools are still better for schoolwork. Good option for casual use if you're not comfortable sharing with other platforms.",
     citationIds: [], // Add Claude-specific citations
+    ageRestriction: "13+",
     dataTraining: false,
     personalizedAds: false,
     dataRetention: "90 days"
@@ -228,8 +234,8 @@ export const aiTools: AITool[] = [
     icon: "🔍",
     category: "consumer",
     privacyRating: "medium",
-    description: "Search-focused AI that logs all queries and shares data with third-party partners.",
-    whatItMeans: "Designed as an AI search engine. Your searches are permanently logged and may be shared with partners to improve results.",
+    description: "AI-powered search engine that answers questions by searching the web and summarizing results. Logs all your queries permanently.",
+    whatItMeans: "Unlike Google Search, Perplexity uses AI to read web pages and give you direct answers. But like Google, it tracks everything you search for. Your question history builds a detailed profile of your interests, concerns, and information needs.",
     privacyRisks: [
       "Search queries permanently logged",
       "Third-party data sharing with partners",
@@ -239,6 +245,7 @@ export const aiTools: AITool[] = [
     ],
     recommendations: "Avoid personal identifiers in search queries. Don't search for information about yourself, friends, or your school by name.",
     citationIds: [], // Add Perplexity citations
+    ageRestriction: "13+",
     dataTraining: true,
     personalizedAds: false,
     dataRetention: "Permanent search logs"

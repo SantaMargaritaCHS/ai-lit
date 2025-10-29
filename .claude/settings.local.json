@@ -21,7 +21,12 @@
       "Bash(if [ -f /home/runner/workspace/.secrets.local ])",
       "Bash(then)",
       "Bash(else)",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(for:*)",
+      "Bash(done)",
+      "Read(//tmp/awesome-claude-code-subagents/categories/01-core-development/**)",
+      "Read(//tmp/awesome-claude-code-subagents/categories/04-quality-security/**)",
+      "Read(//tmp/awesome-claude-code-subagents/categories/06-developer-experience/**)"
     ],
     "deny": [],
     "ask": []

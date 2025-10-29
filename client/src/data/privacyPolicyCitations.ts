@@ -113,7 +113,7 @@ export const citations: Citation[] = [
     url: "https://openai.com/policies/terms-of-use/",
     accessed: "October 27, 2025",
     organization: "OpenAI",
-    notes: "~4,000 words, 16 minute estimated read time; may use content to train models; users can opt out"
+    notes: "General Terms of Use - ~4,000 words, 16 minute estimated read time; covers user obligations and content usage"
   },
   {
     id: 14,
@@ -146,19 +146,12 @@ export const citations: Citation[] = [
     notes: "Will never sell or share student data; no ads on platform"
   },
   {
-    id: 18,
-    title: "Trust & Safety - Snorkl | Instant Feedback on Student Thinking",
-    url: "https://snorkl.app/safety",
-    accessed: "October 27, 2025",
-    organization: "Snorkl"
-  },
-  {
     id: 19,
     title: "ChatGPT data retention policies: updated rules and user controls in 2025",
     url: "https://www.datastudios.org/post/chatgpt-data-retention-policies-updated-rules-and-user-controls-in-2025",
     accessed: "October 27, 2025",
     organization: "Data Studios",
-    notes: "Explains new privacy controls and temporary chat features"
+    notes: "Specific data retention and privacy controls - explains 30-day retention period, opt-out settings, and temporary chat features"
   },
   {
     id: 20,
@@ -166,6 +159,22 @@ export const citations: Citation[] = [
     url: "https://help.snapchat.com/hc/en-us/articles/13889139811860-Staying-Safe-with-My-AI",
     accessed: "October 27, 2025",
     organization: "Snapchat Support"
+  },
+  {
+    id: 21,
+    title: "Character.AI Terms of Service",
+    url: "https://character.ai/tos",
+    accessed: "October 27, 2025",
+    organization: "Character Technologies Inc.",
+    notes: "Grants company broad rights to use, modify, and sell user-generated content and conversations"
+  },
+  {
+    id: 22,
+    title: "Character.AI Privacy Policy",
+    url: "https://character.ai/privacy",
+    accessed: "October 27, 2025",
+    organization: "Character Technologies Inc.",
+    notes: "Conversations may be reviewed by employees; data used for model training; mandatory arbitration clause"
   }
 ];
 
@@ -191,8 +200,14 @@ export const getCitation = (id: number): Citation | undefined => {
  */
 export const generateWorksCited = (): string => {
   return citations
-    .map(c => `${c.id}. ${c.organization ? c.organization + '. ' : ''}"${c.title}." Accessed ${c.accessed}. <a href="${c.url}" target="_blank" rel="noopener noreferrer">${c.url}</a>`)
-    .join('<br><br>');
+    .map(c => {
+      const org = c.organization ? `${c.organization}. ` : '';
+      const title = `"${c.title}."`;
+      const accessed = `Accessed ${c.accessed}.`;
+      const link = `<a href="${c.url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300">${c.url}</a>`;
+      return `<div class="mb-3"><strong>${c.id}.</strong> ${org}${title} ${accessed} ${link}</div>`;
+    })
+    .join('');
 };
 
 /**
