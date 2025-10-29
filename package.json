@@ -7,7 +7,13 @@
     "dev": "vite --host 0.0.0.0 --port 5000",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 5000",
-    "start": "serve -s dist/public -l 5000"
+    "start": "serve -s dist/public -l 5000",
+    "mcp:health": "node scripts/mcp/mcp-client.js health",
+    "mcp:smoke": "node scripts/mcp/test-runner.js --suite=smoke",
+    "mcp:full": "node scripts/mcp/test-runner.js --suite=all --verbose",
+    "mcp:module": "node scripts/mcp/test-runner.js --module=$MODULE",
+    "mcp:accessibility": "node scripts/mcp/test-runner.js --suite=accessibility",
+    "mcp:report": "node scripts/mcp/report-generator.js --latest"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

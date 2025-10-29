@@ -141,7 +141,7 @@ Please update CLAUDE.md to reflect that Introduction to Prompting now has escape
 ---
 
 ### 7. **mcp-debugger**
-Expert in automated browser testing via Railway MCP server.
+Expert in automated browser testing via MCP Debugger service.
 
 **When to use:**
 - Continuous regression testing across all 9 modules
@@ -152,10 +152,12 @@ Expert in automated browser testing via Railway MCP server.
 
 **Key capabilities:**
 - 10 comprehensive test suites (150+ automated tests)
-- Railway MCP server integration (real Chromium browser)
-- Gemini Vision analysis for visual bugs
+- MCP Debugger service (real Chromium browser, 21 endpoints)
+- AI Vision analysis via Gemini 2.5 Flash for visual bugs
 - Auto-collaboration with other agents on failures
 - Detailed reports with reproduction steps and fixes
+- GitHub: https://github.com/maizoro87/MCP-Debugger
+- Requires `MCP_DEBUGGER_API_KEY` environment variable
 
 **Example invocation:**
 ```
@@ -254,6 +256,25 @@ We're about to deploy to production. Please run a comprehensive audit using code
 Please use frontend-developer to add AI validation with escape hatch to the Intro to LLMs module
 ```
 
+---
+
+### **Workflow 6: Continuous Regression Testing**
+
+1. **mcp-debugger** - Run automated test suite (15-20 min)
+2. **Auto-invokes based on findings:**
+   - accessibility-tester (if contrast issues)
+   - code-reviewer (if pattern violations)
+   - refactoring-specialist (if large files suggested)
+   - qa-expert (if complex failures)
+3. **documentation-engineer** - Update docs if needed
+
+**Example:**
+```
+MCP debugger, run comprehensive tests and auto-invoke specialized agents for any failures found
+```
+
+---
+
 ## 🎓 Agent Specializations
 
 ### **For Accessibility Issues:**
@@ -293,9 +314,10 @@ Use frontend-developer to implement, then code-reviewer to review, then qa-exper
 
 ### Tip 3: Pre-Deployment Checklist
 Always run before deploying:
+- mcp-debugger (automated regression tests)
 - code-reviewer (zero console.log, TypeScript clean)
 - accessibility-tester (WCAG compliance)
-- qa-expert (full functionality)
+- qa-expert (manual verification)
 
 ### Tip 4: Use Checkpoints Before Risky Operations
 ```

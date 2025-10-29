@@ -1,14 +1,19 @@
 /**
- * MCP Client - Wrapper for Railway MCP Server API
+ * MCP Client - Wrapper for MCP Debugger Service
  *
  * Provides simplified interface for browser automation testing
- * via https://puppeteer-js-production-49f3.up.railway.app
+ * via https://mcp-debugger-production.up.railway.app
+ *
+ * GitHub: https://github.com/maizoro87/MCP-Debugger
+ *
+ * Authentication: Requires MCP_DEBUGGER_API_KEY environment variable
  */
 
 const https = require('https');
 
-const MCP_BASE_URL = 'https://puppeteer-js-production-49f3.up.railway.app';
+const MCP_BASE_URL = 'https://mcp-debugger-production.up.railway.app';
 const APP_URL = 'https://AILitStudents.replit.app';
+const MCP_API_KEY = process.env.MCP_DEBUGGER_API_KEY || process.env.MCP_API_KEY;
 
 class MCPClient {
   constructor(baseUrl = MCP_BASE_URL) {
@@ -145,11 +150,21 @@ class MCPClient {
   async request(path, method = 'GET', body = null) {
     return new Promise((resolve, reject) => {
       const url = new URL(path, this.baseUrl);
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      // Add authentication for /mcp endpoint (health check is public)
+      if (path === '/mcp' && MCP_API_KEY) {
+        // Primary method (recommended)
+        headers['X-API-Key'] = MCP_API_KEY;
+        // Alternative method (also supported)
+        // headers['Authorization'] = `Bearer ${MCP_API_KEY}`;
+      }
+
       const options = {
         method,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers
       };
 
       const req = https.request(url, options, (res) => {

@@ -26,7 +26,8 @@
       "Bash(done)",
       "Read(//tmp/awesome-claude-code-subagents/categories/01-core-development/**)",
       "Read(//tmp/awesome-claude-code-subagents/categories/04-quality-security/**)",
-      "Read(//tmp/awesome-claude-code-subagents/categories/06-developer-experience/**)"
+      "Read(//tmp/awesome-claude-code-subagents/categories/06-developer-experience/**)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

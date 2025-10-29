@@ -13,6 +13,7 @@
 GEMINI_API_KEY=<in Replit Secrets>
 BROWSERLESS_API_KEY=<in Replit Secrets>
 AI_LITERACY_BOT_API_KEY=<in Replit Secrets>
+MCP_DEBUGGER_API_KEY=<in Replit Secrets>  # For automated browser testing
 ```
 
 **Usage:**
@@ -532,8 +533,20 @@ grep -r "console.log" client/src --include="*.tsx" --include="*.ts" | wc -l
 
 ## 🧪 MCP Remote Testing
 
-**MCP Server**: https://puppeteer-js-production-49f3.up.railway.app
+**MCP Server**: https://mcp-debugger-production.up.railway.app
+**GitHub**: https://github.com/maizoro87/MCP-Debugger
 **Purpose**: Automated browser testing on production URL (https://AILitStudents.replit.app)
+**Authentication**: Requires `MCP_DEBUGGER_API_KEY` (X-API-Key header) - Health endpoint is public
+**Endpoints**: 21 available (including AI Vision via Gemini 2.5 Flash)
+
+**⚠️ CRITICAL: DEPLOYMENT REQUIREMENT**
+- MCP tests run against **production URL only** (https://AILitStudents.replit.app)
+- Code changes are **NOT visible to MCP** until you deploy/republish on Replit
+- **Before running MCP tests after code changes:**
+  1. User must deploy the site on Replit (click "Run" or republish)
+  2. Wait for deployment to complete (~30-60 seconds)
+  3. Then run MCP tests to validate the deployed changes
+- **MCP will test whatever is currently live**, not your local/uncommitted code
 
 **Quick Usage:**
 - "MCP debugger, run full regression tests"
