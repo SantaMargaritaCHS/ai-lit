@@ -14,6 +14,19 @@
 
 ## Quick Start
 
+**⚠️ IMPORTANT: Deployment Requirement**
+
+MCP tests run against the **production URL** (https://AILitStudents.replit.app), not your local development environment.
+
+**Before running MCP tests after making code changes:**
+1. ✅ Deploy/republish the site on Replit (click "Run" button)
+2. ⏱️ Wait for deployment to complete (30-60 seconds)
+3. ✅ Then run MCP tests to validate the deployed changes
+
+**MCP will test whatever is currently live in production**, not uncommitted or undeployed code.
+
+---
+
 ### 1. Check MCP Server Health
 
 ```bash
