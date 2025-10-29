@@ -138,6 +138,30 @@ Expert in maintaining CLAUDE.md and .claude/guides/ documentation.
 Please update CLAUDE.md to reflect that Introduction to Prompting now has escape hatch implemented
 ```
 
+---
+
+### 7. **mcp-debugger**
+Expert in automated browser testing via Railway MCP server.
+
+**When to use:**
+- Continuous regression testing across all 9 modules
+- Automated accessibility compliance checks
+- Production URL validation (videos, routing, features)
+- Performance monitoring and optimization detection
+- After significant code changes or before deployment
+
+**Key capabilities:**
+- 10 comprehensive test suites (150+ automated tests)
+- Railway MCP server integration (real Chromium browser)
+- Gemini Vision analysis for visual bugs
+- Auto-collaboration with other agents on failures
+- Detailed reports with reproduction steps and fixes
+
+**Example invocation:**
+```
+MCP debugger, run full regression tests and report any issues
+```
+
 ## 🚀 How to Invoke Agents
 
 ### Method 1: Direct Request
