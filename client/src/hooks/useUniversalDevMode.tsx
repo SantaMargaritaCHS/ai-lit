@@ -27,7 +27,9 @@ interface UseUniversalDevModeOptions {
 export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
   console.log('🔧🔧🔧 useUniversalDevMode hook called!', { options });
 
-  const [isDevModeActive, setIsDevModeActive] = useState(false);
+  const [isDevModeActive, setIsDevModeActive] = useState(() => {
+    return sessionStorage.getItem('universal-dev-mode-active') === 'true';
+  });
   const [showSecretKeyPrompt, setShowSecretKeyPrompt] = useState(false);
   const [showDevPanel, setShowDevPanel] = useState(false);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(true);
@@ -189,6 +191,7 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
     if (VALID_PASSWORDS.includes(key)) {
       console.log('🔧 Universal Dev Mode: ✅ Key correct! Activating dev mode...');
       setIsDevModeActive(true);
+      sessionStorage.setItem('universal-dev-mode-active', 'true');
       setShowDevPanel(true);
       setShowSecretKeyPrompt(false);
       setIsPanelCollapsed(true); // Start collapsed
@@ -203,6 +206,7 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
   const deactivateDevMode = useCallback(() => {
     console.log('🔧 Dev Mode: Deactivated');
     setIsDevModeActive(false);
+    sessionStorage.removeItem('universal-dev-mode-active');
     setShowDevPanel(false);
   }, []);
 

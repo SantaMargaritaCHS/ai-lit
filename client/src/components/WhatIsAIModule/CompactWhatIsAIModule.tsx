@@ -24,7 +24,7 @@ import { saveProgress, loadProgress, clearProgress, getProgressSummary } from '@
 import { WHAT_IS_AI_ACTIVITIES } from '@/data/moduleActivityDefinitions';
 
 interface CompactWhatIsAIModuleProps {
-  onComplete: () => void;
+  onComplete?: () => void;
   userName?: string;
 }
 
@@ -225,7 +225,7 @@ export default function CompactWhatIsAIModule({
       } else {
         // Module is complete
         setIsTransitioning(false);
-        onComplete();
+        if (onComplete) onComplete();
       }
     }, 200);
   };
@@ -537,7 +537,7 @@ export default function CompactWhatIsAIModule({
                 clearProgress(MODULE_ID);
                 console.log('🎓 Certificate downloaded - progress cleared');
                 // Certificate downloaded, module is complete
-                onComplete();
+                if (onComplete) onComplete();
               }}
             />
           </div>

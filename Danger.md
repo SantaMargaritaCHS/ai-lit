@@ -1,0 +1,3 @@
+
+claude --dangerously-skip-permissions
+mJck9vCvikYMh6oCCOsHOip9rRNih8MICfMHZm5AYaKqF5d8#HoJdoT3tfb7Zj_kkWkDHmWt_3lxZ-K69aakavfJc0co

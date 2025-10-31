@@ -406,7 +406,7 @@ export const Certificate: React.FC<CertificateProps> = ({
           )}
 
           {/* Footer */}
-          <div className="border-t border-white/20 pt-6">
+          <div className="border-t border-white/20 pt-6 mt-8">
             <div className="grid grid-cols-2 gap-8 text-sm">
               <div>
                 <p className="text-gray-400">Date</p>
@@ -418,15 +418,6 @@ export const Certificate: React.FC<CertificateProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Download Indicator */}
-          <motion.div
-            className="download-btn absolute bottom-4 right-4 bg-white/20 rounded-full p-3 group-hover:bg-white/30 transition-colors"
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <Download className="w-6 h-6 text-white" />
-          </motion.div>
         </CardContent>
       </Card>
 

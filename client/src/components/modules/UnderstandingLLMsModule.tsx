@@ -103,7 +103,6 @@ export default function UnderstandingLLMsModule({ onComplete, userName }: Props)
               phase.id.includes('video') ? 'video' as const :
               phase.id.includes('exit-ticket') ? 'reflection' as const :
               'interactive' as const,
-        title: phase.title,
         completed: index < currentPhase
       };
       console.log(`📝 Registering activity: ${activity.id} (${activity.type})`);

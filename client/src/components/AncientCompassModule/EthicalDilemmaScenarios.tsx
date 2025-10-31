@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertTriangle, CheckCircle2, ChevronRight, Sparkles, Loader, AlertCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronRight, Sparkles, Loader, AlertCircle, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
+import { useDevMode } from '@/context/DevModeContext';
 
 interface EthicalDilemmaScenariosProps {
   onComplete: () => void;
@@ -33,6 +34,7 @@ const SCENARIOS = [
 ];
 
 export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaScenariosProps) {
+  const { isDevModeActive } = useDevMode();
   const [selectedScenario, setSelectedScenario] = useState<number | null>(null);
   const [response, setResponse] = useState('');
   const [completed, setCompleted] = useState(false);
@@ -49,6 +51,43 @@ export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaSc
   const wordCount = response.trim().split(/\s+/).filter(w => w.length > 0).length;
   const minWords = 30;
   const MAX_ATTEMPTS = 2;
+
+  // Dev mode response generators
+  const getDevGoodResponse = () => {
+    if (!selectedScenario) return "";
+
+    const goodResponses = [
+      "This violates Human Dignity because AI is making life-changing decisions without human oversight. The Common Good principle also suggests everyone should have fair access regardless of zip code. I think colleges should require human review of all AI-rejected applications and audit their algorithms for bias. The AI should assist admissions officers, not replace them in important decisions that affect students' futures. Under Solidarity, we should advocate for transparency in how colleges use AI and ensure marginalized communities aren't systematically excluded.",
+      "This violates Human Dignity by treating users as engagement metrics rather than autonomous people who deserve to make their own choices about time use. Under Solidarity, we should all work together to demand better design practices. Social media companies should be required to add friction to endless scroll features, be transparent about their algorithms, and face regulations that prevent deliberately addictive designs. The Common Good demands that technology serves humanity's wellbeing, not just maximizes screen time for profit."
+    ];
+
+    return goodResponses[selectedScenario - 1];
+  };
+
+  const getDevGenericResponse = () => {
+    return "I think this is an interesting question about ethics and AI. There are definitely some issues here that need to be addressed. We should probably have more oversight and make sure things are fair for everyone. Technology is complicated and we need to be careful about how we use it.";
+  };
+
+  const getDevComplaintResponse = () => {
+    return "This whole module is confusing and I don't really understand why we're learning about this stuff. These principles seem complicated and I'm not sure how they apply to real life. Can't we just move on to something else? I don't see how this is relevant to my actual life. This feels like a waste of time when I have other homework to do.";
+  };
+
+  const getDevGibberishResponse = () => {
+    return "asdfkj alksjdf laskdjf laksjdf lkajsdhf lkajsdhf lkajsdhf lakjsdhf laksjdhf laksjdhf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf qwerty asdf";
+  };
+
+  const handleDevAutoFill = () => {
+    if (!isDevModeActive || !selectedScenario) return;
+
+    const goodResponse = getDevGoodResponse();
+    setResponse(goodResponse);
+    setFeedback("Excellent analysis! Your application of the ethical principles demonstrates deep engagement with the dilemma.");
+    setShowFeedback(true);
+    setNeedsRetry(false);
+
+    // Auto-complete after brief delay
+    setTimeout(() => handleComplete(), 1000);
+  };
 
   const handleSubmit = async () => {
     if (!selectedScenario) return;
@@ -119,8 +158,8 @@ export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaSc
     setFeedback('');
     setShowFeedback(false);
     setNeedsRetry(false);
-    setAttemptCount(0);
-    setShowEscapeHatch(false);
+    // DON'T reset attemptCount - we need to track total attempts for escape hatch
+    // DON'T reset showEscapeHatch - if they've earned it, keep it available
   };
 
   const handleContinueAnyway = () => {
@@ -200,6 +239,52 @@ export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaSc
                   </ul>
                 </div>
               </div>
+
+              {/* Developer Mode Controls */}
+              {isDevModeActive && !showFeedback && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Ethical Dilemma Shortcuts</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={handleDevAutoFill}
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      <Zap className="w-3 h-3 mr-1" />
+                      Auto-Fill & Complete
+                    </Button>
+                    <Button
+                      onClick={() => setResponse(getDevGoodResponse())}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Good Response
+                    </Button>
+                    <Button
+                      onClick={() => setResponse(getDevGenericResponse())}
+                      className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Generic Response
+                    </Button>
+                    <Button
+                      onClick={() => setResponse(getDevComplaintResponse())}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Complaint
+                    </Button>
+                    <Button
+                      onClick={() => setResponse(getDevGibberishResponse())}
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Gibberish
+                    </Button>
+                  </div>
+                  <p className="text-xs text-red-600 mt-1">Test validation: good, generic, complaint, or gibberish responses</p>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <h4 className="font-semibold text-gray-900">
@@ -339,10 +424,7 @@ export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaSc
                   }`}
                 >
                   {isSubmitting ? (
-                    <>
-                      <Loader className="w-5 h-5 animate-spin inline mr-2" />
-                      Submitting...
-                    </>
+                    'Submit Response'
                   ) : showFeedback && !needsRetry ? (
                     <>
                       Continue

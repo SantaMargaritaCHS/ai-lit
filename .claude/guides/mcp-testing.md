@@ -56,6 +56,132 @@ MCP debugger, run full regression tests and report any issues
 
 ---
 
+## 🧹 Clearing MCP Cache Between Tests
+
+### Why Cache Clearing Matters
+
+The MCP Debugger maintains **stateful browser data** in memory between requests:
+
+1. **Console Messages** - All `console.log()`, errors, and warnings from previous sites
+2. **Network Requests** - HTTP request history from previous testing sessions
+3. **Cookies** - May persist if same domain or shared cookie scope
+4. **localStorage** - Browser storage data from previous sites
+5. **Session State** - Browser context maintained between API calls
+
+### The Problem: Mixed Test Data
+
+If you test **AI Literacy Student Platform** immediately after testing **SM Innovation Hub**:
+- ❌ Console logs include both sites' errors mixed together
+- ❌ Network request analysis shows both applications' API calls
+- ❌ Error counts are inflated with old data
+- ❌ Hard to distinguish which issues belong to which site
+- ❌ Test results are unreliable and confusing
+
+### When to Clear Cache
+
+✅ **Always clear before:**
+- Testing a new site/application
+- Switching between different projects
+- Starting a fresh test session
+- After detecting mixed/stale data
+
+✅ **Good practice:**
+- Clear at the start of each test day
+- Clear after completing a full test suite
+- Clear when debugging unexpected results
+
+### How to Clear MCP Cache
+
+#### Individual Clearing Methods
+
+**Clear Console Messages:**
+```bash
+curl -X POST https://mcp-debugger-production.up.railway.app/mcp \
+  -H "X-API-Key: 352368f9afffa3387a76561a062458d09834a26f9140f8a5e9bc88a08b571cf1" \
+  -H "Content-Type: application/json" \
+  -d '{"method":"clear_console_messages","params":{}}'
+```
+
+**Clear Network Requests:**
+```bash
+curl -X POST https://mcp-debugger-production.up.railway.app/mcp \
+  -H "X-API-Key: 352368f9afffa3387a76561a062458d09834a26f9140f8a5e9bc88a08b571cf1" \
+  -H "Content-Type: application/json" \
+  -d '{"method":"clear_network_requests","params":{}}'
+```
+
+**Clear Cookies:**
+```bash
+curl -X POST https://mcp-debugger-production.up.railway.app/mcp \
+  -H "X-API-Key: 352368f9afffa3387a76561a062458d09834a26f9140f8a5e9bc88a08b571cf1" \
+  -H "Content-Type: application/json" \
+  -d '{"method":"clear_cookies","params":{}}'
+```
+
+#### Quick Clear All Script
+
+**Recommended: Clear everything at once**
+
+```bash
+#!/bin/bash
+# clear-mcp-cache.sh - Clear all MCP browser state
+
+MCP_URL="https://mcp-debugger-production.up.railway.app/mcp"
+API_KEY="352368f9afffa3387a76561a062458d09834a26f9140f8a5e9bc88a08b571cf1"
+
+echo "🧹 Clearing MCP cache..."
+
+# Clear console messages
+curl -X POST "$MCP_URL" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"method":"clear_console_messages","params":{}}' -s
+
+# Clear network requests
+curl -X POST "$MCP_URL" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"method":"clear_network_requests","params":{}}' -s
+
+# Clear cookies
+curl -X POST "$MCP_URL" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"method":"clear_cookies","params":{}}' -s
+
+echo "✅ MCP cache cleared - ready for fresh testing"
+```
+
+**Usage:**
+```bash
+chmod +x clear-mcp-cache.sh
+./clear-mcp-cache.sh
+```
+
+### Example: Testing Workflow with Cache Clearing
+
+```bash
+# Day 1: Test SM Innovation Hub
+./clear-mcp-cache.sh
+# ... run Innovation Hub tests ...
+
+# Day 2: Test AI Literacy Platform
+./clear-mcp-cache.sh  # ⚠️ CRITICAL: Clear before switching sites
+# ... run AI Literacy tests ...
+
+# Later: Test another module
+./clear-mcp-cache.sh  # ✅ Clean state for accurate results
+# ... run tests ...
+```
+
+### Visual Indicators
+
+✅ **Clean cache** = Accurate, reliable test results
+⚠️ **Stale cache** = Mixed data, confusing errors, inflated counts
+❌ **No clearing** = Unreliable results, debugging nightmare
+
+---
+
 ## 10 Test Suites
 
 ### Suite 1: Platform Integrity

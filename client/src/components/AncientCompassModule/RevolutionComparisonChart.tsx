@@ -2,9 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Factory, Smartphone, CheckCircle2, ArrowRight, Sparkles, Loader, AlertCircle } from 'lucide-react';
+import { Factory, Smartphone, CheckCircle2, ArrowRight, Sparkles, Loader, AlertCircle, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
+import { useDevMode } from '@/context/DevModeContext';
 
 interface RevolutionComparisonChartProps {
   onComplete: () => void;
@@ -34,10 +35,11 @@ const COMPARISONS = [
 ];
 
 // Color scheme for each match (1-4)
+// NOTE: Green is reserved for "correct answer" feedback only!
 const getMatchColors = (matchId: number) => {
   const colors = {
     1: { bg: 'bg-blue-100', border: 'border-blue-500', button: 'bg-blue-600 hover:bg-blue-700', text: 'text-white' },
-    2: { bg: 'bg-green-100', border: 'border-green-500', button: 'bg-green-600 hover:bg-green-700', text: 'text-white' },
+    2: { bg: 'bg-pink-100', border: 'border-pink-500', button: 'bg-pink-600 hover:bg-pink-700', text: 'text-white' },
     3: { bg: 'bg-purple-100', border: 'border-purple-500', button: 'bg-purple-600 hover:bg-purple-700', text: 'text-white' },
     4: { bg: 'bg-orange-100', border: 'border-orange-500', button: 'bg-orange-600 hover:bg-orange-700', text: 'text-white' },
   };
@@ -45,6 +47,7 @@ const getMatchColors = (matchId: number) => {
 };
 
 export default function RevolutionComparisonChart({ onComplete }: RevolutionComparisonChartProps) {
+  const { isDevModeActive } = useDevMode();
   const [matches, setMatches] = useState<Record<number, number>>({});
   const [reflection, setReflection] = useState('');
   const [completed, setCompleted] = useState(false);
@@ -60,6 +63,39 @@ export default function RevolutionComparisonChart({ onComplete }: RevolutionComp
 
   const MAX_ATTEMPTS = 2;
   const minReflectionLength = 100;
+
+  // Dev mode response generators
+  const getDevGoodResponse = () => {
+    return "The digital divide to wealth inequality parallel really caught my eye because it shows how history repeats itself with different technology. Just like the Industrial Revolution created a gap between factory owners and workers, the AI Revolution is creating a gap between those who have access to technology and those who don't. What surprised me most is how zip codes and school districts can determine who gets AI education and who doesn't, which mirrors how your birth location determined your opportunities in the 1800s. This shows we need to actively work to prevent AI from deepening existing inequalities rather than assuming technology automatically benefits everyone equally.";
+  };
+
+  const getDevGenericResponse = () => {
+    return "I think all the parallels are interesting. Technology changes things and we need to be aware of that. The Industrial Revolution had some problems and the AI Revolution has some problems too. We should learn from history so we don't make the same mistakes. It's important to think about these connections.";
+  };
+
+  const getDevComplaintResponse = () => {
+    return "I don't really understand why we're comparing old factories to modern AI. This seems like a stretch and I'm not sure what the point is. The Industrial Revolution was a long time ago and things are completely different now. I don't see how this helps me understand AI better. This activity feels confusing and unnecessarily complicated.";
+  };
+
+  const getDevGibberishResponse = () => {
+    return "asdfkj alksjdf laskdjf laksjdf lkajsdhf lkajsdhf lkajsdhf lakjsdhf laksjdhf laksjdhf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf qwerty keyboard mashing text";
+  };
+
+  const handleDevAutoFill = () => {
+    if (!isDevModeActive) return;
+
+    const goodResponse = getDevGoodResponse();
+    setReflection(goodResponse);
+    setReflectionFeedback("Excellent reflection! Your connection between the digital divide and wealth inequality shows deep engagement with historical patterns.");
+    setShowReflectionFeedback(true);
+    setReflectionNeedsRetry(false);
+
+    // Auto-complete after brief delay
+    setTimeout(() => {
+      setCompleted(true);
+      onComplete();
+    }, 1000);
+  };
 
   // Correct mappings based on logical connections (fixed, not randomized)
   // The modern issues are shuffled in the UI, but the correct answers remain logically consistent
@@ -178,8 +214,8 @@ export default function RevolutionComparisonChart({ onComplete }: RevolutionComp
     setReflectionFeedback('');
     setShowReflectionFeedback(false);
     setReflectionNeedsRetry(false);
-    setAttemptCount(0);
-    setShowEscapeHatch(false);
+    // DON'T reset attemptCount - we need to track total attempts for escape hatch
+    // DON'T reset showEscapeHatch - if they've earned it, keep it available
   };
 
   const handleContinueAnyway = () => {
@@ -301,17 +337,6 @@ export default function RevolutionComparisonChart({ onComplete }: RevolutionComp
             </div>
           </div>
 
-          {/* Check Answers Button */}
-          {allMatched && !hasSubmitted && (
-            <Button
-              onClick={handleSubmit}
-              size="lg"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Check Answers
-            </Button>
-          )}
-
           {/* Feedback */}
           {hasSubmitted && !allCorrect && (
             <motion.div
@@ -323,9 +348,26 @@ export default function RevolutionComparisonChart({ onComplete }: RevolutionComp
                 You have {correctCount} out of {COMPARISONS.length} correct matches.
               </p>
               <p className="text-sm text-gray-700 mt-1">
-                Review the connections and try again. Think about how each Industrial Revolution issue relates to modern AI challenges.
+                Review the green checkmarks to see which are correct. Adjust your incorrect matches and click "Check Again" below.
               </p>
             </motion.div>
+          )}
+
+          {/* Check Answers / Check Again Button */}
+          {!allCorrect && (
+            <Button
+              onClick={handleSubmit}
+              disabled={!allMatched}
+              size="lg"
+              className={`w-full ${
+                allMatched
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {hasSubmitted ? 'Check Again' : 'Check Answers'}
+              {!allMatched && ' (select all 4 matches first)'}
+            </Button>
           )}
 
           {hasSubmitted && allCorrect && (
@@ -350,6 +392,52 @@ export default function RevolutionComparisonChart({ onComplete }: RevolutionComp
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3"
             >
+              {/* Developer Mode Controls */}
+              {isDevModeActive && !showReflectionFeedback && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Reflection Shortcuts</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={handleDevAutoFill}
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      <Zap className="w-3 h-3 mr-1" />
+                      Auto-Fill & Complete
+                    </Button>
+                    <Button
+                      onClick={() => setReflection(getDevGoodResponse())}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Good Response
+                    </Button>
+                    <Button
+                      onClick={() => setReflection(getDevGenericResponse())}
+                      className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Generic Response
+                    </Button>
+                    <Button
+                      onClick={() => setReflection(getDevComplaintResponse())}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Complaint
+                    </Button>
+                    <Button
+                      onClick={() => setReflection(getDevGibberishResponse())}
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Gibberish
+                    </Button>
+                  </div>
+                  <p className="text-xs text-red-600 mt-1">Test validation: good, generic, complaint, or gibberish responses</p>
+                </div>
+              )}
+
               <h4 className="font-semibold text-gray-900">
                 Reflection: Which parallel surprised you the most, and why?
               </h4>
@@ -482,10 +570,7 @@ export default function RevolutionComparisonChart({ onComplete }: RevolutionComp
               }`}
             >
               {isGeneratingFeedback ? (
-                <>
-                  <Loader className="w-5 h-5 animate-spin inline mr-2" />
-                  Submitting...
-                </>
+                'Submit Reflection'
               ) : showReflectionFeedback && !reflectionNeedsRetry ? (
                 <>
                   Continue

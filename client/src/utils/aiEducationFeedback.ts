@@ -53,22 +53,22 @@ Your ONLY task is to evaluate the quality and relevance of their reflection.
 
 **STUDENT RESPONSE:** "${response}"
 
-**YOUR TASK:** Determine if this response genuinely addresses the question.
+**YOUR TASK:** Determine if this response genuinely addresses the question asked above.
 
 **STRICT REJECTION CRITERIA - Use phrase "does not address the question" if:**
 1. Response is a complaint about the module (e.g., "waste of time", "boring", "stupid")
-2. Response doesn't mention LLMs, AI, tokens, patterns, predictions, or related concepts
-3. Response is generic fluff that could apply to any topic
-4. Response is inappropriate, off-topic, or trolling
+2. Response is completely off-topic and doesn't relate to the question at all
+3. Response is generic fluff that could apply to any topic ("I learned a lot", "Very interesting")
+4. Response is inappropriate, trolling, or nonsensical
 
 **APPROVAL CRITERIA - Give constructive feedback if:**
-1. Response shows engagement with LLM concepts (prediction, patterns, training data, limitations)
-2. Response demonstrates critical thinking about AI use
-3. Response includes specific examples or personal connections
+1. Response directly addresses the specific question asked
+2. Response demonstrates critical thinking or personal engagement with the topic
+3. Response includes specific examples, comparisons, or personal connections relevant to the question
 
 **OUTPUT FORMAT:**
-- If rejecting: Start with "Your response does not address the question about how LLMs work. Please re-read the question and provide a thoughtful answer."
-- If approving: Give brief (1-2 sentences, under 75 words), direct feedback. Acknowledge their insight and make ONE connection to the AI concept. No fake enthusiasm.
+- If rejecting: Start with "Your response does not address the question. Please re-read the question and provide a thoughtful answer that specifically addresses what was asked."
+- If approving: Give brief (1-2 sentences, under 75 words), direct feedback. Acknowledge what they wrote and make ONE relevant connection to the topic. No fake enthusiasm. Reference specific content from their response.
 
 Evaluate now:`;
 
@@ -127,53 +127,37 @@ Evaluate now:`;
   }
 };
 
-// Contextual fallback that references what the student wrote
+// Contextual fallback that provides generic but relevant feedback
 // NOTE: This should rarely be used since Gemini provides better feedback
 export const getContextualFallback = (response: string, question: string): string => {
   const lowerResponse = response.toLowerCase();
+  const lowerQuestion = question.toLowerCase();
 
-  // Detect key concepts mentioned in their response
-  const mentionedPrediction = lowerResponse.includes('predict') || lowerResponse.includes('pattern') || lowerResponse.includes('guess');
-  const mentionedData = lowerResponse.includes('data') || lowerResponse.includes('train') || lowerResponse.includes('learn');
-  const mentionedCheck = lowerResponse.includes('check') || lowerResponse.includes('verify') || lowerResponse.includes('review') || lowerResponse.includes('validate');
-  const mentionedTool = lowerResponse.includes('tool') || lowerResponse.includes('help') || lowerResponse.includes('assist');
-  const mentionedLimitation = lowerResponse.includes('limit') || lowerResponse.includes('can\'t') || lowerResponse.includes('cannot') || lowerResponse.includes('bias');
-  const mentionedUnderstanding = lowerResponse.includes('understand') || lowerResponse.includes('know') || lowerResponse.includes('aware');
-  const mentionedThinking = lowerResponse.includes('think') || lowerResponse.includes('critical') || lowerResponse.includes('question');
+  // Detect the general topic area from the question
+  const isAboutHistory = lowerQuestion.includes('revolution') || lowerQuestion.includes('parallel') || lowerQuestion.includes('history');
+  const isAboutLLMs = lowerQuestion.includes('llm') || lowerQuestion.includes('predict') || lowerQuestion.includes('token') || lowerQuestion.includes('training data');
+  const isAboutEthics = lowerQuestion.includes('ethic') || lowerQuestion.includes('principle') || lowerQuestion.includes('dignity') || lowerQuestion.includes('solidarity');
+  const isComparison = lowerQuestion.includes('compare') || lowerQuestion.includes('similar') || lowerQuestion.includes('difference');
 
-  // Build contextual response based on what they mentioned
-  let feedback = "";
+  // Check if they showed critical engagement
+  const showsCriticalThinking = lowerResponse.includes('because') || lowerResponse.includes('however') || lowerResponse.includes('although') || lowerResponse.includes('realize');
+  const givesExample = lowerResponse.includes('example') || lowerResponse.includes('instance') || lowerResponse.includes('like') || lowerResponse.includes('such as');
+  const showsPersonalConnection = lowerResponse.includes('i think') || lowerResponse.includes('i believe') || lowerResponse.includes('my') || lowerResponse.includes('caught my eye') || lowerResponse.includes('surprised me');
 
-  // Best case: They mentioned multiple key concepts
-  if (mentionedPrediction && mentionedCheck) {
-    feedback = "You've made an important connection between LLMs as prediction systems and the need to verify their outputs. This understanding will help you use AI more effectively.";
-  } else if (mentionedTool && mentionedData) {
-    feedback = "Your recognition of LLMs as tools shaped by their training data shows thoughtful engagement with how these systems work.";
-  } else if (mentionedCheck && mentionedLimitation) {
-    feedback = "Noting the importance of verification alongside AI limitations demonstrates critical thinking about responsible AI use.";
-  } else if (mentionedUnderstanding && mentionedTool) {
-    feedback = "Your reflection on how understanding LLMs informs their use as tools shows you've engaged with the core concepts of this module.";
+  // Build appropriate fallback based on question type and response quality
+  if (isAboutHistory && (showsPersonalConnection || showsCriticalThinking)) {
+    return "Your reflection on the historical parallels demonstrates engagement with how past technological revolutions inform our understanding of AI today.";
+  } else if (isAboutEthics && showsCriticalThinking) {
+    return "Your thoughtful consideration of ethical principles shows you're thinking critically about how AI should be developed and deployed.";
+  } else if (isComparison && (givesExample || showsCriticalThinking)) {
+    return "Making connections between different concepts helps deepen your understanding of AI's role in society.";
+  } else if (isAboutLLMs) {
+    return "Your reflection on how LLMs work shows engagement with the technical concepts behind AI systems.";
+  } else if (showsPersonalConnection) {
+    return "Thank you for sharing your perspective. Personal engagement with these concepts will help you apply them in real situations.";
+  } else {
+    return "Thank you for your reflection. Continue thinking critically about these concepts as you progress through the module.";
   }
-  // Good case: They mentioned one important concept
-  else if (mentionedCheck || lowerResponse.includes('trust') || lowerResponse.includes('responsible')) {
-    feedback = "Your emphasis on verifying AI outputs reflects the critical thinking approach we emphasized. Always being skeptical of AI-generated content is key.";
-  } else if (mentionedPrediction) {
-    feedback = "You're right to focus on how LLMs predict based on patterns. This understanding helps you recognize when AI might make mistakes or hallucinate information.";
-  } else if (mentionedData) {
-    feedback = "Your attention to training data shows you understand a fundamental aspect of how LLMs work and why they have limitations.";
-  } else if (mentionedLimitation || lowerResponse.includes('mistake') || lowerResponse.includes('error')) {
-    feedback = "Acknowledging AI limitations is crucial. Your awareness of where LLMs can go wrong will make you a more effective user.";
-  } else if (mentionedThinking) {
-    feedback = "Your focus on critical thinking when using AI tools demonstrates the mindset we're trying to cultivate in this module.";
-  } else if (mentionedTool) {
-    feedback = "Viewing AI as a tool rather than an authority figure is an important perspective that will serve you well.";
-  }
-  // Minimal case: Generic but acknowledges they wrote something
-  else {
-    feedback = "Thank you for sharing your thoughts on how LLMs work. Keep applying this knowledge when you use AI tools in the future.";
-  }
-
-  return feedback;
 };
 
 // Legacy random fallback (kept for backward compatibility, but contextual fallback is preferred)

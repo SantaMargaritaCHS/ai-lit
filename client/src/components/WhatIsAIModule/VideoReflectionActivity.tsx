@@ -42,6 +42,18 @@ export default function VideoReflectionActivity({
     return "This is a developer mode auto-generated response for testing purposes.";
   };
 
+  const getDevNegativeResponse = () => {
+    return "I don't know and I don't care about this topic. This is boring and I don't want to think about it. I already know everything I need to know about AI and I don't see why we have to keep talking about it over and over again.";
+  };
+
+  const getDevComplaintResponse = () => {
+    return "This is so stupid. Why do I have to do this? I already watched the video and now you're making me write about it. This is a waste of time and I don't see the point. Can't we just move on to the next thing? I have better things to do than sit here writing paragraphs about stuff I don't care about.";
+  };
+
+  const getDevGibberishResponse = () => {
+    return "asdkjfh laskdjfh alksjdhf laksjdhf lkajsdhf lkajshdflk ajshdflk ajshdflkj ashdflkj ashdflkj ashdflkj ahsdflkj ahsdflkjh asdflkjh asdfkljh asdfkljh asdfklj aslkdfj alskdjf laskdjf laskdjf laskdjflk ajsdflkj asdflkj asdfklj asdfklj";
+  };
+
   const handleDevSkip = () => {
     const devResponse = getDevResponse();
     setResponse(devResponse);
@@ -117,7 +129,7 @@ export default function VideoReflectionActivity({
     onComplete();
   };
 
-  const minResponseLength = 100;
+  const minResponseLength = 150;
   const isResponseValid = response.trim().length >= minResponseLength;
 
   return (
@@ -132,10 +144,10 @@ export default function VideoReflectionActivity({
         {isDevModeActive && !showFeedback && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
           <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Reflection Shortcuts</h3>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={handleDevSkip}
-              className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+              className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
               size="sm"
             >
               <Zap className="w-3 h-3 mr-1" />
@@ -146,13 +158,43 @@ export default function VideoReflectionActivity({
                 const devResponse = getDevResponse();
                 setResponse(devResponse);
               }}
-              className="bg-red-700 hover:bg-red-800 text-white text-xs px-3 py-1 h-auto"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
               size="sm"
             >
-              Fill Response Only
+              Fill Good Response
+            </Button>
+            <Button
+              onClick={() => {
+                const negativeResponse = getDevNegativeResponse();
+                setResponse(negativeResponse);
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+              size="sm"
+            >
+              Fill Negative Response
+            </Button>
+            <Button
+              onClick={() => {
+                const complaintResponse = getDevComplaintResponse();
+                setResponse(complaintResponse);
+              }}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
+              size="sm"
+            >
+              Fill Complaint
+            </Button>
+            <Button
+              onClick={() => {
+                const gibberishResponse = getDevGibberishResponse();
+                setResponse(gibberishResponse);
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+              size="sm"
+            >
+              Fill Gibberish
             </Button>
           </div>
-          <p className="text-xs text-red-600 mt-1">Pre-fills appropriate response for this reflection</p>
+          <p className="text-xs text-red-600 mt-1">Test validation: good, negative, complaint, or gibberish responses</p>
         </div>
       )}
 

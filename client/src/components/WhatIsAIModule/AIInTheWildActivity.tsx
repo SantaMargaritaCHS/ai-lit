@@ -24,6 +24,9 @@ interface Scenario {
   correctData: string;
   correctPattern: string;
   correctAction: string;
+  dataHint: string;
+  patternHint: string;
+  actionHint: string;
 }
 
 interface CardOption {
@@ -41,6 +44,7 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
   const [selectedPattern, setSelectedPattern] = useState<string | null>(null);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
 
@@ -125,132 +129,94 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
       ],
       correctData: 'Videos you watch completely, rewatch, and how long you spend on each',
       correctPattern: 'Videos that go viral spread rapidly through similar audiences',
-      correctAction: 'Prioritizes videos likely to keep you watching and scrolling'
+      correctAction: 'Prioritizes videos likely to keep you watching and scrolling',
+      dataHint: 'Think about your personal viewing behavior - what details does TikTok track about HOW you watch, not just WHAT you watch?',
+      patternHint: 'Consider how content spreads - do users with similar interests tend to discover and share similar videos?',
+      actionHint: 'What is TikTok\'s main goal? Think about what keeps users engaged on the app the longest.'
     },
     {
-      id: 'spotify',
-      title: 'Spotify Discover Weekly',
-      description: 'How does Spotify create your personalized playlist every Monday?',
-      emoji: '🎵',
+      id: 'fraud-detection',
+      title: 'Credit Card Fraud Detection',
+      description: 'How does your bank instantly spot suspicious purchases on your card?',
+      emoji: '💳',
       color: 'blue',
       dataCards: [
-        { id: 'd1', text: 'Songs you replay, save, skip within 30 seconds, and genres you explore', isCorrect: true },
-        { id: 'd2', text: 'Only songs from your favorite artists', isCorrect: false },
-        { id: 'd3', text: 'The most popular songs this week', isCorrect: false }
+        { id: 'd1', text: 'Your purchase history, locations, amounts, times, and merchant types', isCorrect: true },
+        { id: 'd2', text: 'Only large purchases over $500', isCorrect: false },
+        { id: 'd3', text: 'Every transaction from new stores', isCorrect: false }
       ],
       patternCards: [
-        { id: 'p1', text: 'Listeners who enjoy similar genres discover similar new artists together', isCorrect: true },
-        { id: 'p2', text: 'Everyone likes the same new releases', isCorrect: false },
-        { id: 'p3', text: 'Older songs are always better', isCorrect: false }
+        { id: 'p1', text: 'Fraudulent transactions often show unusual locations, amounts, or rapid sequences', isCorrect: true },
+        { id: 'p2', text: 'All online purchases are more likely to be fraud', isCorrect: false },
+        { id: 'p3', text: 'International transactions are always suspicious', isCorrect: false }
       ],
       actionCards: [
-        { id: 'a1', text: 'Introduces you to new artists and songs you haven\'t discovered yet', isCorrect: true },
-        { id: 'a2', text: 'Shows you the global top 50 songs', isCorrect: false },
-        { id: 'a3', text: 'Plays every song your friends listened to', isCorrect: false }
+        { id: 'a1', text: 'Flags or blocks suspicious transactions and sends you an alert', isCorrect: true },
+        { id: 'a2', text: 'Automatically cancels your card after any new purchase', isCorrect: false },
+        { id: 'a3', text: 'Charges fees on all international transactions', isCorrect: false }
       ],
-      correctData: 'Songs you replay, save, skip within 30 seconds, and genres you explore',
-      correctPattern: 'Listeners who enjoy similar genres discover similar new artists together',
-      correctAction: 'Introduces you to new artists and songs you haven\'t discovered yet'
+      correctData: 'Your purchase history, locations, amounts, times, and merchant types',
+      correctPattern: 'Fraudulent transactions often show unusual locations, amounts, or rapid sequences',
+      correctAction: 'Flags or blocks suspicious transactions and sends you an alert',
+      dataHint: 'Fraud detection needs a complete picture of YOUR normal spending habits. What details would reveal your typical behavior?',
+      patternHint: 'What makes a fraudster\'s behavior different from yours? Think about what would look unusual or out of character.',
+      actionHint: 'Banks want to protect you while minimizing disruption. What\'s the best balance between security and convenience?'
     },
     {
-      id: 'youtube',
-      title: 'YouTube Homepage',
-      description: 'How does YouTube know which videos to recommend on your homepage?',
-      emoji: '📺',
+      id: 'face-id',
+      title: 'Face ID Phone Unlock',
+      description: 'How does your phone recognize your face even in different lighting?',
+      emoji: '🔐',
       color: 'pink',
       dataCards: [
-        { id: 'd1', text: 'Videos you watch, like, and how long you watch them', isCorrect: true },
-        { id: 'd2', text: 'Only videos from channels you subscribe to', isCorrect: false },
-        { id: 'd3', text: 'Videos uploaded in the last 24 hours', isCorrect: false }
+        { id: 'd1', text: 'Thousands of data points mapping your facial features, depth, and contours', isCorrect: true },
+        { id: 'd2', text: 'Just a photo of your face from one angle', isCorrect: false },
+        { id: 'd3', text: 'Only your eye color and hair color', isCorrect: false }
       ],
       patternCards: [
-        { id: 'p1', text: 'Viewers with similar watch history like similar videos', isCorrect: true },
-        { id: 'p2', text: 'Everyone likes videos with the most views', isCorrect: false },
-        { id: 'p3', text: 'Longer videos are always more popular', isCorrect: false }
+        { id: 'p1', text: 'Unique facial features like distance between eyes, nose shape, and bone structure stay consistent', isCorrect: true },
+        { id: 'p2', text: 'Everyone in the same family has identical facial patterns', isCorrect: false },
+        { id: 'p3', text: 'Makeup and glasses completely change your facial pattern', isCorrect: false }
       ],
       actionCards: [
-        { id: 'a1', text: 'Suggests videos based on your viewing interests', isCorrect: true },
-        { id: 'a2', text: 'Shows only trending videos', isCorrect: false },
-        { id: 'a3', text: 'Displays random videos from all categories', isCorrect: false }
+        { id: 'a1', text: 'Unlocks only when face matches your unique biometric pattern', isCorrect: true },
+        { id: 'a2', text: 'Unlocks for anyone who looks similar to you', isCorrect: false },
+        { id: 'a3', text: 'Takes a new photo every time and compares it exactly', isCorrect: false }
       ],
-      correctData: 'Videos you watch, like, and how long you watch them',
-      correctPattern: 'Viewers with similar watch history like similar videos',
-      correctAction: 'Suggests videos based on your viewing interests'
+      correctData: 'Thousands of data points mapping your facial features, depth, and contours',
+      correctPattern: 'Unique facial features like distance between eyes, nose shape, and bone structure stay consistent',
+      correctAction: 'Unlocks only when face matches your unique biometric pattern',
+      dataHint: 'Face ID needs to work in different lighting and angles. What kind of data goes beyond a simple 2D photo?',
+      patternHint: 'Your face changes with expressions and accessories, but what underlying structure stays the same?',
+      actionHint: 'Security is critical here. How specific does the match need to be?'
     },
     {
-      id: 'gmail',
-      title: 'Gmail Spam Filter',
-      description: 'How does Gmail know which emails are spam and which are important?',
-      emoji: '📧',
+      id: 'self-driving',
+      title: 'Self-Driving Car Vision',
+      description: 'How do self-driving cars detect pedestrians, signs, and other vehicles?',
+      emoji: '🚗',
       color: 'blue',
       dataCards: [
-        { id: 'd1', text: 'Emails you mark as spam, delete, or report', isCorrect: true },
-        { id: 'd2', text: 'Only emails from unknown senders', isCorrect: false },
-        { id: 'd3', text: 'Emails with attachments', isCorrect: false }
+        { id: 'd1', text: 'Camera feeds, LIDAR distance sensors, radar, and GPS location data', isCorrect: true },
+        { id: 'd2', text: 'Only a front-facing camera', isCorrect: false },
+        { id: 'd3', text: 'Pre-downloaded map of every road', isCorrect: false }
       ],
       patternCards: [
-        { id: 'p1', text: 'Spam emails share common words, links, and sender patterns', isCorrect: true },
-        { id: 'p2', text: 'All promotional emails are spam', isCorrect: false },
-        { id: 'p3', text: 'Emails from other countries are always spam', isCorrect: false }
+        { id: 'p1', text: 'Pedestrians, vehicles, and road signs have distinctive shapes, movements, and positions', isCorrect: true },
+        { id: 'p2', text: 'Everything on the road moves at the same speed', isCorrect: false },
+        { id: 'p3', text: 'All objects are either cars or not cars', isCorrect: false }
       ],
       actionCards: [
-        { id: 'a1', text: 'Automatically filters suspicious emails to spam folder', isCorrect: true },
-        { id: 'a2', text: 'Blocks all emails from new senders', isCorrect: false },
-        { id: 'a3', text: 'Deletes every email with "sale" in the subject', isCorrect: false }
+        { id: 'a1', text: 'Identifies objects, predicts movements, and adjusts steering, speed, and braking', isCorrect: true },
+        { id: 'a2', text: 'Follows the car in front at a constant distance', isCorrect: false },
+        { id: 'a3', text: 'Stops completely whenever any object is detected nearby', isCorrect: false }
       ],
-      correctData: 'Emails you mark as spam, delete, or report',
-      correctPattern: 'Spam emails share common words, links, and sender patterns',
-      correctAction: 'Automatically filters suspicious emails to spam folder'
-    },
-    {
-      id: 'netflix',
-      title: 'Netflix Recommendations',
-      description: 'How does Netflix decide what shows and movies to suggest?',
-      emoji: '🎬',
-      color: 'pink',
-      dataCards: [
-        { id: 'd1', text: 'Shows you watch, rate, and how much you watch', isCorrect: true },
-        { id: 'd2', text: 'Only new releases from this month', isCorrect: false },
-        { id: 'd3', text: 'Shows with the highest ratings', isCorrect: false }
-      ],
-      patternCards: [
-        { id: 'p1', text: 'Viewers who like similar content watch similar shows', isCorrect: true },
-        { id: 'p2', text: 'Everyone likes the same popular shows', isCorrect: false },
-        { id: 'p3', text: 'Movies are always better than TV shows', isCorrect: false }
-      ],
-      actionCards: [
-        { id: 'a1', text: 'Suggests content matching your viewing preferences', isCorrect: true },
-        { id: 'a2', text: 'Shows you every new release', isCorrect: false },
-        { id: 'a3', text: 'Recommends the most-watched shows globally', isCorrect: false }
-      ],
-      correctData: 'Shows you watch, rate, and how much you watch',
-      correctPattern: 'Viewers who like similar content watch similar shows',
-      correctAction: 'Suggests content matching your viewing preferences'
-    },
-    {
-      id: 'instagram',
-      title: "Instagram Explore Page",
-      description: "How does Instagram decide what posts to show you?",
-      emoji: '📸',
-      color: 'blue',
-      dataCards: [
-        { id: 'd1', text: 'Posts you like, save, and spend time viewing', isCorrect: true },
-        { id: 'd2', text: 'Only the most recent posts from all accounts', isCorrect: false },
-        { id: 'd3', text: 'Posts with the most comments', isCorrect: false }
-      ],
-      patternCards: [
-        { id: 'p1', text: 'Users with similar engagement like similar content', isCorrect: true },
-        { id: 'p2', text: 'All users in the same age group like the same things', isCorrect: false },
-        { id: 'p3', text: 'Photos are always more engaging than videos', isCorrect: false }
-      ],
-      actionCards: [
-        { id: 'a1', text: 'Suggests posts and accounts that match your interests', isCorrect: true },
-        { id: 'a2', text: 'Shows you every post from accounts with many followers', isCorrect: false },
-        { id: 'a3', text: 'Displays random popular posts from around the world', isCorrect: false }
-      ],
-      correctData: 'Posts you like, save, and spend time viewing',
-      correctPattern: 'Users with similar engagement like similar content',
-      correctAction: 'Suggests posts and accounts that match your interests'
+      correctData: 'Camera feeds, LIDAR distance sensors, radar, and GPS location data',
+      correctPattern: 'Pedestrians, vehicles, and road signs have distinctive shapes, movements, and positions',
+      correctAction: 'Identifies objects, predicts movements, and adjusts steering, speed, and braking',
+      dataHint: 'Self-driving cars need to understand the 3D world around them. What types of sensors provide different kinds of information?',
+      patternHint: 'Think about what makes a pedestrian look different from a car or a stop sign. What characteristics help identify each?',
+      actionHint: 'The car needs to respond to its environment safely. What decisions must it make in real-time?'
     }
     ];
 
@@ -269,35 +235,66 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
   const currentScenario = scenarios[currentScenarioIndex];
 
   const handleCardClick = (category: 'data' | 'pattern' | 'action', cardId: string, text: string) => {
-    if (showFeedback) return; // Don't allow changes after feedback
+    if (showFeedback && !isCorrectAnswer) return; // Don't allow changes while showing error feedback
 
     if (category === 'data') {
       setSelectedData(text);
-      // Auto-advance to pattern step after selection
-      setTimeout(() => setCurrentStep('pattern'), 600);
+      const isCorrect = text === currentScenario.correctData;
+      setIsCorrectAnswer(isCorrect);
+      setShowFeedback(true);
+
+      if (isCorrect) {
+        // Auto-advance to pattern step after showing success
+        setTimeout(() => {
+          setShowFeedback(false);
+          setCurrentStep('pattern');
+        }, 800);
+      }
+      // If wrong, stay on data step and let them retry
     }
+
     if (category === 'pattern') {
       setSelectedPattern(text);
-      // Auto-advance to action step after selection
-      setTimeout(() => setCurrentStep('action'), 600);
+      const isCorrect = text === currentScenario.correctPattern;
+      setIsCorrectAnswer(isCorrect);
+      setShowFeedback(true);
+
+      if (isCorrect) {
+        // Auto-advance to action step after showing success
+        setTimeout(() => {
+          setShowFeedback(false);
+          setCurrentStep('action');
+        }, 800);
+      }
+      // If wrong, stay on pattern step and let them retry
     }
+
     if (category === 'action') {
       setSelectedAction(text);
-      // Auto-show feedback after completing all steps
-      setTimeout(() => checkAnswers(), 600);
+      const isCorrect = text === currentScenario.correctAction;
+      setIsCorrectAnswer(isCorrect);
+      setShowFeedback(true);
+
+      if (isCorrect) {
+        // All steps completed correctly
+        setScore(score + 1);
+      }
+      // Show feedback and wait for user to click button (correct or retry)
     }
   };
 
-  const checkAnswers = () => {
-    const isCorrect =
-      selectedData === currentScenario.correctData &&
-      selectedPattern === currentScenario.correctPattern &&
-      selectedAction === currentScenario.correctAction;
-
-    if (isCorrect) {
-      setScore(score + 1);
+  const retryCurrentStep = () => {
+    // Clear the selection for the current step only
+    if (currentStep === 'data') {
+      setSelectedData(null);
+    } else if (currentStep === 'pattern') {
+      setSelectedPattern(null);
+    } else if (currentStep === 'action') {
+      setSelectedAction(null);
     }
-    setShowFeedback(true);
+
+    setShowFeedback(false);
+    setIsCorrectAnswer(false);
   };
 
   const nextScenario = () => {
@@ -308,13 +305,9 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
       setSelectedPattern(null);
       setSelectedAction(null);
       setShowFeedback(false);
+      setIsCorrectAnswer(false);
     } else {
       setCompleted(true);
-
-      // Auto-complete after showing results
-      setTimeout(() => {
-        onComplete();
-      }, 3000);
     }
   };
 
@@ -331,9 +324,7 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
   const devAutoComplete = () => {
     setScore(scenarios.length);
     setCompleted(true);
-    setTimeout(() => {
-      onComplete();
-    }, 1000);
+    // No auto-advance - wait for user to click Continue button
   };
 
   const devAutoAnswer = () => {
@@ -342,11 +333,18 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
     setSelectedAction(currentScenario.correctAction);
   };
 
+  const devAutoAnswerWrong = () => {
+    // Select the first incorrect answer for each step
+    const wrongData = currentScenario.dataCards.find(card => !card.isCorrect);
+    const wrongPattern = currentScenario.patternCards.find(card => !card.isCorrect);
+    const wrongAction = currentScenario.actionCards.find(card => !card.isCorrect);
+
+    if (wrongData) setSelectedData(wrongData.text);
+    if (wrongPattern) setSelectedPattern(wrongPattern.text);
+    if (wrongAction) setSelectedAction(wrongAction.text);
+  };
+
   const isAnswerComplete = selectedData && selectedPattern && selectedAction;
-  const isAnswerCorrect = showFeedback &&
-    selectedData === currentScenario.correctData &&
-    selectedPattern === currentScenario.correctPattern &&
-    selectedAction === currentScenario.correctAction;
 
   // Color schemes
   const colorSchemes = {
@@ -421,9 +419,13 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
               </p>
             </div>
 
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Moving to next activity in 3 seconds...
-            </p>
+            <Button
+              onClick={onComplete}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              size="lg"
+            >
+              Continue
+            </Button>
           </CardContent>
         </Card>
       </motion.div>
@@ -447,8 +449,10 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
         <div className="grid gap-2">
           {cards.map((card) => {
             const isSelected = selected === card.text;
-            const showCorrectness = showFeedback;
             const isThisCorrect = card.isCorrect;
+            // Only show correctness indicators when the answer is correct
+            const showCorrectIndicator = showFeedback && isCorrectAnswer && isThisCorrect;
+            const showWrongIndicator = showFeedback && !isCorrectAnswer && isSelected && !isThisCorrect;
 
             return (
               <motion.button
@@ -459,9 +463,9 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
                     ? `${colors.selectedBg} border-gray-700 dark:border-gray-300`
                     : `${colors.card} border-transparent ${!showFeedback ? colors.cardHover : ''}`
                 } ${
-                  showCorrectness && isThisCorrect
+                  showCorrectIndicator
                     ? 'ring-2 ring-green-500 bg-green-100 dark:bg-green-900/30'
-                    : showCorrectness && isSelected && !isThisCorrect
+                    : showWrongIndicator
                     ? 'ring-2 ring-red-500 bg-red-100 dark:bg-red-900/30'
                     : ''
                 }`}
@@ -471,10 +475,10 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{card.text}</span>
-                  {showCorrectness && isThisCorrect && (
+                  {showCorrectIndicator && (
                     <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                   )}
-                  {showCorrectness && isSelected && !isThisCorrect && (
+                  {showWrongIndicator && (
                     <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                   )}
                 </div>
@@ -493,14 +497,22 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
       {isDevModeActive && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
           <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Activity Shortcuts</h3>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={devAutoAnswer}
-              className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+              className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
               size="sm"
             >
               <Zap className="w-3 h-3 mr-1" />
-              Auto-Answer Current
+              Auto-Answer Correct
+            </Button>
+            <Button
+              onClick={devAutoAnswerWrong}
+              className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+              size="sm"
+            >
+              <XCircle className="w-3 h-3 mr-1" />
+              Auto-Answer Wrong
             </Button>
             <Button
               onClick={devAutoComplete}
@@ -510,7 +522,7 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
               Skip Entire Activity
             </Button>
           </div>
-          <p className="text-xs text-red-600 mt-1">Fill answers or skip activity entirely</p>
+          <p className="text-xs text-red-600 mt-1">Test correct/wrong answers or skip activity entirely</p>
         </div>
       )}
 
@@ -602,46 +614,63 @@ export default function AIInTheWildActivity({ onComplete }: AIInTheWildActivityP
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={`p-5 rounded-lg border-2 ${
-                    isAnswerCorrect
+                    isCorrectAnswer
                       ? 'bg-green-100 dark:bg-green-900/30 border-green-300'
                       : 'bg-orange-100 dark:bg-orange-900/30 border-orange-300'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    {isAnswerCorrect ? (
+                    {isCorrectAnswer ? (
                       <>
                         <CheckCircle className="w-5 h-5 text-green-600" />
                         <span className="font-semibold text-green-900 dark:text-green-100">
-                          Yep, you got it! 🎯
+                          {currentStep === 'action' ? 'Perfect! All steps complete! 🎯' : 'Correct! Moving to next step...'}
                         </span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-5 h-5 text-orange-600" />
                         <span className="font-semibold text-orange-900 dark:text-orange-100">
-                          Not quite, but here's how it works:
+                          Not quite. Think about this:
                         </span>
                       </>
                     )}
                   </div>
-                  <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
-                    {currentScenario.title} collects <strong>{currentScenario.correctData.toLowerCase()}</strong>,
-                    finds the pattern that <strong>{currentScenario.correctPattern.toLowerCase()}</strong>,
-                    and then <strong>{currentScenario.correctAction.toLowerCase()}</strong>.
-                  </p>
+                  {!isCorrectAnswer && (
+                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                      <strong>💡 Hint:</strong>{' '}
+                      {currentStep === 'data' && currentScenario.dataHint}
+                      {currentStep === 'pattern' && currentScenario.patternHint}
+                      {currentStep === 'action' && currentScenario.actionHint}
+                    </p>
+                  )}
                 </motion.div>
               )}
 
               {/* Action Buttons - Only show when feedback is visible */}
               {showFeedback && (
                 <div className="pt-4">
-                  <Button
-                    onClick={nextScenario}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {currentScenarioIndex < scenarios.length - 1 ? 'Next Scenario' : 'Complete Activity'}
-                  </Button>
+                  {isCorrectAnswer ? (
+                    // Show Next button only after Action step is completed correctly
+                    currentStep === 'action' && (
+                      <Button
+                        onClick={nextScenario}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        size="lg"
+                      >
+                        {currentScenarioIndex < scenarios.length - 1 ? 'Next Scenario' : 'Complete Activity'}
+                      </Button>
+                    )
+                  ) : (
+                    <Button
+                      onClick={retryCurrentStep}
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                      size="lg"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Try Again
+                    </Button>
+                  )}
                 </div>
               )}
             </motion.div>

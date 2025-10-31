@@ -235,6 +235,177 @@ const MAX_ATTEMPTS = 2;
 
 ---
 
+## 🧰 Developer Mode Testing Pattern
+
+**Purpose:** Provide rapid testing shortcuts for reflection activities during development
+
+**When to Use:** ALL reflection/exit ticket activities with AI validation MUST implement this pattern
+
+### Required Components
+
+**1. Import Dev Mode Hook:**
+```typescript
+import { useDevMode } from '@/context/DevModeContext';
+import { Zap, AlertTriangle } from 'lucide-react';
+
+const { isDevModeActive } = useDevMode();
+```
+
+**2. Response Generator Functions:**
+```typescript
+// Activity-specific good response (demonstrates learning)
+const getDevGoodResponse = () => {
+  return "The digital divide to wealth inequality parallel really caught my eye because it shows how history repeats itself. Just like the Industrial Revolution created a gap between factory owners and workers, the AI Revolution is creating a gap between those who have access to technology and those who don't. I think this is especially important in education, where some schools have advanced AI tools and others barely have internet access. This made me realize we need to think about equity when rolling out AI technology, not just innovation for innovation's sake.";
+};
+
+// Generic fluff (tests AI rejection for vague answers)
+const getDevGenericResponse = () => {
+  return "I think this is an interesting question about AI and ethics. There are definitely some important things to consider here. I learned a lot from this activity and it made me think about technology in new ways. The content was very informative and I appreciate learning about these topics.";
+};
+
+// Complaint (tests AI rejection for off-topic complaints)
+const getDevComplaintResponse = () => {
+  return "This whole module is confusing and I don't really understand why we're learning about this stuff. It seems like a waste of time and I'd rather be working on my other homework. This assignment is too long and the videos are boring. Can we just skip to the end?";
+};
+
+// Gibberish (tests pre-filter rejection)
+const getDevGibberishResponse = () => {
+  return "asdfkj alksjdf laskdjf laksjdf lkajsdhf lkasjdhf laksdjhf laskdjfh alskdjfh alskdjfh alskdjfh alksdjfh alksdjfh alksdjfh alksdjfh alksdjfh";
+};
+
+// Auto-fill and complete (skip validation for navigation testing)
+const handleDevAutoFill = () => {
+  const goodResponse = getDevGoodResponse();
+  setResponse(goodResponse);
+  setFeedback("Excellent analysis connecting historical patterns to modern AI challenges!");
+  setShowFeedback(true);
+  setNeedsRetry(false);
+  setTimeout(() => {
+    handleComplete();
+  }, 1000);
+};
+```
+
+**3. UI Implementation (5-Button Pattern):**
+```tsx
+{isDevModeActive && !showFeedback && (
+  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <h3 className="text-sm font-semibold text-red-800 mb-2 flex items-center gap-2">
+      <AlertTriangle className="w-4 h-4" />
+      Developer Mode: Reflection Input Shortcuts
+    </h3>
+    <div className="flex flex-wrap gap-2">
+      <Button
+        onClick={handleDevAutoFill}
+        className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 h-auto"
+      >
+        <Zap className="w-3 h-3 mr-1" />
+        Auto-Fill & Complete
+      </Button>
+      <Button
+        onClick={() => setResponse(getDevGoodResponse())}
+        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 h-auto"
+      >
+        Fill Good Response
+      </Button>
+      <Button
+        onClick={() => setResponse(getDevGenericResponse())}
+        className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 h-auto"
+      >
+        Fill Generic Response
+      </Button>
+      <Button
+        onClick={() => setResponse(getDevComplaintResponse())}
+        className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 h-auto"
+      >
+        Fill Complaint
+      </Button>
+      <Button
+        onClick={() => setResponse(getDevGibberishResponse())}
+        className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 h-auto"
+      >
+        Fill Gibberish
+      </Button>
+    </div>
+    <p className="text-xs text-red-700 mt-2">
+      These shortcuts help test different validation scenarios without manual typing.
+    </p>
+  </div>
+)}
+```
+
+### Button Functions
+
+| Button | Color | Purpose | Expected Behavior |
+|--------|-------|---------|-------------------|
+| **Auto-Fill & Complete** | Green | Skip validation, proceed immediately | Fills good response, shows success feedback, auto-proceeds after 1s |
+| **Fill Good Response** | Blue | Test successful validation | Fills thoughtful response, student clicks Submit, should pass |
+| **Fill Generic Response** | Orange | Test AI rejection for vague answers | Fills generic fluff, should trigger Gemini rejection |
+| **Fill Complaint** | Yellow | Test AI rejection for complaints | Fills off-topic complaint, should trigger Gemini rejection |
+| **Fill Gibberish** | Red | Test pre-filter rejection | Fills keyboard mashing, should fail isNonsensical check |
+
+### Critical Implementation Notes
+
+**⚠️ IMPORTANT: Escape Hatch Compatibility**
+
+When implementing dev mode with escape hatch, ensure `handleTryAgain()` does NOT reset attempt tracking:
+
+```typescript
+const handleTryAgain = () => {
+  setResponse('');
+  setFeedback('');
+  setShowFeedback(false);
+  setNeedsRetry(false);
+  // ⚠️ DON'T reset attemptCount - we need to track total attempts for escape hatch
+  // ⚠️ DON'T reset showEscapeHatch - if they've earned it, keep it available
+
+  // ❌ WRONG:
+  // setAttemptCount(0);
+  // setShowEscapeHatch(false);
+};
+```
+
+**Why:** If you reset these values, students can never trigger the escape hatch after 2 failed attempts.
+
+### Implementation Status
+
+**Modules with Dev Mode Pattern:**
+- ✅ IntroToGenAIModule.tsx (Exit Ticket)
+- ✅ EthicalDilemmaScenarios.tsx (Ancient Compass)
+- ✅ RevolutionComparisonChart.tsx (Ancient Compass)
+- ✅ StakeholderPerspectives.tsx (Ancient Compass) - 2 questions, fills both simultaneously
+- ⏳ Understanding LLMs module reflections
+- ⏳ Other modules with reflection activities
+
+### Testing Dev Mode
+
+**1. Test Auto-Fill & Complete:**
+- Click button → Should see response fill in
+- Should show success feedback immediately
+- Should auto-proceed to next activity after 1s
+
+**2. Test Good Response:**
+- Click button → Should see thoughtful response
+- Click Submit → Should pass validation
+- Should show green success feedback
+
+**3. Test Generic Response:**
+- Click button → Should see generic fluff
+- Click Submit → Should trigger Gemini rejection
+- Should show yellow retry feedback
+
+**4. Test Complaint:**
+- Click button → Should see complaint text
+- Click Submit → Should trigger Gemini rejection
+- Should see "does not address the question" feedback
+
+**5. Test Gibberish:**
+- Click button → Should see keyboard mashing
+- Click Submit → Should fail pre-filter
+- Should show "needs more depth" error (no API call)
+
+---
+
 ## 🧪 Testing Scenarios
 
 ### 1. Valid Response
@@ -369,16 +540,26 @@ const MAX_ATTEMPTS = 2;
 
 ## 📚 Module Implementation Status
 
-| Module | File | Status | Notes |
-|--------|------|--------|-------|
-| Understanding LLMs | `ExitTicketLLM.tsx` | ✅ Complete | Exit ticket |
-| What Is AI | `VideoReflectionActivity.tsx` | ✅ Complete | Video reflections |
-| Intro to Gen AI | `IntroToGenAIModule.tsx` | ✅ Complete | Exit ticket |
-| LLM Limitations | - | ⏳ Pending | Manual implementation needed |
-| Privacy & Data | - | ⏳ Pending | Manual implementation needed |
-| AI Environmental | - | ⏳ Pending | Manual implementation needed |
-| Intro to Prompting | - | ⏳ Pending | Manual implementation needed |
-| Responsible AI | - | ⏳ Pending | Manual implementation needed |
+| Module | File | Validation | Escape Hatch | Dev Mode | Notes |
+|--------|------|------------|--------------|----------|-------|
+| Understanding LLMs | `ExitTicketLLM.tsx` | ✅ | ✅ | ⏳ | Exit ticket with escape hatch |
+| What Is AI | `VideoReflectionActivity.tsx` | ✅ | ✅ | ⏳ | Video reflections |
+| Intro to Gen AI | `IntroToGenAIModule.tsx` | ✅ | ✅ | ✅ | Exit ticket with full dev mode |
+| AI Environmental Impact | `AIEnvironmentalImpactModule.tsx` | ✅ | ✅ | ⏳ | Reflection + Exit Ticket |
+| Ancient Compass | `EthicalDilemmaScenarios.tsx` | ✅ | ✅ | ✅ | Ethical dilemma responses |
+| Ancient Compass | `RevolutionComparisonChart.tsx` | ✅ | ✅ | ✅ | Comparison reflection |
+| Ancient Compass | `StakeholderPerspectives.tsx` | ✅ | ✅ | ✅ | 2 reflection questions with full dev mode |
+| LLM Limitations | - | ⏳ | ⏳ | ⏳ | Manual implementation needed |
+| Privacy & Data Rights | - | ⏳ | ⏳ | ⏳ | Manual implementation needed |
+| Introduction to Prompting | - | ⏳ | ⏳ | ⏳ | Manual implementation needed |
+| Responsible & Ethical AI | - | ⏳ | ⏳ | ⏳ | Manual implementation needed |
+
+**Legend:**
+- ✅ Complete - Fully implemented and tested
+- ⏳ Pending - Needs implementation
+- Validation = AI feedback with pre-filter + Gemini evaluation
+- Escape Hatch = 2-attempt limit with bypass option
+- Dev Mode = 5-button testing pattern
 
 ---
 

@@ -125,8 +125,8 @@ export function ActivityRegistryProvider({ children }: { children: ReactNode }) 
   // Global keyboard navigation (only when dev mode is active)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Check if dev mode is active (we'll check this from localStorage)
-      const devModeActive = localStorage.getItem('universal-dev-mode-active') === 'true';
+      // Check if dev mode is active (we'll check this from sessionStorage)
+      const devModeActive = sessionStorage.getItem('universal-dev-mode-active') === 'true';
       if (!devModeActive) return;
 
       if (e.key === 'ArrowLeft' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {

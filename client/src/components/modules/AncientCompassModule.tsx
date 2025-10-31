@@ -107,7 +107,8 @@ const QUIZ_1_QUESTIONS = [
       "Factories producing computers"
     ],
     correctAnswer: 1,
-    explanation: "Correct! The industrialization of thought refers to AI systems automating cognitive, mental, and creative tasks—similar to how the Industrial Revolution automated physical labor."
+    explanation: "Correct! The industrialization of thought refers to AI systems automating cognitive, mental, and creative tasks—similar to how the Industrial Revolution automated physical labor.",
+    hint: "Think about what the Industrial Revolution automated (physical labor). What is AI automating now? Consider what 'thought' and 'mental work' mean in this context."
   },
   {
     question: "How is learning prompt engineering similar to learning to operate factory machines in the 1800s?",
@@ -118,7 +119,8 @@ const QUIZ_1_QUESTIONS = [
       "Both are being replaced by AI"
     ],
     correctAnswer: 2,
-    explanation: "Exactly! Both represent new skills that workers need to learn to interact with revolutionary technology of their era."
+    explanation: "Exactly! Both represent new skills that workers need to learn to interact with revolutionary technology of their era.",
+    hint: "The video emphasizes parallels between two time periods. What did workers in the 1800s need to learn? What do workers today need to learn? Think about the core similarity."
   },
   {
     question: "Why does the video compare AI to the Industrial Revolution?",
@@ -129,7 +131,8 @@ const QUIZ_1_QUESTIONS = [
       "They both were invented by the same people"
     ],
     correctAnswer: 1,
-    explanation: "Perfect! Both the Industrial Revolution and the AI Revolution are transformative technological shifts that require ethical frameworks to ensure they benefit humanity."
+    explanation: "Perfect! Both the Industrial Revolution and the AI Revolution are transformative technological shifts that require ethical frameworks to ensure they benefit humanity.",
+    hint: "The video isn't just making a simple comparison about machines. Think about the bigger picture: what challenge did society face in both eras? Consider the ethical dimension."
   }
 ];
 
@@ -144,7 +147,8 @@ const COMPREHENSION_CHECK_2_QUESTIONS = [
       "To suggest we should avoid AI entirely"
     ],
     correctAnswer: 1,
-    explanation: "Correct! The video uses the historical example of Rerum Novarum to show that society has successfully navigated major technological shifts using ethical frameworks before."
+    explanation: "Correct! The video uses the historical example of Rerum Novarum to show that society has successfully navigated major technological shifts using ethical frameworks before.",
+    hint: "The video is using history as a lesson. Why would it share a story from the past? What does this historical example demonstrate about dealing with new technology?"
   },
   {
     question: "What was Rerum Novarum (1891)?",
@@ -155,7 +159,8 @@ const COMPREHENSION_CHECK_2_QUESTIONS = [
       "A law banning child labor"
     ],
     correctAnswer: 2,
-    explanation: "That's right! Rerum Novarum was a papal document that established principles to protect workers during the Industrial Revolution."
+    explanation: "That's right! Rerum Novarum was a papal document that established principles to protect workers during the Industrial Revolution.",
+    hint: "The Latin name suggests it's an official document, not a physical object or organization. What kind of document would address ethical concerns during the Industrial Revolution?"
   },
   {
     question: "What 'middle path' did Catholic Social Teaching seek between two extremes?",
@@ -166,7 +171,8 @@ const COMPREHENSION_CHECK_2_QUESTIONS = [
       "Between workers and factory owners"
     ],
     correctAnswer: 1,
-    explanation: "Exactly! Catholic Social Teaching aimed to find a balance between extreme capitalism (which exploited workers) and extreme socialism (which erased individual dignity)."
+    explanation: "Exactly! Catholic Social Teaching aimed to find a balance between extreme capitalism (which exploited workers) and extreme socialism (which erased individual dignity).",
+    hint: "A 'middle path between extremes' suggests two opposing economic systems. Think about the major economic debates of the Industrial Revolution era—what were the two competing approaches?"
   }
 ];
 
@@ -176,23 +182,27 @@ const QUIZ_2_QUESTIONS = {
     {
       example: "Ensuring rural students have equal access to AI education tools",
       correctPrinciple: "Common Good",
-      id: 1
+      id: 1,
+      hint: "This is about access for everyone, not just those who can easily afford or access technology. Which principle focuses on ensuring everyone can participate?"
     },
     {
       example: "Requiring human oversight for AI hiring decisions",
       correctPrinciple: "Human Dignity",
-      id: 2
+      id: 2,
+      hint: "This is about preventing AI from making major life decisions without human input. Which principle emphasizes that humans shouldn't be treated as just data points?"
     },
     {
       example: "Everyone working together to fix biased algorithms",
       correctPrinciple: "Solidarity",
-      id: 3
+      id: 3,
+      hint: "Notice the emphasis on 'everyone working together' and 'collective action.' Which principle is about unity and mutual support?"
     }
   ],
   trueFalse: {
     statement: "The Common Good principle means AI should benefit the majority of people.",
     correctAnswer: false,
-    explanation: "The Common Good means AI should allow EVERYONE to thrive, not just most people. It's about ensuring technology benefits all members of society, especially marginalized groups, not just the majority."
+    explanation: "The Common Good means AI should allow EVERYONE to thrive, not just most people. It's about ensuring technology benefits all members of society, especially marginalized groups, not just the majority.",
+    hint: "Read the statement carefully. Does 'majority' mean the same thing as 'everyone'? Think about what happens to minorities if we only focus on the majority."
   }
 };
 
@@ -578,7 +588,17 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
 
     const handleTrueFalseSelect = (value: boolean) => {
       setQuiz2TrueFalse(value);
+    };
+
+    const checkAnswers = () => {
       setQuiz2ShowFeedback(true);
+    };
+
+    const handleTryAgain = () => {
+      // Complete reset - blank slate
+      setQuiz2Matching({});
+      setQuiz2TrueFalse(null);
+      setQuiz2ShowFeedback(false);
     };
 
     const allMatchingCorrect = QUIZ_2_QUESTIONS.matching.every(
@@ -615,7 +635,8 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
 
               {QUIZ_2_QUESTIONS.matching.map((item) => {
                 const isCorrect = quiz2Matching[item.id] === item.correctPrinciple;
-                const showFeedback = quiz2Matching[item.id] !== undefined;
+                const showFeedback = quiz2ShowFeedback;
+                const hasAnswer = quiz2Matching[item.id] !== undefined;
 
                 return (
                   <div key={item.id} className="space-y-2">
@@ -623,31 +644,59 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
                     <div className="flex gap-2 flex-wrap">
                       {principles.map((principle) => {
                         const isSelected = quiz2Matching[item.id] === principle;
+                        const isPrincipleCorrect = item.correctPrinciple === principle;
+                        const isSelectedAndCorrect = isSelected && isCorrect;
+                        const isSelectedAndWrong = isSelected && !isCorrect;
+
+                        // Only show green if student selected the correct answer
+                        const showAsCorrect = showFeedback && isSelectedAndCorrect;
 
                         return (
-                          <button
+                          <label
                             key={principle}
-                            onClick={() => handleMatchingSelect(item.id, principle)}
-                            className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                              showFeedback && isSelected && isCorrect
+                            className={`px-4 py-2 rounded-lg border-2 transition-all inline-block ${
+                              quiz2ShowFeedback ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+                            } ${
+                              showAsCorrect
                                 ? 'border-green-500 bg-green-50 text-gray-900'
-                                : showFeedback && isSelected && !isCorrect
+                                : showFeedback && isSelectedAndWrong
                                 ? 'border-red-500 bg-red-50 text-gray-900'
                                 : isSelected
                                 ? 'border-blue-500 bg-blue-50 text-gray-900'
                                 : 'border-gray-300 bg-white text-gray-900 hover:border-blue-300'
                             }`}
                           >
+                            <input
+                              type="radio"
+                              name={`quiz2-matching-${item.id}`}
+                              checked={isSelected}
+                              onChange={() => handleMatchingSelect(item.id, principle)}
+                              disabled={quiz2ShowFeedback}
+                              className="sr-only"
+                            />
                             {principle}
                             {isSelected && (
                               <CheckCircle2 className={`inline-block ml-2 w-4 h-4 ${
-                                showFeedback && isCorrect ? 'text-green-600' : 'text-blue-600'
+                                showAsCorrect ? 'text-green-600' : 'text-blue-600'
                               }`} />
                             )}
-                          </button>
+                          </label>
                         );
                       })}
                     </div>
+
+                    {/* Show hint for wrong answers (never reveal correct answer) */}
+                    {showFeedback && hasAnswer && !isCorrect && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="p-3 rounded-lg bg-yellow-100 border border-yellow-300 mt-2"
+                      >
+                        <p className="text-sm text-gray-900">
+                          <strong>Not quite!</strong> {item.hint}
+                        </p>
+                      </motion.div>
+                    )}
                   </div>
                 );
               })}
@@ -662,9 +711,10 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
                 "{QUIZ_2_QUESTIONS.trueFalse.statement}"
               </p>
               <div className="flex gap-4">
-                <button
-                  onClick={() => handleTrueFalseSelect(true)}
+                <label
                   className={`flex-1 px-6 py-4 rounded-lg border-2 transition-all ${
+                    quiz2ShowFeedback ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+                  } ${
                     quiz2ShowFeedback && quiz2TrueFalse === true && !trueFalseCorrect
                       ? 'border-red-500 bg-red-50'
                       : quiz2TrueFalse === true
@@ -672,11 +722,20 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
                       : 'border-gray-300 bg-white hover:border-blue-300'
                   }`}
                 >
+                  <input
+                    type="radio"
+                    name="quiz2-truefalse"
+                    checked={quiz2TrueFalse === true}
+                    onChange={() => handleTrueFalseSelect(true)}
+                    disabled={quiz2ShowFeedback}
+                    className="sr-only"
+                  />
                   <span className="text-lg font-semibold text-gray-900">True</span>
-                </button>
-                <button
-                  onClick={() => handleTrueFalseSelect(false)}
+                </label>
+                <label
                   className={`flex-1 px-6 py-4 rounded-lg border-2 transition-all ${
+                    quiz2ShowFeedback ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+                  } ${
                     quiz2ShowFeedback && quiz2TrueFalse === false && trueFalseCorrect
                       ? 'border-green-500 bg-green-50'
                       : quiz2TrueFalse === false
@@ -684,28 +743,58 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
                       : 'border-gray-300 bg-white hover:border-blue-300'
                   }`}
                 >
+                  <input
+                    type="radio"
+                    name="quiz2-truefalse"
+                    checked={quiz2TrueFalse === false}
+                    onChange={() => handleTrueFalseSelect(false)}
+                    disabled={quiz2ShowFeedback}
+                    className="sr-only"
+                  />
                   <span className="text-lg font-semibold text-gray-900">False</span>
-                </button>
+                </label>
               </div>
 
-              {quiz2ShowFeedback && (
+              {/* Only show explanation if student got it right */}
+              {quiz2ShowFeedback && trueFalseCorrect && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className={`p-4 rounded-lg ${
-                    trueFalseCorrect
-                      ? 'bg-green-100 border border-green-300'
-                      : 'bg-yellow-100 border border-yellow-300'
-                  }`}
+                  className="p-4 rounded-lg bg-green-100 border border-green-300"
                 >
                   <p className="text-sm text-gray-900">
                     {QUIZ_2_QUESTIONS.trueFalse.explanation}
                   </p>
                 </motion.div>
               )}
+
+              {/* Show hint for wrong answer (never reveal correct answer) */}
+              {quiz2ShowFeedback && !trueFalseCorrect && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="p-4 rounded-lg bg-yellow-100 border border-yellow-300"
+                >
+                  <p className="text-sm text-gray-900">
+                    <strong>Not quite!</strong> {QUIZ_2_QUESTIONS.trueFalse.hint}
+                  </p>
+                </motion.div>
+              )}
             </div>
 
-            {allAnswered && allCorrect && !quiz2Completed && (
+            {allAnswered && !quiz2ShowFeedback && (
+              <div className="pt-4">
+                <Button
+                  onClick={checkAnswers}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Check My Answers
+                </Button>
+              </div>
+            )}
+
+            {quiz2ShowFeedback && allAnswered && allCorrect && !quiz2Completed && (
               <div className="pt-4">
                 <Button
                   onClick={() => {
@@ -721,11 +810,15 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
               </div>
             )}
 
-            {allAnswered && !allCorrect && (
-              <div className="bg-blue-100 p-4 rounded-lg border border-blue-300">
-                <p className="text-sm text-gray-900">
-                  Review your answers. All questions must be correct to continue.
-                </p>
+            {quiz2ShowFeedback && allAnswered && !allCorrect && (
+              <div className="pt-4">
+                <Button
+                  onClick={handleTryAgain}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Try Again
+                </Button>
               </div>
             )}
           </CardContent>
@@ -740,14 +833,22 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
       const newAnswers = [...cc2Answers];
       newAnswers[questionIndex] = answerIndex;
       setCc2Answers(newAnswers);
+    };
 
-      const newFeedback = [...cc2ShowFeedback];
-      newFeedback[questionIndex] = true;
+    const checkAnswers = () => {
+      const newFeedback = COMPREHENSION_CHECK_2_QUESTIONS.map(() => true);
       setCc2ShowFeedback(newFeedback);
+    };
+
+    const handleTryAgain = () => {
+      // Complete reset - blank slate
+      setCc2Answers([null, null, null]);
+      setCc2ShowFeedback([false, false, false]);
     };
 
     const allCorrect = cc2Answers.every((answer, index) => answer === COMPREHENSION_CHECK_2_QUESTIONS[index].correctAnswer);
     const allAnswered = cc2Answers.every(answer => answer !== null);
+    const anyFeedbackShown = cc2ShowFeedback.some(shown => shown);
 
     return (
       <motion.div
@@ -773,59 +874,95 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
                     const isSelected = cc2Answers[qIndex] === oIndex;
                     const isCorrect = oIndex === q.correctAnswer;
                     const showFeedback = cc2ShowFeedback[qIndex];
+                    const isSelectedAndCorrect = isSelected && isCorrect;
+                    const isSelectedAndWrong = isSelected && !isCorrect;
+
+                    // Only show green if student selected the correct answer
+                    const showAsCorrect = showFeedback && isSelectedAndCorrect;
 
                     return (
-                      <button
+                      <label
                         key={oIndex}
-                        onClick={() => handleAnswerSelect(qIndex, oIndex)}
-                        className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                          showFeedback && isCorrect
+                        className={`w-full block p-4 rounded-lg border-2 transition-all ${
+                          anyFeedbackShown ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+                        } ${
+                          showAsCorrect
                             ? 'border-green-500 bg-green-50'
-                            : showFeedback && isSelected && !isCorrect
+                            : showFeedback && isSelectedAndWrong
                             ? 'border-red-500 bg-red-50'
                             : isSelected
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-200 bg-white hover:border-blue-300'
                         }`}
                       >
+                        <input
+                          type="radio"
+                          name={`cc2-question-${qIndex}`}
+                          checked={isSelected}
+                          onChange={() => handleAnswerSelect(qIndex, oIndex)}
+                          disabled={anyFeedbackShown}
+                          className="sr-only"
+                        />
                         <div className="flex items-center gap-3">
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                            showFeedback && isCorrect
+                            showAsCorrect
                               ? 'border-green-600 bg-green-600'
-                              : showFeedback && isSelected && !isCorrect
+                              : showFeedback && isSelectedAndWrong
                               ? 'border-red-600 bg-red-600'
                               : isSelected
                               ? 'border-blue-600 bg-blue-600'
                               : 'border-gray-400'
                           }`}>
-                            {((showFeedback && isCorrect) || isSelected) && (
+                            {(showAsCorrect || isSelected) && (
                               <div className="w-2 h-2 bg-white rounded-full" />
                             )}
                           </div>
                           <span className="text-gray-900">{option}</span>
                         </div>
-                      </button>
+                      </label>
                     );
                   })}
                 </div>
 
-                {cc2ShowFeedback[qIndex] && (
+                {/* Only show explanation if student got it right */}
+                {cc2ShowFeedback[qIndex] && cc2Answers[qIndex] === q.correctAnswer && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className={`p-4 rounded-lg ${
-                      cc2Answers[qIndex] === q.correctAnswer
-                        ? 'bg-green-100 border border-green-300'
-                        : 'bg-yellow-100 border border-yellow-300'
-                    }`}
+                    className="p-4 rounded-lg bg-green-100 border border-green-300"
                   >
                     <p className="text-sm text-gray-900">{q.explanation}</p>
+                  </motion.div>
+                )}
+
+                {/* Show hint for wrong answers (never reveal the correct answer) */}
+                {cc2ShowFeedback[qIndex] && cc2Answers[qIndex] !== q.correctAnswer && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="p-4 rounded-lg bg-yellow-100 border border-yellow-300"
+                  >
+                    <p className="text-sm text-gray-900">
+                      <strong>Not quite!</strong> {q.hint}
+                    </p>
                   </motion.div>
                 )}
               </div>
             ))}
 
-            {allAnswered && allCorrect && !cc2Completed && (
+            {allAnswered && !anyFeedbackShown && (
+              <div className="pt-4">
+                <Button
+                  onClick={checkAnswers}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Check My Answers
+                </Button>
+              </div>
+            )}
+
+            {anyFeedbackShown && allAnswered && allCorrect && !cc2Completed && (
               <div className="pt-4">
                 <Button
                   onClick={() => {
@@ -841,11 +978,15 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
               </div>
             )}
 
-            {allAnswered && !allCorrect && (
-              <div className="bg-blue-100 p-4 rounded-lg border border-blue-300">
-                <p className="text-sm text-gray-900">
-                  Review the questions and try selecting the correct answers. All questions must be correct to continue.
-                </p>
+            {anyFeedbackShown && allAnswered && !allCorrect && (
+              <div className="pt-4">
+                <Button
+                  onClick={handleTryAgain}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Try Again
+                </Button>
               </div>
             )}
           </CardContent>
@@ -860,14 +1001,22 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
       const newAnswers = [...quiz1Answers];
       newAnswers[questionIndex] = answerIndex;
       setQuiz1Answers(newAnswers);
+    };
 
-      const newFeedback = [...quiz1ShowFeedback];
-      newFeedback[questionIndex] = true;
+    const checkAnswers = () => {
+      const newFeedback = QUIZ_1_QUESTIONS.map(() => true);
       setQuiz1ShowFeedback(newFeedback);
+    };
+
+    const handleTryAgain = () => {
+      // Complete reset - blank slate
+      setQuiz1Answers([null, null, null]);
+      setQuiz1ShowFeedback([false, false, false]);
     };
 
     const allCorrect = quiz1Answers.every((answer, index) => answer === QUIZ_1_QUESTIONS[index].correctAnswer);
     const allAnswered = quiz1Answers.every(answer => answer !== null);
+    const anyFeedbackShown = quiz1ShowFeedback.some(shown => shown);
 
     return (
       <motion.div
@@ -893,59 +1042,95 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
                     const isSelected = quiz1Answers[qIndex] === oIndex;
                     const isCorrect = oIndex === q.correctAnswer;
                     const showFeedback = quiz1ShowFeedback[qIndex];
+                    const isSelectedAndCorrect = isSelected && isCorrect;
+                    const isSelectedAndWrong = isSelected && !isCorrect;
+
+                    // Only show green if student selected the correct answer
+                    const showAsCorrect = showFeedback && isSelectedAndCorrect;
 
                     return (
-                      <button
+                      <label
                         key={oIndex}
-                        onClick={() => handleAnswerSelect(qIndex, oIndex)}
-                        className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                          showFeedback && isCorrect
+                        className={`w-full block p-4 rounded-lg border-2 transition-all ${
+                          anyFeedbackShown ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+                        } ${
+                          showAsCorrect
                             ? 'border-green-500 bg-green-50'
-                            : showFeedback && isSelected && !isCorrect
+                            : showFeedback && isSelectedAndWrong
                             ? 'border-red-500 bg-red-50'
                             : isSelected
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-200 bg-white hover:border-blue-300'
                         }`}
                       >
+                        <input
+                          type="radio"
+                          name={`quiz1-question-${qIndex}`}
+                          checked={isSelected}
+                          onChange={() => handleAnswerSelect(qIndex, oIndex)}
+                          disabled={anyFeedbackShown}
+                          className="sr-only"
+                        />
                         <div className="flex items-center gap-3">
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                            showFeedback && isCorrect
+                            showAsCorrect
                               ? 'border-green-600 bg-green-600'
-                              : showFeedback && isSelected && !isCorrect
+                              : showFeedback && isSelectedAndWrong
                               ? 'border-red-600 bg-red-600'
                               : isSelected
                               ? 'border-blue-600 bg-blue-600'
                               : 'border-gray-400'
                           }`}>
-                            {((showFeedback && isCorrect) || isSelected) && (
+                            {(showAsCorrect || isSelected) && (
                               <div className="w-2 h-2 bg-white rounded-full" />
                             )}
                           </div>
                           <span className="text-gray-900">{option}</span>
                         </div>
-                      </button>
+                      </label>
                     );
                   })}
                 </div>
 
-                {quiz1ShowFeedback[qIndex] && (
+                {/* Only show explanation if student got it right */}
+                {quiz1ShowFeedback[qIndex] && quiz1Answers[qIndex] === q.correctAnswer && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className={`p-4 rounded-lg ${
-                      quiz1Answers[qIndex] === q.correctAnswer
-                        ? 'bg-green-100 border border-green-300'
-                        : 'bg-yellow-100 border border-yellow-300'
-                    }`}
+                    className="p-4 rounded-lg bg-green-100 border border-green-300"
                   >
                     <p className="text-sm text-gray-900">{q.explanation}</p>
+                  </motion.div>
+                )}
+
+                {/* Show hint for wrong answers (never reveal the correct answer) */}
+                {quiz1ShowFeedback[qIndex] && quiz1Answers[qIndex] !== q.correctAnswer && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="p-4 rounded-lg bg-yellow-100 border border-yellow-300"
+                  >
+                    <p className="text-sm text-gray-900">
+                      <strong>Not quite!</strong> {q.hint}
+                    </p>
                   </motion.div>
                 )}
               </div>
             ))}
 
-            {allAnswered && allCorrect && !quiz1Completed && (
+            {allAnswered && !anyFeedbackShown && (
+              <div className="pt-4">
+                <Button
+                  onClick={checkAnswers}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Check My Answers
+                </Button>
+              </div>
+            )}
+
+            {anyFeedbackShown && allAnswered && allCorrect && !quiz1Completed && (
               <div className="pt-4">
                 <Button
                   onClick={() => {
@@ -961,11 +1146,15 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
               </div>
             )}
 
-            {allAnswered && !allCorrect && (
-              <div className="bg-blue-100 p-4 rounded-lg border border-blue-300">
-                <p className="text-sm text-gray-900">
-                  Review the questions and try selecting the correct answers. All questions must be correct to continue.
-                </p>
+            {anyFeedbackShown && allAnswered && !allCorrect && (
+              <div className="pt-4">
+                <Button
+                  onClick={handleTryAgain}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Try Again
+                </Button>
               </div>
             )}
           </CardContent>

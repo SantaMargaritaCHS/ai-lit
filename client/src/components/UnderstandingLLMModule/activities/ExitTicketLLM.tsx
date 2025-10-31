@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Sparkles, Loader, AlertCircle, CheckCircle, ArrowRight, ChevronDown } from 'lucide-react';
+import { MessageSquare, Sparkles, Loader, AlertCircle, CheckCircle, ArrowRight, ChevronDown, Zap } from 'lucide-react';
 import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
+import { useDevMode } from '@/context/DevModeContext';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   onComplete: () => void;
 }
 
 export default function ExitTicketLLM({ onComplete }: Props) {
+  const { isDevModeActive } = useDevMode();
   const [response, setResponse] = useState('');
   const [feedback, setFeedback] = useState('');
   const [needsRetry, setNeedsRetry] = useState(false);
   const [validationError, setValidationError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
@@ -21,6 +23,33 @@ export default function ExitTicketLLM({ onComplete }: Props) {
   const minResponseLength = 100;
   const minWords = 15;
   const MAX_ATTEMPTS = 2;
+
+  // Dev mode response generators
+  const getDevGoodResponse = () => {
+    return "Understanding how LLMs work through pattern matching and statistical predictions fundamentally changes how I use them. I know they don't actually 'understand' content - they predict likely next tokens based on training data. This means I always verify outputs, especially for factual information. For example, when using AI to help research a history paper, I'll ask it to explain a concept like the causes of World War I, but I won't trust it blindly. Instead, I'll cross-reference its response with primary sources and academic materials, treating the AI as a starting point for my own analysis rather than the final authority. This approach helps me leverage AI's pattern recognition while maintaining my critical thinking.";
+  };
+
+  const getDevNegativeResponse = () => {
+    return "I don't really care about how LLMs work. I just want to use them to get my homework done faster. If they give me an answer, I'm just going to use it without checking because they're usually right anyway. I don't see why I need to understand the technical details - that's for computer scientists, not students.";
+  };
+
+  const getDevComplaintResponse = () => {
+    return "This is too complicated and I don't understand why we have to learn all this technical stuff about training data and pattern matching. Can't we just use AI without having to think about how it works? This seems like a waste of time when I could be working on actual assignments.";
+  };
+
+  const getDevGibberishResponse = () => {
+    return "asldkjf laksdjf lkajsdf lkajsdf lkajsdf lkajsdf lkajsdf lkajsdf laksjdf laksjdf laksjdf laksjdf laksjdf laksjdf laskdjf";
+  };
+
+  const handleDevSkip = () => {
+    const goodResponse = getDevGoodResponse();
+    setResponse(goodResponse);
+    setFeedback("Excellent reflection! Your understanding of how LLMs work through pattern matching shows you'll use them responsibly and critically. Your example demonstrates thoughtful application of this knowledge.");
+    setShowFeedback(true);
+    setNeedsRetry(false);
+    // Auto-complete after showing feedback
+    setTimeout(() => onComplete(), 1000);
+  };
 
   // Developer Mode: Auto-fill
   useEffect(() => {
@@ -42,7 +71,6 @@ export default function ExitTicketLLM({ onComplete }: Props) {
   }, [onComplete]);
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
     setIsGeneratingFeedback(true);
     setNeedsRetry(false);
     setValidationError('');
@@ -103,20 +131,17 @@ export default function ExitTicketLLM({ onComplete }: Props) {
       setNeedsRetry(false);
       setShowFeedback(true);
     } finally {
-      setIsSubmitting(false);
       setIsGeneratingFeedback(false);
     }
   };
 
   const handleTryAgain = () => {
-    // Reset for retry (clears attempt count and escape hatch)
-    setResponse('');
+    // Reset for retry (keep response so they can edit, keep attempt count for escape hatch)
     setFeedback('');
     setShowFeedback(false);
     setNeedsRetry(false);
     setValidationError('');
-    setAttemptCount(0);
-    setShowEscapeHatch(false);
+    // DON'T reset attemptCount or showEscapeHatch - track cumulative attempts
   };
 
   const handleContinueAnyway = () => {
@@ -152,6 +177,52 @@ export default function ExitTicketLLM({ onComplete }: Props) {
             </p>
           </div>
 
+          {/* Developer Mode Controls */}
+          {isDevModeActive && !showFeedback && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Exit Ticket Shortcuts</h3>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={handleDevSkip}
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                  size="sm"
+                >
+                  <Zap className="w-3 h-3 mr-1" />
+                  Auto-Fill & Complete
+                </Button>
+                <Button
+                  onClick={() => setResponse(getDevGoodResponse())}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
+                  size="sm"
+                >
+                  Fill Good Response
+                </Button>
+                <Button
+                  onClick={() => setResponse(getDevNegativeResponse())}
+                  className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+                  size="sm"
+                >
+                  Fill Negative Response
+                </Button>
+                <Button
+                  onClick={() => setResponse(getDevComplaintResponse())}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
+                  size="sm"
+                >
+                  Fill Complaint
+                </Button>
+                <Button
+                  onClick={() => setResponse(getDevGibberishResponse())}
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+                  size="sm"
+                >
+                  Fill Gibberish
+                </Button>
+              </div>
+              <p className="text-xs text-red-600 mt-1">Test validation: good, negative, complaint, or gibberish responses</p>
+            </div>
+          )}
+
           {/* Reflection Question */}
           <div className="bg-purple-900/30 border border-purple-400 rounded-lg p-6 mb-6">
             <h3 className="text-xl font-semibold text-white mb-2">
@@ -178,18 +249,6 @@ export default function ExitTicketLLM({ onComplete }: Props) {
             </span>
             <span className="text-white/70">{response.length}/{minResponseLength}</span>
           </div>
-
-          {/* Loading state while generating feedback */}
-          {isGeneratingFeedback && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-3 text-blue-300 bg-blue-900/40 rounded-lg p-4 mb-4"
-            >
-              <Loader className="w-5 h-5 animate-spin" />
-              <span>Analyzing your response with AI...</span>
-            </motion.div>
-          )}
 
           {/* AI Feedback Box - appears after submission */}
           {showFeedback && feedback && (
@@ -305,21 +364,21 @@ export default function ExitTicketLLM({ onComplete }: Props) {
                 handleSubmit();
               }
             }}
-            disabled={!showFeedback && (response.trim().length < minResponseLength || isSubmitting)}
+            disabled={!showFeedback && (response.trim().length < minResponseLength || isGeneratingFeedback)}
             className={`w-full py-4 rounded-lg font-medium text-lg transition-all ${
               showFeedback && !needsRetry
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
                 : showFeedback && needsRetry
                 ? 'bg-orange-600 hover:bg-orange-700 text-white'
-                : response.trim().length >= minResponseLength && !isSubmitting
+                : response.trim().length >= minResponseLength && !isGeneratingFeedback
                 ? 'bg-purple-600 hover:bg-purple-700 text-white'
                 : 'bg-gray-700 text-white/50 cursor-not-allowed'
             }`}
           >
-            {isSubmitting ? (
+            {isGeneratingFeedback ? (
               <>
                 <Loader className="w-5 h-5 animate-spin inline mr-2" />
-                Validating...
+                Analyzing with AI...
               </>
             ) : showFeedback && !needsRetry ? (
               <>

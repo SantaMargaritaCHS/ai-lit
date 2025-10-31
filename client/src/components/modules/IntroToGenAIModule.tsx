@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Brain, Sparkles, Video, MessageSquare, Award, ChevronRight, Shuffle, CheckCircle2, X, Lightbulb, Target, Copy, Check, Loader2, BookOpen, AlertTriangle, Scale, Zap } from 'lucide-react';
+import { Brain, Sparkles, Video, MessageSquare, Award, ChevronRight, Shuffle, CheckCircle2, X, Lightbulb, Target, Copy, Check, Loader2, BookOpen, AlertTriangle, Scale, Zap, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumVideoPlayer } from '../PremiumVideoPlayer';
 import { Certificate } from '../Certificate';
@@ -82,13 +82,30 @@ const VIDEO_CONFIG = {
 const COMPREHENSION_QUESTION_1 = {
   question: "According to the video, what is the best way to think about generative AI?",
   options: [
-    "It's a creative genius that thinks like a human",
-    "It's a super-powered auto-complete that makes educated guesses based on patterns",
-    "It's a simple calculator that just adds numbers",
-    "It's a magical tool that creates content out of thin air"
-  ],
-  correctAnswer: 1,
-  explanation: "Exactly right! As the video explained, generative AI is like a super-powered auto-complete. Just like your phone guesses the next word, AI makes educated guesses about the next word, sentence, or pixel based on massive amounts of data it has learned from."
+    {
+      text: "It's a creative genius that thinks like a human",
+      isCorrect: false,
+      hint: "Think about what the video said about AI NOT being. Does AI actually think or have consciousness?",
+      explanation: "Not quite. The video emphasized that AI doesn't actually think like humans - it's pattern matching, not creative thinking."
+    },
+    {
+      text: "It's a super-powered auto-complete that makes educated guesses based on patterns",
+      isCorrect: true,
+      explanation: "Exactly right! As the video explained, generative AI is like a super-powered auto-complete. Just like your phone guesses the next word, AI makes educated guesses about the next word, sentence, or pixel based on massive amounts of data it has learned from."
+    },
+    {
+      text: "It's a simple calculator that just adds numbers",
+      isCorrect: false,
+      hint: "Is AI doing basic math, or is it working with something more complex? What does it predict?",
+      explanation: "Not quite. AI is much more sophisticated than a calculator - it predicts words, sentences, and patterns based on massive training data."
+    },
+    {
+      text: "It's a magical tool that creates content out of thin air",
+      isCorrect: false,
+      hint: "Where does AI's knowledge come from? Does it create something from nothing, or from somewhere?",
+      explanation: "Not quite. There's no magic involved - AI learns from massive amounts of data and uses patterns to generate content. It needs training data to work."
+    }
+  ]
 };
 
 export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer" }: IntroToGenAIModuleProps) {
@@ -156,6 +173,10 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   const [factCheckSelections, setFactCheckSelections] = useState<Record<number, boolean>>({});
   const [integritySelections, setIntegritySelections] = useState<Record<number, string>>({});
   const [scenarioSelections, setScenarioSelections] = useState<Record<number, boolean>>({});
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [scenarioAttempts, setScenarioAttempts] = useState<Record<number, number>>({});
+  const [scenarioSelectedAnswer, setScenarioSelectedAnswer] = useState<number | null>(null);
+  const [showHint, setShowHint] = useState(false);
   const [ingredientsSelections, setIngredientsSelections] = useState<Record<number, boolean>>({});
 
   const isMountedRef = useRef(true);
@@ -172,7 +193,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
               phase.includes('video') ? 'video' as const :
               phase.includes('reflection') || phase.includes('exit') ? 'reflection' as const :
               'interactive' as const,
-        title: phase.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        name: phase.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
         completed: completedPhases.has(phase)
       };
       registerActivity(activity);
@@ -489,9 +510,25 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   };
 
   const renderComprehensionCheck1 = () => {
+    const { isDevModeActive } = useDevMode();
+
     const handleAnswerSelect = (index: number) => {
       setSelectedAnswer(index);
       setQuestionShowFeedback(true);
+    };
+
+    const handleDevSelectCorrect = () => {
+      const correctIndex = COMPREHENSION_QUESTION_1.options.findIndex(opt => opt.isCorrect);
+      if (correctIndex !== -1) {
+        handleAnswerSelect(correctIndex);
+      }
+    };
+
+    const handleDevSelectWrong = () => {
+      const wrongIndex = COMPREHENSION_QUESTION_1.options.findIndex(opt => !opt.isCorrect);
+      if (wrongIndex !== -1) {
+        handleAnswerSelect(wrongIndex);
+      }
     };
 
     return (
@@ -508,6 +545,32 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
           transition={{ duration: 0.6 }}
           className="bg-card rounded-2xl p-8 border border-primary"
         >
+        {/* Developer Mode Controls */}
+        {isDevModeActive && selectedAnswer === null && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Quiz Shortcuts</h3>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={handleDevSelectCorrect}
+                className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                size="sm"
+              >
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Select Correct Answer
+              </Button>
+              <Button
+                onClick={handleDevSelectWrong}
+                className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+                size="sm"
+              >
+                <X className="w-3 h-3 mr-1" />
+                Select Wrong Answer (Test Hint)
+              </Button>
+            </div>
+            <p className="text-xs text-red-600 mt-1">Test correct/wrong answers with hints</p>
+          </div>
+        )}
+
         <div className="text-center mb-6">
           <div className="bg-gradient-to-r from-yellow-500 to-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <Brain className="w-8 h-8 text-white" />
@@ -523,45 +586,85 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
           <div className="space-y-3">
             {COMPREHENSION_QUESTION_1.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswerSelect(index)}
-                disabled={questionShowFeedback}
-                className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-300 ${
-                  selectedAnswer === index
-                    ? index === COMPREHENSION_QUESTION_1.correctAnswer
-                      ? 'border-green-500 bg-green-soft'
-                      : 'border-red-500 bg-red-soft'
-                    : 'border-primary bg-card hover:bg-card-hover'
-                } ${questionShowFeedback && index === COMPREHENSION_QUESTION_1.correctAnswer ? 'border-green-500 bg-green-soft' : ''}`}
-              >
-                {option}
-              </button>
+              <div key={index} className="space-y-2">
+                <button
+                  onClick={() => handleAnswerSelect(index)}
+                  disabled={selectedAnswer !== null}
+                  className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-300 ${
+                    selectedAnswer === index
+                      ? option.isCorrect
+                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                        : 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  } ${selectedAnswer !== null && selectedAnswer !== index ? 'opacity-60' : ''}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-800 dark:text-gray-200">{option.text}</span>
+                    {selectedAnswer === index && (
+                      <span className="ml-2 flex-shrink-0">
+                        {option.isCorrect ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <X className="w-5 h-5 text-red-600" />
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </button>
+
+                {/* Show feedback for selected answer */}
+                {selectedAnswer === index && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`p-4 rounded-lg text-sm ${
+                      option.isCorrect
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border-2 border-green-300'
+                        : 'bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200 border-2 border-orange-300'
+                    }`}
+                  >
+                    {option.isCorrect ? (
+                      <p className="font-semibold">{option.explanation}</p>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="font-semibold">{option.explanation}</p>
+                        {option.hint && (
+                          <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 rounded">
+                            <p className="text-sm text-yellow-900 dark:text-yellow-200">
+                              <strong>💡 Hint:</strong> {option.hint}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </div>
             ))}
           </div>
 
-          {questionShowFeedback && (
-            <div className={`p-4 rounded-lg ${
-              selectedAnswer === COMPREHENSION_QUESTION_1.correctAnswer
-                ? 'bg-green-soft'
-                : 'bg-yellow-soft'
-            }`}>
-              <p className={`mb-2 font-semibold ${
-                selectedAnswer === COMPREHENSION_QUESTION_1.correctAnswer ? 'text-green-700 dark:text-green-300' : 'text-yellow-700 dark:text-yellow-300'
-              }`}>
-                {selectedAnswer === COMPREHENSION_QUESTION_1.correctAnswer ? '✓ Correct!' : 'Not quite right'}
-              </p>
-              <p className="text-gray-800 dark:text-gray-200">{COMPREHENSION_QUESTION_1.explanation}</p>
-
-              <div className="mt-4 text-center">
+          {selectedAnswer !== null && (
+            <div className="mt-4 text-center">
+              {COMPREHENSION_QUESTION_1.options[selectedAnswer].isCorrect ? (
                 <Button
                   onClick={handlePhaseComplete}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
                 >
                   Continue
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
-              </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    setSelectedAnswer(null);
+                    setQuestionShowFeedback(false);
+                  }}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Try Again
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -648,34 +751,141 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   );
 
   const renderScenarioActivity = () => {
-    const SCENARIO_QUESTION = {
-      question: "Which of these demonstrates responsible AI use for learning?",
-      options: [
-        {
-          text: "📚 Using AI to understand research methodology - AI suggests resources, you develop critical thinking skills",
-          isCorrect: true,
-          explanation: "Exactly right! You're using AI to learn HOW to research, not to do the research for you. You provide the direction, AI provides information."
-        },
-        {
-          text: "🎨 Using AI to explore artistic techniques - AI shows examples, you practice and develop your own artistic voice",
-          isCorrect: true,
-          explanation: "Perfect! AI generates examples for you to study, but YOU create the original work. AI processes patterns, you create."
-        },
-        {
-          text: "💻 Using AI to understand programming concepts - AI explains and provides examples, you analyze and experiment",
-          isCorrect: true,
-          explanation: "Great! AI provides example code to study, but you build true understanding by analyzing and testing. You make the decisions."
-        },
-        {
-          text: "📝 Using AI to complete your homework assignments without understanding the concepts",
-          isCorrect: false,
-          explanation: "This is NOT responsible use. AI should help you learn skills, not complete tasks for you. Remember: you're the driver!"
-        }
-      ]
+    const { isDevModeActive } = useDevMode();
+
+    const SCENARIOS = [
+      {
+        question: "Your history teacher allows AI for research help on your Industrial Revolution essay, but says 'the analysis and arguments must be your own thinking.' What's the responsible approach?",
+        options: [
+          {
+            text: "📚 Ask AI to explain causes of the Industrial Revolution, then develop your own thesis by analyzing primary sources and citing AI as one research source",
+            isCorrect: true,
+            explanation: "Excellent! You're using AI to understand concepts, but YOU read sources, form arguments, and properly cite AI's contribution. This follows your teacher's guidelines and school policy."
+          },
+          {
+            text: "📝 Ask AI to generate three main arguments about the Industrial Revolution, then write body paragraphs expanding on those points in your own words",
+            isCorrect: false,
+            hint: "Your teacher said 'arguments must be your own thinking.' Who's doing the intellectual work here?",
+            explanation: "This violates your teacher's instructions and school policy on 'Undermining Learning Objectives.' AI is doing the critical thinking (forming arguments) while you're just elaborating. The analytical work needs to come from you."
+          },
+          {
+            text: "🔍 Use AI to summarize your textbook chapter so you can skip the reading, then base your essay on that summary",
+            isCorrect: false,
+            hint: "Think about what skills you're supposed to be developing. Can AI replace the fundamental skill of reading?",
+            explanation: "Not responsible! School policy states AI should not 'bypass necessary steps like reading or analysis.' You're missing the learning - reading comprehension and source analysis are essential skills."
+          }
+        ]
+      },
+      {
+        question: "Your biology teacher says 'You can use AI to help understand mitosis, but you must write your own analysis of your lab observations.' You're writing your lab report. What's appropriate?",
+        options: [
+          {
+            text: "🔬 Ask AI to explain the stages of mitosis, then observe your slides and write conclusions based on what you actually saw, citing AI for the background explanation",
+            isCorrect: true,
+            explanation: "Perfect! AI helps you understand the concept, but YOU make observations and draw conclusions from your actual lab work. You're developing scientific analysis skills and following citation requirements."
+          },
+          {
+            text: "📊 Take photos of your slides, upload them to AI, ask it to identify the stages and write the analysis section, then include that analysis in your report",
+            isCorrect: false,
+            hint: "Your teacher said 'you must write your own analysis.' What's the point of doing a lab if AI does the scientific thinking?",
+            explanation: "This directly violates your teacher's policy and undermines the lab's learning objectives. You're not developing observation or analysis skills - AI is doing the scientific reasoning for you."
+          },
+          {
+            text: "💡 Copy AI's explanation of mitosis word-for-word in your background section because it's just factual information everyone knows",
+            isCorrect: false,
+            hint: "Even if information seems common, what does school policy say about using AI-generated content?",
+            explanation: "This violates citation requirements. School policy states you must cite 'any AI-generated content used in your work, including text.' Even for background information, proper citation is required."
+          }
+        ]
+      },
+      {
+        question: "Your English teacher says 'AI can help you brainstorm, but your thesis about The Great Gatsby must come from your own close reading of the text.' Which approach respects this guideline?",
+        options: [
+          {
+            text: "📖 Read the novel, develop your own interpretation, then discuss your ideas with AI to test if your thesis is arguable and cite AI for helping refine your thinking",
+            isCorrect: true,
+            explanation: "Excellent! YOU read the text and formed ideas first, then used AI as a thought partner to strengthen your thesis. Your interpretation came from close reading, and you properly cited AI's role."
+          },
+          {
+            text: "💬 Ask AI 'What are the main themes in The Great Gatsby?' then pick one as your thesis without reading the book closely",
+            isCorrect: false,
+            hint: "Your teacher specifically said the thesis must come from 'your own close reading.' What essential step are you skipping?",
+            explanation: "This violates policy on bypassing reading. AI is replacing the fundamental skill of reading comprehension and literary analysis. You can't develop a genuine interpretation without engaging with the text yourself."
+          },
+          {
+            text: "✍️ Read the book, ask AI to suggest a thesis statement, then write your essay supporting that thesis with quotes from the text",
+            isCorrect: false,
+            hint: "The thesis is the heart of your argument - YOUR interpretation of the text. Where did this interpretation come from?",
+            explanation: "The thesis isn't yours - AI generated your central argument. Even though you find supporting quotes, the intellectual work (interpretation) came from AI, not your reading. This undermines the assignment's learning goals."
+          }
+        ]
+      }
+    ];
+
+    const currentScenarioData = SCENARIOS[currentScenario];
+    const attempts = scenarioAttempts[currentScenario] || 0;
+    const isCorrectAnswer = scenarioSelectedAnswer !== null && currentScenarioData.options[scenarioSelectedAnswer].isCorrect;
+
+    const handleAnswerSelect = (index: number) => {
+      if (scenarioSelectedAnswer !== null) return; // Already answered
+
+      setScenarioSelectedAnswer(index);
+      const isCorrect = currentScenarioData.options[index].isCorrect;
+
+      if (!isCorrect) {
+        // Track incorrect attempt
+        setScenarioAttempts({
+          ...scenarioAttempts,
+          [currentScenario]: attempts + 1
+        });
+        setShowHint(true);
+      }
     };
 
-    const allAnswered = SCENARIO_QUESTION.options.every((_, idx) => scenarioSelections[idx] !== undefined);
-    const hasCorrectAnswer = SCENARIO_QUESTION.options.some((opt, idx) => opt.isCorrect && scenarioSelections[idx] === true);
+    const handleTryAgain = () => {
+      setScenarioSelectedAnswer(null);
+      setShowHint(false);
+    };
+
+    const handleNextScenario = () => {
+      if (currentScenario < SCENARIOS.length - 1) {
+        setCurrentScenario(currentScenario + 1);
+        setScenarioSelectedAnswer(null);
+        setShowHint(false);
+      } else {
+        handlePhaseComplete();
+      }
+    };
+
+    const handleDevSelectCorrect = () => {
+      const correctIndex = currentScenarioData.options.findIndex(opt => opt.isCorrect);
+      if (correctIndex !== -1) {
+        handleAnswerSelect(correctIndex);
+      }
+    };
+
+    const handleDevSelectWrong = () => {
+      const wrongIndex = currentScenarioData.options.findIndex(opt => !opt.isCorrect);
+      if (wrongIndex !== -1) {
+        handleAnswerSelect(wrongIndex);
+      }
+    };
+
+    const handleDevCompleteAll = () => {
+      // Jump to last scenario and auto-select correct answer
+      if (currentScenario < SCENARIOS.length - 1) {
+        setCurrentScenario(SCENARIOS.length - 1);
+        setScenarioSelectedAnswer(null);
+        setShowHint(false);
+      }
+      setTimeout(() => {
+        const lastScenario = SCENARIOS[SCENARIOS.length - 1];
+        const correctIndex = lastScenario.options.findIndex(opt => opt.isCorrect);
+        if (correctIndex !== -1) {
+          handleAnswerSelect(correctIndex);
+        }
+      }, 100);
+    };
 
     return (
       <InteractiveActivity
@@ -690,6 +900,42 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto"
         >
+          {/* Developer Mode Controls */}
+          {isDevModeActive && scenarioSelectedAnswer === null && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Scenario Shortcuts</h3>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={handleDevSelectCorrect}
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                  size="sm"
+                >
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  Select Correct Answer
+                </Button>
+                <Button
+                  onClick={handleDevSelectWrong}
+                  className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+                  size="sm"
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Select Wrong Answer (Test Hint)
+                </Button>
+                <Button
+                  onClick={handleDevCompleteAll}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
+                  size="sm"
+                >
+                  <Zap className="w-3 h-3 mr-1" />
+                  Skip to End & Complete
+                </Button>
+              </div>
+              <p className="text-xs text-red-600 mt-1">
+                Scenario {currentScenario + 1} of {SCENARIOS.length}: Test correct answers, wrong answers with hints, or skip all
+              </p>
+            </div>
+          )}
+
           <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-300">
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-3">
@@ -697,31 +943,32 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                 Knowledge Check: Responsible AI Use
               </CardTitle>
               <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-                Select all examples of responsible AI use (there may be more than one!)
+                Scenario {currentScenario + 1} of {SCENARIOS.length}
               </p>
             </CardHeader>
 
             <CardContent className="space-y-4">
               <div className="bg-purple-50 dark:bg-purple-900/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-4">{SCENARIO_QUESTION.question}</h3>
+                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-4">{currentScenarioData.question}</h3>
               </div>
 
               <div className="space-y-3">
-                {SCENARIO_QUESTION.options.map((option, index) => (
+                {currentScenarioData.options.map((option, index) => (
                   <div key={index} className="space-y-2">
                     <button
-                      onClick={() => setScenarioSelections({...scenarioSelections, [index]: !scenarioSelections[index]})}
+                      onClick={() => handleAnswerSelect(index)}
+                      disabled={scenarioSelectedAnswer !== null}
                       className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-300 ${
-                        scenarioSelections[index] === true
+                        scenarioSelectedAnswer === index
                           ? option.isCorrect
-                            ? 'border-green-500 bg-green-soft'
-                            : 'border-red-500 bg-red-soft'
-                          : 'border-primary bg-card hover:bg-card-hover'
-                      }`}
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                            : 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      } ${scenarioSelectedAnswer !== null && scenarioSelectedAnswer !== index ? 'opacity-60' : ''}`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-gray-800 dark:text-gray-200">{option.text}</span>
-                        {scenarioSelections[index] === true && (
+                        {scenarioSelectedAnswer === index && (
                           <span className="ml-2 flex-shrink-0">
                             {option.isCorrect ? (
                               <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -732,17 +979,32 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                         )}
                       </div>
                     </button>
-                    {scenarioSelections[index] === true && (
+
+                    {/* Show feedback */}
+                    {scenarioSelectedAnswer === index && (
                       <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className={`p-3 rounded-lg text-sm ${
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`p-4 rounded-lg text-sm ${
                           option.isCorrect
-                            ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200'
-                            : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200'
+                            ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border-2 border-green-300'
+                            : 'bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200 border-2 border-orange-300'
                         }`}
                       >
-                        {option.explanation}
+                        {option.isCorrect ? (
+                          <p className="font-semibold">{option.explanation}</p>
+                        ) : (
+                          <div className="space-y-2">
+                            <p className="font-semibold">{option.explanation}</p>
+                            {showHint && option.hint && (
+                              <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 rounded">
+                                <p className="text-sm text-yellow-900 dark:text-yellow-200">
+                                  <strong>💡 Hint:</strong> {option.hint}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </div>
@@ -751,19 +1013,42 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
               <div className="bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-400 p-4 rounded-lg mt-4">
                 <p className="text-sm text-gray-800 dark:text-gray-200">
-                  <strong>Remember:</strong> Responsible AI use means you provide the direction and make the decisions. AI processes information to help you learn skills - it should never complete tasks for you.
+                  <strong>Key Principles from School Policy:</strong> Always follow your teacher's specific instructions about AI use. AI should complement, not replace, fundamental skills like reading, analysis, and critical thinking. You must cite AI-generated content and are responsible for accuracy, even when using AI assistance.
                 </p>
               </div>
 
-              <Button
-                onClick={handlePhaseComplete}
-                disabled={!allAnswered || !hasCorrectAnswer}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white mt-6"
-                size="lg"
-              >
-                {!allAnswered ? 'Select at least one answer to continue' : !hasCorrectAnswer ? 'Select at least one correct answer to continue' : 'Continue'}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
+              {scenarioSelectedAnswer !== null && (
+                <div className="pt-4">
+                  {isCorrectAnswer ? (
+                    <Button
+                      onClick={handleNextScenario}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      size="lg"
+                    >
+                      {currentScenario < SCENARIOS.length - 1 ? (
+                        <>
+                          Next Scenario
+                          <ChevronRight className="ml-2 h-4 w-4" />
+                        </>
+                      ) : (
+                        <>
+                          Complete Activity
+                          <CheckCircle2 className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleTryAgain}
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                      size="lg"
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Try Again
+                    </Button>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -1324,8 +1609,36 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   };
 
   const renderExitTicket = () => {
+    const { isDevModeActive } = useDevMode();
     const minExitLength = 150;
     const isExitValid = exitResponse.trim().length >= minExitLength;
+
+    // Dev mode response generators
+    const getDevGoodResponse = () => {
+      return "I plan to use AI as a learning partner, not a replacement for my own thinking. When working on assignments, I'll use AI to help me understand difficult concepts or explain things in different ways, but I'll make sure the analysis and arguments come from my own critical thinking. I'll always follow my teacher's guidelines about AI use, properly cite when I use AI-generated content, and verify any information AI gives me since it can make mistakes. Most importantly, I'll focus on using AI to strengthen my fundamental skills like reading comprehension, analysis, and problem-solving rather than bypassing them. AI should help me learn better, not prevent me from learning at all.";
+    };
+
+    const getDevNegativeResponse = () => {
+      return "I don't really see the point of all this AI stuff. It's just another tool that teachers are making a big deal about. I'll probably just use it however I want and not worry too much about all these rules and guidelines. If it helps me finish my homework faster, that's good enough for me. I already know how to use technology and I don't need special instruction about it.";
+    };
+
+    const getDevComplaintResponse = () => {
+      return "This is way too complicated and confusing. Why do we have to learn about responsible AI use when we could just be doing our actual schoolwork? I don't understand why there are so many rules about when we can and can't use AI. It seems like teachers just want to make everything harder for us. I wish we could just go back to the old way of doing things without having to think about all this AI policy stuff.";
+    };
+
+    const getDevGibberishResponse = () => {
+      return "asdfjkl asdkljf laksdjf laksjdf lkajsdhf lkajsdhf lkajsdhf lakjsdhf laksjdhf laksjdhf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf";
+    };
+
+    const handleDevSkip = () => {
+      const goodResponse = getDevGoodResponse();
+      setExitResponse(goodResponse);
+      setExitFeedback("Excellent reflection! Your thoughtful approach shows a deep understanding of responsible AI use and your role as the driver of this technology.");
+      setExitShowFeedback(true);
+      setExitNeedsRetry(false);
+      // Auto-complete after showing feedback
+      setTimeout(() => handlePhaseComplete(), 1000);
+    };
 
     const handleExitSubmit = async () => {
       if (!exitShowFeedback) {
@@ -1409,6 +1722,52 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
               <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">Final reflection on your role as the driver</p>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
+              {/* Developer Mode Controls */}
+              {isDevModeActive && !exitShowFeedback && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Exit Ticket Shortcuts</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={handleDevSkip}
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      <Zap className="w-3 h-3 mr-1" />
+                      Auto-Fill & Complete
+                    </Button>
+                    <Button
+                      onClick={() => setExitResponse(getDevGoodResponse())}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Good Response
+                    </Button>
+                    <Button
+                      onClick={() => setExitResponse(getDevNegativeResponse())}
+                      className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Negative Response
+                    </Button>
+                    <Button
+                      onClick={() => setExitResponse(getDevComplaintResponse())}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Complaint
+                    </Button>
+                    <Button
+                      onClick={() => setExitResponse(getDevGibberishResponse())}
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Gibberish
+                    </Button>
+                  </div>
+                  <p className="text-xs text-red-600 mt-1">Test validation: good, negative, complaint, or gibberish responses</p>
+                </div>
+              )}
+
               <div className="bg-indigo-100 dark:bg-indigo-900/30 p-4 rounded-lg border-l-4 border-indigo-600">
                 <p className="text-lg text-gray-800 dark:text-gray-200">
                   The video ended with a powerful question: "The real question isn't what can AI do - it's what will YOU do with it?"

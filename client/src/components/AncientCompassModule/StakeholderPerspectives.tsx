@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, Briefcase, GraduationCap, BookOpen, ChevronRight, CheckCircle2, Sparkles, Loader, AlertCircle } from 'lucide-react';
+import { Users, Briefcase, GraduationCap, BookOpen, ChevronRight, CheckCircle2, Sparkles, Loader, AlertCircle, Zap, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
+import { useDevMode } from '@/context/DevModeContext';
 
 interface StakeholderPerspectivesProps {
   onComplete: () => void;
@@ -67,6 +68,54 @@ export default function StakeholderPerspectives({ onComplete }: StakeholderPersp
 
   const minChars = 50;
   const MAX_ATTEMPTS = 2;
+
+  const { isDevModeActive } = useDevMode();
+
+  // Dev Mode Response Generators
+  const getDevGoodResponse1 = () => {
+    return "Alex's perspective surprised me the most because it shows the ethical dilemma from a student's point of view. I hadn't really thought about how AI tools like ChatGPT can be both helpful for learning and problematic for academic integrity. Alex's situation highlights the gray area between using AI as a learning aid versus using it to cheat. This made me realize that blanket bans on AI aren't the answer – we need clearer guidelines about appropriate use. The fact that Alex is aware of classmates copy-pasting entire essays while trying to use the tool responsibly shows that students themselves understand the ethical difference, but need better guidance.";
+  };
+
+  const getDevGoodResponse2 = () => {
+    return "Balancing these competing needs requires transparency and human oversight at multiple levels. For Maya, gig platforms should provide appeals processes where human reviewers can consider extenuating circumstances like weather delays. For Jordan, industry standards and ethics boards could help level the playing field so companies aren't penalized for prioritizing ethics. For Alex and Ms. Rodriguez, schools need AI literacy programs that teach students when AI use is appropriate (brainstorming, understanding concepts) versus inappropriate (writing entire assignments). Ms. Rodriguez also needs better tools to detect AI writing, like plagiarism checkers adapted for AI. The common thread is that purely algorithmic decisions aren't enough – we need human judgment, clear policies, and systems that allow appeals and context. Rather than banning AI or letting it run unchecked, we need frameworks that preserve human dignity, support learning, and maintain fairness.";
+  };
+
+  const getDevGenericResponse1 = () => {
+    return "I think all of the perspectives were interesting and made me think about AI ethics. Each person had valid concerns about technology. This activity was very informative and taught me a lot about different viewpoints on AI systems.";
+  };
+
+  const getDevGenericResponse2 = () => {
+    return "There are many ways to balance these competing needs. Everyone makes good points and we should consider all perspectives. AI systems should try to be fair to everyone involved. More research is needed on this topic.";
+  };
+
+  const getDevComplaintResponse1 = () => {
+    return "This whole activity is too long and complicated. I don't see why we need to read all these different perspectives. Can we just move on to the next section already?";
+  };
+
+  const getDevComplaintResponse2 = () => {
+    return "I already said this is too much work. These questions are asking for too much detail and I don't have time for this. Let me continue.";
+  };
+
+  const getDevGibberishResponse1 = () => {
+    return "asdf asdfasdf asdf asf asdf asfasdfl;aksf ja;klsdfBlah blah blah blah blah blah blah blah";
+  };
+
+  const getDevGibberishResponse2 = () => {
+    return "asdf asdfasf asf afasf asf asf asf asfasd f asf asf asf as";
+  };
+
+  const handleDevAutoFill = () => {
+    setReflection1(getDevGoodResponse1());
+    setReflection2(getDevGoodResponse2());
+    setFeedback1("Excellent analysis! Your identification of Alex's perspective as highlighting the gray area between helpful and harmful AI use shows thoughtful engagement with the ethical complexities.");
+    setFeedback2("Outstanding solution! Your emphasis on transparency, human oversight, and clear guidelines demonstrates sophisticated understanding of how to balance competing stakeholder needs.");
+    setShowFeedback(true);
+    setNeedsRetry1(false);
+    setNeedsRetry2(false);
+    setTimeout(() => {
+      handleComplete();
+    }, 1000);
+  };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -150,8 +199,8 @@ export default function StakeholderPerspectives({ onComplete }: StakeholderPersp
     setShowFeedback(false);
     setNeedsRetry1(false);
     setNeedsRetry2(false);
-    setAttemptCount(0);
-    setShowEscapeHatch(false);
+    // DON'T reset attemptCount - we need to track total attempts for escape hatch
+    // DON'T reset showEscapeHatch - if they've earned it, keep it available
   };
 
   const handleContinueAnyway = () => {
@@ -200,6 +249,64 @@ export default function StakeholderPerspectives({ onComplete }: StakeholderPersp
               );
             })}
           </div>
+
+          {/* Dev Mode Shortcuts */}
+          {isDevModeActive && !showFeedback && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h3 className="text-sm font-semibold text-red-800 mb-2 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                Developer Mode: Stakeholder Reflection Shortcuts
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={handleDevAutoFill}
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 h-auto"
+                >
+                  <Zap className="w-3 h-3 mr-1" />
+                  Auto-Fill & Complete
+                </Button>
+                <Button
+                  onClick={() => {
+                    setReflection1(getDevGoodResponse1());
+                    setReflection2(getDevGoodResponse2());
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 h-auto"
+                >
+                  Fill Good Responses
+                </Button>
+                <Button
+                  onClick={() => {
+                    setReflection1(getDevGenericResponse1());
+                    setReflection2(getDevGenericResponse2());
+                  }}
+                  className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 h-auto"
+                >
+                  Fill Generic Responses
+                </Button>
+                <Button
+                  onClick={() => {
+                    setReflection1(getDevComplaintResponse1());
+                    setReflection2(getDevComplaintResponse2());
+                  }}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 h-auto"
+                >
+                  Fill Complaints
+                </Button>
+                <Button
+                  onClick={() => {
+                    setReflection1(getDevGibberishResponse1());
+                    setReflection2(getDevGibberishResponse2());
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 h-auto"
+                >
+                  Fill Gibberish
+                </Button>
+              </div>
+              <p className="text-xs text-red-700 mt-2">
+                These shortcuts help test different validation scenarios for both reflection questions.
+              </p>
+            </div>
+          )}
 
           {/* Reflection Questions */}
           <motion.div
@@ -399,10 +506,7 @@ export default function StakeholderPerspectives({ onComplete }: StakeholderPersp
               }`}
             >
               {isSubmitting ? (
-                <>
-                  <Loader className="w-5 h-5 animate-spin inline mr-2" />
-                  Submitting...
-                </>
+                'Submit Responses'
               ) : showFeedback && !needsRetry ? (
                 <>
                   Continue

@@ -584,7 +584,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
               activity.id.includes('video') ? 'video' :
               activity.id === 'exit-ticket' ? 'reflection' :
               'interactive',
-        title: activity.title,
+        name: activity.title,
         completed: index < currentActivity
       };
       console.log(`📝 Registering activity: ${activityRegistration.id} (${activityRegistration.type})`);

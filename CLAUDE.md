@@ -42,15 +42,16 @@ node scripts/gemini-vision-inspector.js
 - Firebase (video storage), Gemini API (AI feedback)
 - LocalStorage (progress persistence)
 
-**8 Learning Modules:**
+**9 Learning Modules:**
 1. What Is AI (`/module/what-is-ai`)
 2. Intro to Gen AI (`/module/intro-to-gen-ai`)
-3. Intro to LLMs (`/module/intro-to-llms`)
+3. Responsible & Ethical AI (`/module/responsible-ethical-ai`)
 4. Understanding LLMs (`/module/understanding-llms`)
 5. LLM Limitations (`/module/llm-limitations`)
 6. Privacy & Data Rights (`/module/privacy-data-rights`)
 7. AI Environmental Impact (`/module/ai-environmental-impact`)
 8. Introduction to Prompting (`/module/introduction-to-prompting`)
+9. Ancient Compass AI Ethics (`/module/ancient-compass-ai-ethics`)
 
 ## 📁 Key Files & Directories
 
@@ -86,6 +87,24 @@ node scripts/gemini-vision-inspector.js
 - `client/src/context/ActivityRegistryContext.tsx` - Activity tracking
 - Event-based: `goToActivity` CustomEvent
 
+**⚠️ Session-Based Persistence (Temporary Development Feature):**
+
+**IMPORTANT**: This feature is implemented for development convenience and should be removed before final production release.
+
+Dev mode now persists across page refreshes within the same browser session using `sessionStorage`:
+- **Files Modified:**
+  - `client/src/hooks/useUniversalDevMode.tsx` (lines 30-32, 194, 209)
+  - `client/src/context/ActivityRegistryContext.tsx` (line 129)
+- **Behavior**: Once activated with password, dev mode stays active until:
+  - Browser tab/window is closed
+  - User manually deactivates with `Ctrl+Alt+D`
+  - Session storage is cleared
+- **Why Temporary**: This is a development convenience to avoid re-entering password during testing. Production should require manual activation each session for security.
+- **How to Remove**:
+  1. Revert `sessionStorage` calls back to no persistence in `useUniversalDevMode.tsx`
+  2. Revert `sessionStorage` check in `ActivityRegistryContext.tsx` line 129
+  3. Remove this documentation section
+
 **Module Integration Pattern:**
 ```typescript
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
@@ -108,9 +127,94 @@ useEffect(() => {
 }, []);
 ```
 
-**Status**: 8/8 modules integrated
-- ✅ What Is AI, Intro to Gen AI, Understanding LLMs, LLM Limitations, Privacy & Data Rights, AI Environmental Impact, Introduction to Prompting, Ancient Compass
-- ⏹️ Responsible Ethical AI Module skipped (no activities to register)
+**Status**: 9/9 modules integrated
+- ✅ What Is AI, Intro to Gen AI, Responsible & Ethical AI, Understanding LLMs, LLM Limitations, Privacy & Data Rights, AI Environmental Impact, Introduction to Prompting, Ancient Compass
+- ⚠️ Note: Responsible & Ethical AI has full landing page (previously incorrectly documented as stub)
+
+**Dev Mode Reflection Input Pattern:**
+
+**MANDATORY for all reflection/exit ticket activities with AI validation:**
+
+All activities with reflection inputs MUST implement this dev mode testing pattern:
+
+```typescript
+import { useDevMode } from '@/context/DevModeContext';
+
+const { isDevModeActive } = useDevMode();
+
+// Dev mode response generators
+const getDevGoodResponse = () => {
+  return "[Comprehensive, thoughtful response that addresses all aspects of the question]";
+};
+
+const getDevGenericResponse = () => {
+  return "[Vague response without specific details: 'I think this is interesting...']";
+};
+
+const getDevComplaintResponse = () => {
+  return "[Complaint about the module: 'This is confusing and I don't understand...']";
+};
+
+const getDevGibberishResponse = () => {
+  return "asdfkj alksjdf laskdjf... [keyboard mashing]";
+};
+
+const handleDevAutoFill = () => {
+  if (!isDevModeActive) return;
+
+  const goodResponse = getDevGoodResponse();
+  setResponse(goodResponse);
+  setFeedback("Excellent reflection! [positive feedback]");
+  setShowFeedback(true);
+  setNeedsRetry(false);
+
+  // Auto-complete after brief delay
+  setTimeout(() => onComplete(), 1000);
+};
+```
+
+**UI Implementation:**
+```tsx
+{isDevModeActive && !showFeedback && (
+  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: [Activity Name] Shortcuts</h3>
+    <div className="flex flex-wrap gap-2">
+      <Button onClick={handleDevAutoFill} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto" size="sm">
+        <Zap className="w-3 h-3 mr-1" />
+        Auto-Fill & Complete
+      </Button>
+      <Button onClick={() => setResponse(getDevGoodResponse())} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto" size="sm">
+        Fill Good Response
+      </Button>
+      <Button onClick={() => setResponse(getDevGenericResponse())} className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto" size="sm">
+        Fill Generic Response
+      </Button>
+      <Button onClick={() => setResponse(getDevComplaintResponse())} className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto" size="sm">
+        Fill Complaint
+      </Button>
+      <Button onClick={() => setResponse(getDevGibberishResponse())} className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto" size="sm">
+        Fill Gibberish
+      </Button>
+    </div>
+    <p className="text-xs text-red-600 mt-1">Test validation: good, generic, complaint, or gibberish responses</p>
+  </div>
+)}
+```
+
+**Why This Pattern:**
+- **5 Buttons** allow testing different validation scenarios
+- **Auto-Fill & Complete** (green) - Quick skip for navigation testing
+- **Fill Good Response** (blue) - Test successful validation
+- **Fill Generic Response** (orange) - Test AI rejection for vague answers
+- **Fill Complaint** (yellow) - Test AI rejection for off-topic complaints
+- **Fill Gibberish** (red) - Test pre-filter rejection
+
+**Implemented In:**
+- ✅ IntroToGenAIModule.tsx (Exit Ticket)
+- ✅ EthicalDilemmaScenarios.tsx (Ancient Compass)
+- ✅ RevolutionComparisonChart.tsx (Ancient Compass)
+- ✅ StakeholderPerspectives.tsx (Ancient Compass - 2 questions)
+- ⏳ Other modules with reflection activities need implementation
 
 ## 🔍 Gemini Vision Testing
 

@@ -278,7 +278,7 @@ export function LLMLimitationsModule({
               activity.id.includes('video') ? 'video' as const :
               activity.id === 'reflection' ? 'reflection' as const :
               'interactive' as const,
-        title: activity.title,
+        name: activity.title,
         completed: phases.indexOf(currentPhase) > index
       };
       console.log(`📝 Registering activity: ${activityRegistration.id} (${activityRegistration.type})`);
