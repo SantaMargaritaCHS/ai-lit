@@ -50,7 +50,6 @@ const AUDIT_ITEMS = [
 
 export default function PersonalAIAudit({ onComplete }: PersonalAIAuditProps) {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [improvementArea, setImprovementArea] = useState('');
   const [actionPlan, setActionPlan] = useState('');
   const [completed, setCompleted] = useState(false);
 
@@ -62,10 +61,9 @@ export default function PersonalAIAudit({ onComplete }: PersonalAIAuditProps) {
   };
 
   const checkedCount = Object.values(checkedItems).filter(Boolean).length;
-  const uncheckedItems = AUDIT_ITEMS.filter(item => !checkedItems[item.id]);
 
   const handleComplete = () => {
-    if (improvementArea.trim() && actionPlan.trim().split(/\s+/).length >= 10) {
+    if (actionPlan.trim().split(/\s+/).length >= 10) {
       setCompleted(true);
       onComplete();
     }
@@ -83,7 +81,7 @@ export default function PersonalAIAudit({ onComplete }: PersonalAIAuditProps) {
             Personal AI Audit
           </CardTitle>
           <p className="text-gray-700 mt-2">
-            Take stock of your current relationship with AI. Check all that apply, then identify one area to improve.
+            Take stock of your current relationship with AI. Check all that apply, then create an action plan for one area.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -124,11 +122,11 @@ export default function PersonalAIAudit({ onComplete }: PersonalAIAuditProps) {
             <p className="text-sm text-gray-800">
               {checkedCount === AUDIT_ITEMS.length
                 ? 'Excellent! You have strong AI literacy. Now let\'s plan how to maintain and deepen these skills.'
-                : 'Great self-reflection! Everyone has areas to grow. Let\'s identify one specific way to improve.'}
+                : 'Great self-reflection! Everyone has areas to grow. Choose one area below to create an action plan.'}
             </p>
           </div>
 
-          {/* Improvement Area */}
+          {/* Action Plan */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -138,43 +136,10 @@ export default function PersonalAIAudit({ onComplete }: PersonalAIAuditProps) {
               <Lightbulb className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="font-semibold text-gray-900 mb-2">
-                  Identify ONE area to improve:
-                </h4>
-                {uncheckedItems.length > 0 && (
-                  <div className="space-y-1 mb-3">
-                    <p className="text-xs text-gray-700 mb-2">Suggested areas based on your audit:</p>
-                    {uncheckedItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setImprovementArea(item.label)}
-                        className="block text-left text-sm text-blue-700 hover:text-blue-900 hover:underline"
-                      >
-                        • {item.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <input
-                  type="text"
-                  value={improvementArea}
-                  onChange={(e) => setImprovementArea(e.target.value)}
-                  placeholder="E.g., 'I want to get better at recognizing AI-generated images'"
-                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {improvementArea.trim() && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
-              >
-                <h4 className="font-semibold text-gray-900">
                   Your Action Plan:
                 </h4>
-                <p className="text-sm text-gray-700">
-                  Write a specific action plan. What will you do <strong>this week</strong> to improve in this area?
+                <p className="text-sm text-gray-700 mb-3">
+                  Choose one of the areas above. What will you do <strong>this week</strong> to improve in that area?
                 </p>
                 <Textarea
                   value={actionPlan}
@@ -183,7 +148,7 @@ export default function PersonalAIAudit({ onComplete }: PersonalAIAuditProps) {
                   rows={4}
                   className="w-full text-gray-900"
                 />
-                <div className="flex justify-between items-center text-xs">
+                <div className="flex justify-between items-center text-xs mt-2">
                   <span className={`${actionPlanWords >= minWords ? 'text-green-600' : 'text-gray-600'}`}>
                     {actionPlanWords} / {minWords} words minimum
                   </span>
@@ -194,12 +159,12 @@ export default function PersonalAIAudit({ onComplete }: PersonalAIAuditProps) {
                     </span>
                   )}
                 </div>
-              </motion.div>
-            )}
+              </div>
+            </div>
           </motion.div>
 
           {/* Continue Button */}
-          {improvementArea.trim() && actionPlanWords >= minWords && (
+          {actionPlanWords >= minWords && (
             <Button
               onClick={handleComplete}
               size="lg"

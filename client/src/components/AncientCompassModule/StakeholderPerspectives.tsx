@@ -51,20 +51,28 @@ const STAKEHOLDERS = [
 ];
 
 export default function StakeholderPerspectives({ onComplete }: StakeholderPerspectivesProps) {
+  // Simple sequential state: 1 or 2
+  const [currentQuestion, setCurrentQuestion] = useState<1 | 2>(1);
+
+  // Responses
   const [reflection1, setReflection1] = useState('');
   const [reflection2, setReflection2] = useState('');
-  const [completed, setCompleted] = useState(false);
 
-  // AI Feedback state
+  // AI Feedback state for Q1
   const [feedback1, setFeedback1] = useState('');
-  const [feedback2, setFeedback2] = useState('');
   const [needsRetry1, setNeedsRetry1] = useState(false);
+  const [showFeedback1, setShowFeedback1] = useState(false);
+  const [isSubmitting1, setIsSubmitting1] = useState(false);
+  const [attemptCount1, setAttemptCount1] = useState(0);
+  const [showEscapeHatch1, setShowEscapeHatch1] = useState(false);
+
+  // AI Feedback state for Q2
+  const [feedback2, setFeedback2] = useState('');
   const [needsRetry2, setNeedsRetry2] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [attemptCount, setAttemptCount] = useState(0);
-  const [showEscapeHatch, setShowEscapeHatch] = useState(false);
+  const [showFeedback2, setShowFeedback2] = useState(false);
+  const [isSubmitting2, setIsSubmitting2] = useState(false);
+  const [attemptCount2, setAttemptCount2] = useState(0);
+  const [showEscapeHatch2, setShowEscapeHatch2] = useState(false);
 
   const minChars = 50;
   const MAX_ATTEMPTS = 2;
@@ -80,75 +88,61 @@ export default function StakeholderPerspectives({ onComplete }: StakeholderPersp
     return "Balancing these competing needs requires transparency and human oversight at multiple levels. For Maya, gig platforms should provide appeals processes where human reviewers can consider extenuating circumstances like weather delays. For Jordan, industry standards and ethics boards could help level the playing field so companies aren't penalized for prioritizing ethics. For Alex and Ms. Rodriguez, schools need AI literacy programs that teach students when AI use is appropriate (brainstorming, understanding concepts) versus inappropriate (writing entire assignments). Ms. Rodriguez also needs better tools to detect AI writing, like plagiarism checkers adapted for AI. The common thread is that purely algorithmic decisions aren't enough – we need human judgment, clear policies, and systems that allow appeals and context. Rather than banning AI or letting it run unchecked, we need frameworks that preserve human dignity, support learning, and maintain fairness.";
   };
 
-  const getDevGenericResponse1 = () => {
-    return "I think all of the perspectives were interesting and made me think about AI ethics. Each person had valid concerns about technology. This activity was very informative and taught me a lot about different viewpoints on AI systems.";
+  const getDevGenericResponse = (q: 1 | 2) => {
+    if (q === 1) {
+      return "I think all of the perspectives were interesting and made me think about AI ethics. Each person had valid concerns about technology. This activity was very informative and taught me a lot about different viewpoints on AI systems.";
+    } else {
+      return "There are many ways to balance these competing needs. Everyone makes good points and we should consider all perspectives. AI systems should try to be fair to everyone involved. More research is needed on this topic.";
+    }
   };
 
-  const getDevGenericResponse2 = () => {
-    return "There are many ways to balance these competing needs. Everyone makes good points and we should consider all perspectives. AI systems should try to be fair to everyone involved. More research is needed on this topic.";
+  const getDevComplaintResponse = (q: 1 | 2) => {
+    if (q === 1) {
+      return "This whole activity is too long and complicated. I don't see why we need to read all these different perspectives. Can we just move on to the next section already?";
+    } else {
+      return "I already said this is too much work. These questions are asking for too much detail and I don't have time for this. Let me continue.";
+    }
   };
 
-  const getDevComplaintResponse1 = () => {
-    return "This whole activity is too long and complicated. I don't see why we need to read all these different perspectives. Can we just move on to the next section already?";
-  };
-
-  const getDevComplaintResponse2 = () => {
-    return "I already said this is too much work. These questions are asking for too much detail and I don't have time for this. Let me continue.";
-  };
-
-  const getDevGibberishResponse1 = () => {
+  const getDevGibberishResponse = () => {
     return "asdf asdfasdf asdf asf asdf asfasdfl;aksf ja;klsdfBlah blah blah blah blah blah blah blah";
   };
 
-  const getDevGibberishResponse2 = () => {
-    return "asdf asdfasf asf afasf asf asf asf asfasd f asf asf asf as";
-  };
-
+  // Dev Mode Auto-Fill
   const handleDevAutoFill = () => {
-    setReflection1(getDevGoodResponse1());
-    setReflection2(getDevGoodResponse2());
-    setFeedback1("Excellent analysis! Your identification of Alex's perspective as highlighting the gray area between helpful and harmful AI use shows thoughtful engagement with the ethical complexities.");
-    setFeedback2("Outstanding solution! Your emphasis on transparency, human oversight, and clear guidelines demonstrates sophisticated understanding of how to balance competing stakeholder needs.");
-    setShowFeedback(true);
-    setNeedsRetry1(false);
-    setNeedsRetry2(false);
-    setTimeout(() => {
-      handleComplete();
-    }, 1000);
+    if (!isDevModeActive) return;
+
+    if (currentQuestion === 1) {
+      setReflection1(getDevGoodResponse1());
+      setFeedback1("Excellent analysis! Your identification of Alex's perspective as highlighting the gray area between helpful and harmful AI use shows thoughtful engagement with the ethical complexities.");
+      setShowFeedback1(true);
+      setNeedsRetry1(false);
+    } else {
+      setReflection2(getDevGoodResponse2());
+      setFeedback2("Outstanding solution! Your emphasis on transparency, human oversight, and clear guidelines demonstrates sophisticated understanding of how to balance competing stakeholder needs.");
+      setShowFeedback2(true);
+      setNeedsRetry2(false);
+    }
   };
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    setIsGeneratingFeedback(true);
+  // Submit Question 1
+  const handleSubmitQ1 = async () => {
+    setIsSubmitting1(true);
     setNeedsRetry1(false);
-    setNeedsRetry2(false);
 
     try {
-      // Generate AI feedback for both questions in parallel
-      const [aiFeedback1, aiFeedback2] = await Promise.all([
-        generateEducationFeedback(
-          reflection1.trim(),
-          "Which stakeholder perspective surprised you the most and why? Explain which viewpoint challenged your thinking and what you learned from it."
-        ),
-        generateEducationFeedback(
-          reflection2.trim(),
-          "How would you balance the competing needs of different stakeholders in AI systems (Maya the gig worker, Jordan the CEO, Alex the student, and Ms. Rodriguez the teacher)? Propose a solution that addresses multiple perspectives."
-        )
-      ]);
+      const aiFeedback = await generateEducationFeedback(
+        reflection1.trim(),
+        "Which stakeholder perspective surprised you the most and why? Explain which viewpoint challenged your thinking and what you learned from it."
+      );
 
-      // Ensure feedback is never empty
-      const finalFeedback1 = aiFeedback1 && aiFeedback1.trim().length > 0
-        ? aiFeedback1
+      const finalFeedback = aiFeedback && aiFeedback.trim().length > 0
+        ? aiFeedback
         : "Thank you for sharing which perspective surprised you. Considering different viewpoints is crucial for ethical AI development.";
 
-      const finalFeedback2 = aiFeedback2 && aiFeedback2.trim().length > 0
-        ? aiFeedback2
-        : "Thank you for proposing a solution that balances different stakeholder needs. This kind of thoughtful consideration is essential for ethical AI.";
+      setFeedback1(finalFeedback);
 
-      setFeedback1(finalFeedback1);
-      setFeedback2(finalFeedback2);
-
-      // Check for rejection phrases in both feedbacks
+      // Check for rejection phrases
       const checkRejection = (text: string) =>
         text.toLowerCase().includes('does not address') ||
         text.toLowerCase().includes('please re-read') ||
@@ -161,60 +155,119 @@ export default function StakeholderPerspectives({ onComplete }: StakeholderPersp
         text.toLowerCase().includes('monitored for inappropriate') ||
         text.toLowerCase().includes('answer the original question');
 
-      const retry1 = checkRejection(aiFeedback1);
-      const retry2 = checkRejection(aiFeedback2);
+      const retry = checkRejection(aiFeedback);
+      setNeedsRetry1(retry);
 
-      setNeedsRetry1(retry1);
-      setNeedsRetry2(retry2);
-
-      if (retry1 || retry2) {
-        const newAttemptCount = attemptCount + 1;
-        setAttemptCount(newAttemptCount);
+      if (retry) {
+        const newAttemptCount = attemptCount1 + 1;
+        setAttemptCount1(newAttemptCount);
 
         if (newAttemptCount >= MAX_ATTEMPTS) {
-          setShowEscapeHatch(true);
+          setShowEscapeHatch1(true);
         }
       }
 
-      setShowFeedback(true);
+      setShowFeedback1(true);
 
     } catch (error) {
-      console.error('[Stakeholder Perspectives] Error:', error);
+      console.error('[Stakeholder Perspectives Q1] Error:', error);
       setFeedback1("Thank you for sharing which perspective surprised you.");
-      setFeedback2("Thank you for proposing a solution to balance stakeholder needs.");
       setNeedsRetry1(false);
-      setNeedsRetry2(false);
-      setShowFeedback(true);
+      setShowFeedback1(true);
     } finally {
-      setIsSubmitting(false);
-      setIsGeneratingFeedback(false);
+      setIsSubmitting1(false);
     }
   };
 
-  const handleTryAgain = () => {
-    setReflection1('');
-    setReflection2('');
-    setFeedback1('');
-    setFeedback2('');
-    setShowFeedback(false);
-    setNeedsRetry1(false);
+  // Submit Question 2
+  const handleSubmitQ2 = async () => {
+    setIsSubmitting2(true);
     setNeedsRetry2(false);
-    // DON'T reset attemptCount - we need to track total attempts for escape hatch
-    // DON'T reset showEscapeHatch - if they've earned it, keep it available
+
+    try {
+      const aiFeedback = await generateEducationFeedback(
+        reflection2.trim(),
+        "How would you balance the competing needs of different stakeholders in AI systems (Maya the gig worker, Jordan the CEO, Alex the student, and Ms. Rodriguez the teacher)? Propose a solution that addresses multiple perspectives."
+      );
+
+      const finalFeedback = aiFeedback && aiFeedback.trim().length > 0
+        ? aiFeedback
+        : "Thank you for proposing a solution that balances different stakeholder needs. This kind of thoughtful consideration is essential for ethical AI.";
+
+      setFeedback2(finalFeedback);
+
+      // Check for rejection phrases
+      const checkRejection = (text: string) =>
+        text.toLowerCase().includes('does not address') ||
+        text.toLowerCase().includes('please re-read') ||
+        text.toLowerCase().includes('inappropriate language') ||
+        text.toLowerCase().includes('off-topic') ||
+        text.toLowerCase().includes('must elaborate') ||
+        text.toLowerCase().includes('insufficient') ||
+        text.toLowerCase().includes('needs more depth') ||
+        text.toLowerCase().includes('random text') ||
+        text.toLowerCase().includes('monitored for inappropriate') ||
+        text.toLowerCase().includes('answer the original question');
+
+      const retry = checkRejection(aiFeedback);
+      setNeedsRetry2(retry);
+
+      if (retry) {
+        const newAttemptCount = attemptCount2 + 1;
+        setAttemptCount2(newAttemptCount);
+
+        if (newAttemptCount >= MAX_ATTEMPTS) {
+          setShowEscapeHatch2(true);
+        }
+      }
+
+      setShowFeedback2(true);
+
+    } catch (error) {
+      console.error('[Stakeholder Perspectives Q2] Error:', error);
+      setFeedback2("Thank you for proposing a solution to balance stakeholder needs.");
+      setNeedsRetry2(false);
+      setShowFeedback2(true);
+    } finally {
+      setIsSubmitting2(false);
+    }
   };
 
-  const handleContinueAnyway = () => {
-    console.log('Student bypassed validation after', attemptCount, 'attempts');
+  // Proceed to Q2
+  const handleProceedToQ2 = () => {
+    setCurrentQuestion(2);
+  };
+
+  // Try Again Q1
+  const handleTryAgainQ1 = () => {
+    setReflection1('');
+    setFeedback1('');
+    setShowFeedback1(false);
+    setNeedsRetry1(false);
+  };
+
+  // Try Again Q2
+  const handleTryAgainQ2 = () => {
+    setReflection2('');
+    setFeedback2('');
+    setShowFeedback2(false);
+    setNeedsRetry2(false);
+  };
+
+  // Continue Anyway Q1 (bypass validation)
+  const handleContinueAnywayQ1 = () => {
+    console.log('Student bypassed Q1 validation after', attemptCount1, 'attempts');
+    setCurrentQuestion(2);
+  };
+
+  // Continue Anyway Q2 (bypass validation)
+  const handleContinueAnywayQ2 = () => {
+    console.log('Student bypassed Q2 validation after', attemptCount2, 'attempts');
     onComplete();
   };
 
-  const handleComplete = () => {
-    setCompleted(true);
-    onComplete();
-  };
-
-  const bothValid = reflection1.length >= minChars && reflection2.length >= minChars;
-  const needsRetry = needsRetry1 || needsRetry2;
+  const q1Valid = reflection1.length >= minChars;
+  const q2Valid = reflection2.length >= minChars;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -251,11 +304,11 @@ export default function StakeholderPerspectives({ onComplete }: StakeholderPersp
           </div>
 
           {/* Dev Mode Shortcuts */}
-          {isDevModeActive && !showFeedback && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          {isDevModeActive && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <h3 className="text-sm font-semibold text-red-800 mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
-                Developer Mode: Stakeholder Reflection Shortcuts
+                Developer Mode: Question {currentQuestion} Shortcuts
               </h3>
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -263,261 +316,365 @@ export default function StakeholderPerspectives({ onComplete }: StakeholderPersp
                   className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 h-auto"
                 >
                   <Zap className="w-3 h-3 mr-1" />
-                  Auto-Fill & Complete
+                  Auto-Fill Q{currentQuestion} + Show Feedback
                 </Button>
                 <Button
                   onClick={() => {
-                    setReflection1(getDevGoodResponse1());
-                    setReflection2(getDevGoodResponse2());
+                    if (currentQuestion === 1) {
+                      setReflection1(currentQuestion === 1 ? getDevGoodResponse1() : getDevGoodResponse2());
+                    } else {
+                      setReflection2(getDevGoodResponse2());
+                    }
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 h-auto"
                 >
-                  Fill Good Responses
+                  Fill Good Response
                 </Button>
                 <Button
                   onClick={() => {
-                    setReflection1(getDevGenericResponse1());
-                    setReflection2(getDevGenericResponse2());
+                    if (currentQuestion === 1) {
+                      setReflection1(getDevGenericResponse(1));
+                    } else {
+                      setReflection2(getDevGenericResponse(2));
+                    }
                   }}
                   className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 h-auto"
                 >
-                  Fill Generic Responses
+                  Fill Generic
                 </Button>
                 <Button
                   onClick={() => {
-                    setReflection1(getDevComplaintResponse1());
-                    setReflection2(getDevComplaintResponse2());
+                    if (currentQuestion === 1) {
+                      setReflection1(getDevComplaintResponse(1));
+                    } else {
+                      setReflection2(getDevComplaintResponse(2));
+                    }
                   }}
                   className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 h-auto"
                 >
-                  Fill Complaints
+                  Fill Complaint
                 </Button>
                 <Button
                   onClick={() => {
-                    setReflection1(getDevGibberishResponse1());
-                    setReflection2(getDevGibberishResponse2());
+                    if (currentQuestion === 1) {
+                      setReflection1(getDevGibberishResponse());
+                    } else {
+                      setReflection2(getDevGibberishResponse());
+                    }
                   }}
                   className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 h-auto"
                 >
                   Fill Gibberish
                 </Button>
               </div>
-              <p className="text-xs text-red-700 mt-2">
-                These shortcuts help test different validation scenarios for both reflection questions.
-              </p>
             </div>
           )}
 
-          {/* Reflection Questions */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6 mt-8"
-          >
-            {/* Question 1 */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-gray-900">
-                1. Which perspective surprised you the most and why?
-              </h4>
-              <Textarea
-                value={reflection1}
-                onChange={(e) => setReflection1(e.target.value)}
-                disabled={showFeedback && !needsRetry}
-                placeholder="Explain which viewpoint challenged your thinking and what you learned from it..."
-                rows={4}
-                className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
-              />
-              <p className="text-xs text-gray-600">
-                {reflection1.length} characters (minimum {minChars} required)
-              </p>
-
-              {/* AI Feedback for Question 1 */}
-              {showFeedback && feedback1 && (
-                <AnimatePresence>
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`border-2 rounded-lg p-4 ${
-                      needsRetry1
-                        ? 'bg-yellow-50 border-yellow-400'
-                        : 'bg-green-50 border-green-400'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      {needsRetry1 ? (
-                        <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      )}
-                      <div className="w-full">
-                        <h5 className="text-sm font-semibold text-gray-900 mb-1">
-                          {needsRetry1 ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
-                        </h5>
-                        <p className="text-sm text-gray-900">{feedback1}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              )}
-            </div>
-
-            {/* Question 2 */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-gray-900">
-                2. How would you balance these competing needs?
-              </h4>
-              <p className="text-sm text-gray-700 mb-2">
-                Consider: Maya needs fair treatment, Jordan faces business pressures, Alex needs learning support, and Ms. Rodriguez needs to ensure academic integrity. How can AI systems serve everyone?
-              </p>
-              <Textarea
-                value={reflection2}
-                onChange={(e) => setReflection2(e.target.value)}
-                disabled={showFeedback && !needsRetry}
-                placeholder="Propose a solution that addresses the needs of different stakeholders..."
-                rows={5}
-                className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
-              />
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-600">
-                  {reflection2.length} characters (minimum {minChars} required)
-                </span>
-                {bothValid && !showFeedback && (
-                  <span className="flex items-center gap-1 text-green-600">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Ready for AI feedback
-                  </span>
-                )}
+          {/* Question 1 */}
+          {currentQuestion === 1 && (
+            <motion.div
+              key="question-1"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-4"
+            >
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                  Which perspective surprised you the most and why?
+                </h4>
+                <Textarea
+                  value={reflection1}
+                  onChange={(e) => setReflection1(e.target.value)}
+                  disabled={showFeedback1 && !needsRetry1}
+                  placeholder="Explain which viewpoint challenged your thinking and what you learned from it..."
+                  rows={5}
+                  className="w-full text-gray-900 mt-3"
+                />
+                <p className="text-xs text-gray-600 mt-2">
+                  {reflection1.length} characters (minimum {minChars} required)
+                </p>
               </div>
 
-              {/* AI Feedback for Question 2 */}
-              {showFeedback && feedback2 && (
-                <AnimatePresence>
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`border-2 rounded-lg p-4 ${
-                      needsRetry2
-                        ? 'bg-yellow-50 border-yellow-400'
-                        : 'bg-green-50 border-green-400'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      {needsRetry2 ? (
-                        <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      )}
-                      <div className="w-full">
-                        <h5 className="text-sm font-semibold text-gray-900 mb-1">
-                          {needsRetry2 ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
-                        </h5>
-                        <p className="text-sm text-gray-900">{feedback2}</p>
+              {/* Loading */}
+              {isSubmitting1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-center gap-3 text-blue-700 bg-blue-50 rounded-lg p-4 border border-blue-200"
+                >
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Analyzing your response with AI...</span>
+                </motion.div>
+              )}
+
+              {/* AI Feedback */}
+              {showFeedback1 && feedback1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`border-2 rounded-lg p-4 ${
+                    needsRetry1
+                      ? 'bg-yellow-50 border-yellow-400'
+                      : 'bg-green-50 border-green-400'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {needsRetry1 ? (
+                      <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="w-full">
+                      <h5 className="text-sm font-semibold text-gray-900 mb-1">
+                        {needsRetry1 ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
+                      </h5>
+                      <p className="text-sm text-gray-900">{feedback1}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Escape Hatch */}
+              {showEscapeHatch1 && needsRetry1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-50 border-2 border-red-400 rounded-lg p-6"
+                >
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
+                    <div className="w-full">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">
+                        ⚠️ Multiple Attempts Detected
+                      </h3>
+                      <p className="text-gray-900 mb-3">
+                        You've tried {attemptCount1} times and the AI feedback suggests your response needs improvement.
+                      </p>
+                      <p className="text-gray-900 mb-3">
+                        <strong className="text-yellow-700">You have two options:</strong>
+                      </p>
+                      <ol className="text-gray-900 mb-4 space-y-1 ml-4">
+                        <li>1. Try again with a different response that addresses the question</li>
+                        <li>2. Continue anyway and move to Question 2</li>
+                      </ol>
+                      <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-4">
+                        <p className="text-gray-900 text-sm">
+                          ⚠️ <strong className="text-yellow-700">Important:</strong> If you continue, your response will be flagged for instructor review.
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={handleTryAgainQ1}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Try One More Time
+                        </Button>
+                        <Button
+                          onClick={handleContinueAnywayQ1}
+                          className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                        >
+                          Continue to Q2 Anyway
+                        </Button>
                       </div>
                     </div>
-                  </motion.div>
-                </AnimatePresence>
+                  </div>
+                </motion.div>
               )}
-            </div>
-          </motion.div>
 
-          {/* Loading state */}
-          {isGeneratingFeedback && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-3 text-blue-700 bg-blue-50 rounded-lg p-4 border border-blue-200"
-            >
-              <Loader className="w-5 h-5 animate-spin" />
-              <span>Analyzing your responses with AI...</span>
+              {/* Submit Button */}
+              {!(showEscapeHatch1 && needsRetry1) && (
+                <Button
+                  onClick={() => {
+                    if (showFeedback1 && !needsRetry1) {
+                      handleProceedToQ2();
+                    } else if (showFeedback1 && needsRetry1) {
+                      handleTryAgainQ1();
+                    } else {
+                      handleSubmitQ1();
+                    }
+                  }}
+                  disabled={!q1Valid || isSubmitting1}
+                  size="lg"
+                  className={`w-full ${
+                    showFeedback1 && !needsRetry1
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : showFeedback1 && needsRetry1
+                      ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                      : q1Valid && !isSubmitting1
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {showFeedback1 && !needsRetry1 ? (
+                    <>
+                      Continue to Question 2
+                      <ChevronRight className="ml-2 w-5 h-5" />
+                    </>
+                  ) : showFeedback1 && needsRetry1 ? (
+                    'Try Again'
+                  ) : (
+                    'Submit Question 1'
+                  )}
+                </Button>
+              )}
             </motion.div>
           )}
 
-          {/* Escape Hatch */}
-          {showEscapeHatch && needsRetry && (
-            <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border-2 border-red-400 rounded-lg p-6"
-              >
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
-                  <div className="w-full">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      ⚠️ Multiple Attempts Detected
-                    </h3>
-                    <p className="text-gray-900 mb-3">
-                      You've tried {attemptCount} times and the AI feedback suggests your responses need improvement.
-                    </p>
-                    <p className="text-gray-900 mb-3">
-                      <strong className="text-yellow-700">You have two options:</strong>
-                    </p>
-                    <ol className="text-gray-900 mb-4 space-y-1 ml-4">
-                      <li>1. Try again with different responses that address the questions</li>
-                      <li>2. Continue anyway and move to the next step</li>
-                    </ol>
-                    <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-4">
-                      <p className="text-gray-900 text-sm">
-                        ⚠️ <strong className="text-yellow-700">Important:</strong> If you continue, your responses will be flagged for instructor review. We want to make sure students are engaging thoughtfully with the content.
-                      </p>
-                    </div>
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={handleTryAgain}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        Try One More Time
-                      </Button>
-                      <Button
-                        onClick={handleContinueAnyway}
-                        className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
-                      >
-                        Continue Anyway
-                      </Button>
+          {/* Question 2 */}
+          {currentQuestion === 2 && (
+            <motion.div
+              key="question-2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="space-y-4"
+            >
+              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <span className="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                  How would you balance these competing needs?
+                </h4>
+                <p className="text-sm text-gray-700 mb-3">
+                  Consider: Maya needs fair treatment, Jordan faces business pressures, Alex needs learning support, and Ms. Rodriguez needs to ensure academic integrity. How can AI systems serve everyone?
+                </p>
+                <Textarea
+                  value={reflection2}
+                  onChange={(e) => setReflection2(e.target.value)}
+                  disabled={showFeedback2 && !needsRetry2}
+                  placeholder="Propose a solution that addresses the needs of different stakeholders..."
+                  rows={6}
+                  className="w-full text-gray-900"
+                />
+                <p className="text-xs text-gray-600 mt-2">
+                  {reflection2.length} characters (minimum {minChars} required)
+                </p>
+              </div>
+
+              {/* Loading */}
+              {isSubmitting2 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-center gap-3 text-blue-700 bg-blue-50 rounded-lg p-4 border border-blue-200"
+                >
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Analyzing your response with AI...</span>
+                </motion.div>
+              )}
+
+              {/* AI Feedback */}
+              {showFeedback2 && feedback2 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`border-2 rounded-lg p-4 ${
+                    needsRetry2
+                      ? 'bg-yellow-50 border-yellow-400'
+                      : 'bg-green-50 border-green-400'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {needsRetry2 ? (
+                      <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="w-full">
+                      <h5 className="text-sm font-semibold text-gray-900 mb-1">
+                        {needsRetry2 ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
+                      </h5>
+                      <p className="text-sm text-gray-900">{feedback2}</p>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          )}
-
-          {/* Submit / Continue Button */}
-          {!showEscapeHatch && (
-            <Button
-              onClick={() => {
-                if (showFeedback && !needsRetry) {
-                  handleComplete();
-                } else if (showFeedback && needsRetry) {
-                  handleTryAgain();
-                } else {
-                  handleSubmit();
-                }
-              }}
-              disabled={!showFeedback && (!bothValid || isSubmitting)}
-              size="lg"
-              className={`w-full ${
-                showFeedback && !needsRetry
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : showFeedback && needsRetry
-                  ? 'bg-orange-600 hover:bg-orange-700 text-white'
-                  : bothValid && !isSubmitting
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              {isSubmitting ? (
-                'Submit Responses'
-              ) : showFeedback && !needsRetry ? (
-                <>
-                  Continue
-                  <ChevronRight className="ml-2 w-5 h-5" />
-                </>
-              ) : showFeedback && needsRetry ? (
-                'Try Again'
-              ) : (
-                'Submit Responses'
+                </motion.div>
               )}
-            </Button>
+
+              {/* Escape Hatch */}
+              {showEscapeHatch2 && needsRetry2 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-50 border-2 border-red-400 rounded-lg p-6"
+                >
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
+                    <div className="w-full">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">
+                        ⚠️ Multiple Attempts Detected
+                      </h3>
+                      <p className="text-gray-900 mb-3">
+                        You've tried {attemptCount2} times and the AI feedback suggests your response needs improvement.
+                      </p>
+                      <p className="text-gray-900 mb-3">
+                        <strong className="text-yellow-700">You have two options:</strong>
+                      </p>
+                      <ol className="text-gray-900 mb-4 space-y-1 ml-4">
+                        <li>1. Try again with a different response that addresses the question</li>
+                        <li>2. Continue anyway and finish the activity</li>
+                      </ol>
+                      <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-4">
+                        <p className="text-gray-900 text-sm">
+                          ⚠️ <strong className="text-yellow-700">Important:</strong> If you continue, your response will be flagged for instructor review.
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={handleTryAgainQ2}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Try One More Time
+                        </Button>
+                        <Button
+                          onClick={handleContinueAnywayQ2}
+                          className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                        >
+                          Continue Anyway
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Submit Button */}
+              {!(showEscapeHatch2 && needsRetry2) && (
+                <Button
+                  onClick={() => {
+                    if (showFeedback2 && !needsRetry2) {
+                      onComplete();
+                    } else if (showFeedback2 && needsRetry2) {
+                      handleTryAgainQ2();
+                    } else {
+                      handleSubmitQ2();
+                    }
+                  }}
+                  disabled={!q2Valid || isSubmitting2}
+                  size="lg"
+                  className={`w-full ${
+                    showFeedback2 && !needsRetry2
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : showFeedback2 && needsRetry2
+                      ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                      : q2Valid && !isSubmitting2
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {showFeedback2 && !needsRetry2 ? (
+                    <>
+                      Continue
+                      <ChevronRight className="ml-2 w-5 h-5" />
+                    </>
+                  ) : showFeedback2 && needsRetry2 ? (
+                    'Try Again'
+                  ) : (
+                    'Submit Question 2'
+                  )}
+                </Button>
+              )}
+            </motion.div>
           )}
         </CardContent>
       </Card>

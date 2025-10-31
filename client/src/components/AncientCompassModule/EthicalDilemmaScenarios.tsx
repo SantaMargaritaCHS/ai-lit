@@ -85,8 +85,7 @@ export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaSc
     setShowFeedback(true);
     setNeedsRetry(false);
 
-    // Auto-complete after brief delay
-    setTimeout(() => handleComplete(), 1000);
+    // Don't auto-complete - let student read the feedback and click Continue
   };
 
   const handleSubmit = async () => {
@@ -251,7 +250,7 @@ export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaSc
                       size="sm"
                     >
                       <Zap className="w-3 h-3 mr-1" />
-                      Auto-Fill & Complete
+                      Auto-Fill Good + Show Feedback
                     </Button>
                     <Button
                       onClick={() => setResponse(getDevGoodResponse())}
@@ -282,7 +281,7 @@ export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaSc
                       Fill Gibberish
                     </Button>
                   </div>
-                  <p className="text-xs text-red-600 mt-1">Test validation: good, generic, complaint, or gibberish responses</p>
+                  <p className="text-xs text-red-600 mt-1">Green button shows feedback without auto-advancing. Other buttons fill text for manual testing.</p>
                 </div>
               )}
 

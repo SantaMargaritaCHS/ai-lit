@@ -246,8 +246,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     setReflectionFeedback('');
     setShowReflectionFeedback(false);
     setReflectionNeedsRetry(false);
-    setReflectionAttemptCount(0);
-    setShowReflectionEscapeHatch(false);
+    // DON'T reset reflectionAttemptCount - need to track total attempts for escape hatch
+    // DON'T reset showReflectionEscapeHatch - if earned, keep it available
   };
 
   const handleReflectionContinueAnyway = () => {
@@ -332,8 +332,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     setShowExitTicketFeedback(false);
     setExitTicket1NeedsRetry(false);
     setExitTicket2NeedsRetry(false);
-    setExitTicketAttemptCount(0);
-    setShowExitTicketEscapeHatch(false);
+    // DON'T reset exitTicketAttemptCount - need to track total attempts for escape hatch
+    // DON'T reset showExitTicketEscapeHatch - if earned, keep it available
   };
 
   const handleExitTicketContinueAnyway = () => {

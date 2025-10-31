@@ -15,7 +15,8 @@ import {
   Loader2,
   BookOpen,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumVideoPlayer } from '../PremiumVideoPlayer';
@@ -68,7 +69,7 @@ const VIDEO_CONFIG = {
     {
       id: 'segment-2',
       title: 'Echo from the Past',
-      startTime: 114.5, // 1:54:31
+      startTime: 115, // 1:55:00 (adjusted +0.5s for cleaner start)
       endTime: 186.75, // 3:06:45
       pausePoint: 186.75
     },
@@ -90,8 +91,8 @@ const VIDEO_CONFIG = {
       id: 'segment-5',
       title: 'The Choice We Face',
       startTime: 378, // 6:18
-      endTime: 450, // 7:30
-      pausePoint: 450
+      endTime: 447.5, // 7:27.5 (duration 1:09.5)
+      pausePoint: 447.5
     }
   ]
 };
@@ -1220,6 +1221,73 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
               </div>
             )}
 
+            {/* Dev Mode Shortcuts */}
+            {isDevModeActive && !exitShowFeedback && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-red-800 mb-2 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  Developer Mode: Exit Ticket Shortcuts
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => {
+                      const goodResponses = [
+                        "I use Instagram's recommendation algorithm daily, and applying Human Dignity would mean giving users more control over what they see instead of just maximizing engagement time. Currently, the algorithm shows content designed to keep me scrolling endlessly, treating me like an engagement metric rather than a person with agency and time limits. If Instagram respected Human Dignity, they would add features like 'time well spent' summaries showing if I'm actually connecting with friends or just consuming content, plus easy tools to customize my feed based on my values rather than just what keeps me clicking. This matters to me because I've noticed how the algorithm can make me feel worse about myself by showing idealized content, but I keep using it because all my friends are there. Respecting my dignity would mean acknowledging I'm a whole person who deserves transparency about how my attention is being directed, not just a user to monetize.",
+                        "Companies face immense pressure to prioritize speed over ethics because their competitors will capture market share if they slow down. In tech, there's a 'move fast and break things' culture where being first to market often determines who dominates an entire industry - think how Google dominates search or how TikTok exploded by perfecting addictive algorithms before competitors could catch up. Financially, investors demand rapid growth and higher stock prices, so executives who slow down for ethics reviews risk being replaced by boards. However, what could motivate change is a combination of public backlash (like when Apple faced criticism over App Store policies and actually made changes) and smart regulation that levels the playing field so ethical companies aren't punished. If regulations required all social media companies to disclose algorithmic impacts on teen mental health, suddenly ethics becomes a competitive necessity rather than a disadvantage. Additionally, younger consumers like my generation increasingly care about corporate values and might choose ethical alternatives if they existed and were well-marketed.",
+                        "The most important lesson from Catholic Social Teaching's response to the Industrial Revolution is that technological change doesn't automatically lead to human progress - we have to actively ensure technology serves human dignity rather than just profit. During the Industrial Revolution, people initially thought factories would make everyone's lives better, but instead we got child labor, dangerous conditions, and extreme inequality until society pushed back with regulations and unions. For AI, my generation needs to remember that just because we can automate something doesn't mean we should, and that the people most affected by AI systems (like gig workers or students) deserve a voice in how those systems work. I personally can apply this by questioning whether AI tools I use actually help me learn and grow, or if they're just making me dependent and less capable. For example, I've started using AI to help me understand difficult concepts rather than just giving me answers, which means I'm treating it as a tool for my development rather than a replacement for thinking."
+                      ];
+                      setExitResponse(goodResponses[selectedExitPrompt]);
+                      setExitFeedback("Excellent reflection! Your response demonstrates deep engagement with the ethical principles and thoughtful consideration of real-world applications.");
+                      setExitShowFeedback(true);
+                      setExitNeedsRetry(false);
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 h-auto"
+                  >
+                    <Zap className="w-3 h-3 mr-1" />
+                    Auto-Fill & Show Good Feedback
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const goodResponses = [
+                        "I use Instagram's recommendation algorithm daily, and applying Human Dignity would mean giving users more control over what they see instead of just maximizing engagement time. Currently, the algorithm shows content designed to keep me scrolling endlessly, treating me like an engagement metric rather than a person with agency and time limits. If Instagram respected Human Dignity, they would add features like 'time well spent' summaries showing if I'm actually connecting with friends or just consuming content, plus easy tools to customize my feed based on my values rather than just what keeps me clicking. This matters to me because I've noticed how the algorithm can make me feel worse about myself by showing idealized content, but I keep using it because all my friends are there. Respecting my dignity would mean acknowledging I'm a whole person who deserves transparency about how my attention is being directed, not just a user to monetize.",
+                        "Companies face immense pressure to prioritize speed over ethics because their competitors will capture market share if they slow down. In tech, there's a 'move fast and break things' culture where being first to market often determines who dominates an entire industry - think how Google dominates search or how TikTok exploded by perfecting addictive algorithms before competitors could catch up. Financially, investors demand rapid growth and higher stock prices, so executives who slow down for ethics reviews risk being replaced by boards. However, what could motivate change is a combination of public backlash (like when Apple faced criticism over App Store policies and actually made changes) and smart regulation that levels the playing field so ethical companies aren't punished. If regulations required all social media companies to disclose algorithmic impacts on teen mental health, suddenly ethics becomes a competitive necessity rather than a disadvantage. Additionally, younger consumers like my generation increasingly care about corporate values and might choose ethical alternatives if they existed and were well-marketed.",
+                        "The most important lesson from Catholic Social Teaching's response to the Industrial Revolution is that technological change doesn't automatically lead to human progress - we have to actively ensure technology serves human dignity rather than just profit. During the Industrial Revolution, people initially thought factories would make everyone's lives better, but instead we got child labor, dangerous conditions, and extreme inequality until society pushed back with regulations and unions. For AI, my generation needs to remember that just because we can automate something doesn't mean we should, and that the people most affected by AI systems (like gig workers or students) deserve a voice in how those systems work. I personally can apply this by questioning whether AI tools I use actually help me learn and grow, or if they're just making me dependent and less capable. For example, I've started using AI to help me understand difficult concepts rather than just giving me answers, which means I'm treating it as a tool for my development rather than a replacement for thinking."
+                      ];
+                      setExitResponse(goodResponses[selectedExitPrompt]);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 h-auto"
+                  >
+                    Fill Good Response
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setExitResponse("I think AI ethics is important and we should all think about it more. The principles from the module were interesting and made me think. Technology is changing fast and we need to be careful about how we use it. Everyone should consider the impact of their choices.");
+                    }}
+                    className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 h-auto"
+                  >
+                    Fill Generic Response
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setExitResponse("This module was really confusing and I don't understand why we had to learn about Catholic Social Teaching. It seems old and not relevant to modern technology. Can we just move on to the certificate already? I don't have time for this.");
+                    }}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 h-auto"
+                  >
+                    Fill Complaint
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setExitResponse("asdfkj alksjdf laskdjf laksjdf lkajsdhf lkajsdhf lkajsdhf lakjsdhf laksjdhf laksjdhf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf laskdjf qwerty keyboard mashing");
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 h-auto"
+                  >
+                    Fill Gibberish
+                  </Button>
+                </div>
+                <p className="text-xs text-red-600 mt-2">Green button shows feedback, others fill text for manual testing</p>
+              </div>
+            )}
+
             {/* Response Input */}
             <div className="space-y-3">
               <h4 className="font-semibold text-gray-900">Your Response:</h4>
@@ -1291,12 +1359,16 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
             )}
 
             {/* Submit Button */}
-            {!exitShowFeedback && exitResponse.trim().split(/\s+/).filter(w => w.length > 0).length >= 50 && (
+            {!exitShowFeedback && (
               <Button
                 onClick={handleExitSubmit}
                 size="lg"
-                disabled={isLoadingFeedback}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                disabled={isLoadingFeedback || exitResponse.trim().split(/\s+/).filter(w => w.length > 0).length < 50}
+                className={`w-full ${
+                  exitResponse.trim().split(/\s+/).filter(w => w.length > 0).length >= 50 && !isLoadingFeedback
+                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 {isLoadingFeedback ? (
                   <>
@@ -1306,7 +1378,12 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
                 ) : (
                   <>
                     Submit Response
-                    <ChevronRight className="ml-2 w-5 h-5" />
+                    {exitResponse.trim().split(/\s+/).filter(w => w.length > 0).length < 50 && (
+                      <span className="ml-2 text-xs">(50 words required)</span>
+                    )}
+                    {exitResponse.trim().split(/\s+/).filter(w => w.length > 0).length >= 50 && (
+                      <ChevronRight className="ml-2 w-5 h-5" />
+                    )}
                   </>
                 )}
               </Button>

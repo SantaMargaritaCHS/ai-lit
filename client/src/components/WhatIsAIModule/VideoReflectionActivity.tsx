@@ -118,8 +118,8 @@ export default function VideoReflectionActivity({
     setShowFeedback(false);
     setAiFeedback('');
     setNeedsRetry(false);
-    setAttemptCount(0);
-    setShowEscapeHatch(false);
+    // DON'T reset attemptCount - let it persist so escape hatch stays available
+    // DON'T reset showEscapeHatch - it's earned and should stay available
     // Keep the response so they can edit it
   };
 
@@ -327,8 +327,8 @@ export default function VideoReflectionActivity({
             </motion.div>
           )}
 
-          {/* Show appropriate buttons based on state - hidden when escape hatch is showing */}
-          {!showEscapeHatch && (needsRetry ? (
+          {/* Show appropriate buttons based on state - hidden when escape hatch is actively showing */}
+          {!(showEscapeHatch && needsRetry) && (needsRetry ? (
             <Button
               onClick={handleTryAgain}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"

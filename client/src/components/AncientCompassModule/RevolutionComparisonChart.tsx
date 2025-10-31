@@ -354,7 +354,7 @@ export default function RevolutionComparisonChart({ onComplete }: RevolutionComp
           )}
 
           {/* Check Answers / Check Again Button */}
-          {!allCorrect && (
+          {!(hasSubmitted && allCorrect) && (
             <Button
               onClick={handleSubmit}
               disabled={!allMatched}
@@ -546,7 +546,7 @@ export default function RevolutionComparisonChart({ onComplete }: RevolutionComp
           )}
 
           {/* Submit / Continue Button */}
-          {hasSubmitted && allCorrect && !showEscapeHatch && (
+          {hasSubmitted && allCorrect && !(showEscapeHatch && reflectionNeedsRetry) && (
             <Button
               onClick={() => {
                 if (showReflectionFeedback && !reflectionNeedsRetry) {

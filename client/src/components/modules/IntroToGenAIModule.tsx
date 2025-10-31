@@ -1689,8 +1689,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       setExitShowFeedback(false);
       setExitFeedback('');
       setExitNeedsRetry(false);
-      setExitAttemptCount(0);
-      setExitShowEscapeHatch(false);
+      // DON'T reset exitAttemptCount - need to track total attempts for escape hatch
+      // DON'T reset exitShowEscapeHatch - if earned, keep it available
     };
 
     const handleExitContinueAnyway = () => {
