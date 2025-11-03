@@ -532,12 +532,12 @@ export function PremiumVideoPlayer({
 
   const handleSegmentEnd = () => {
     if (isCrossfading) return;
-    
+
     const video = videoRef.current;
     if (!video) return;
-    
+
     video.pause();
-    
+
     // Mark segment as complete
     setProgress(prev => ({ ...prev, [currentSegment.id]: 100 }));
     setCompletedSegments(prev => new Set([...prev, currentSegment.id]));
@@ -830,7 +830,11 @@ export function PremiumVideoPlayer({
                     size="sm"
                     onClick={() => {
                       if (videoRef.current && currentSegment) {
-                        const skipTime = Math.max(currentSegment.end - 5, currentSegment.start);
+                        // For full-length videos (end: -1 or end >= 100000), use actual video duration
+                        const effectiveEnd = (currentSegment.end === -1 || currentSegment.end >= 100000)
+                          ? videoRef.current.duration
+                          : currentSegment.end;
+                        const skipTime = Math.max(effectiveEnd - 5, currentSegment.start);
                         videoRef.current.currentTime = skipTime;
                       }
                     }}

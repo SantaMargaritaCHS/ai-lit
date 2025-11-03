@@ -349,8 +349,8 @@ export default function ExitTicketLLM({ onComplete }: Props) {
             </AnimatePresence>
           )}
 
-          {/* Action Button - hidden when escape hatch is showing */}
-          {!showEscapeHatch && (
+          {/* Action Button - hidden when escape hatch is actively showing */}
+          {!(showEscapeHatch && needsRetry) && (
             <button
             onClick={() => {
               if (showFeedback && !needsRetry) {

@@ -1888,8 +1888,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                 </motion.div>
               )}
 
-              {/* Show appropriate buttons based on state - hidden when escape hatch is showing */}
-              {!exitShowEscapeHatch && (exitNeedsRetry ? (
+              {/* Show appropriate buttons based on state - hidden when escape hatch is actively showing */}
+              {!(exitShowEscapeHatch && exitNeedsRetry) && (exitNeedsRetry ? (
                 <Button
                   onClick={handleExitTryAgain}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"

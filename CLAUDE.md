@@ -454,13 +454,46 @@ if (feedbackIndicatesRetry) {
 **After 2 failed attempts, student sees:**
 - ⚠️ Warning message about multiple attempts
 - **Two options:**
-  1. "Try One More Time" - Resets form, clears attempt count
+  1. "Try One More Time" - Clears form only, preserves attempt tracking
   2. "Continue Anyway" - Proceeds to next activity/certificate
 - ⚠️ **"Instructor review" warning** if they continue (harmless lie for accountability)
 
 **Button Actions:**
-- **Try Again**: Resets `attemptCount` to 0, clears form, hides escape hatch
+- **Try Again**: Clears form/feedback UI, **PRESERVES** `attemptCount` and `showEscapeHatch` (escape hatch stays available)
 - **Continue Anyway**: Logs bypass to console, proceeds with `onComplete()`
+
+### ⚠️ Critical Implementation Pattern (Anti-Bug)
+
+**CORRECT `handleTryAgain` Pattern:**
+```typescript
+const handleTryAgain = () => {
+  setResponse('');           // ✅ Clear form
+  setFeedback('');          // ✅ Clear feedback UI
+  setShowFeedback(false);   // ✅ Hide feedback UI
+  setNeedsRetry(false);     // ✅ Clear retry flag
+  // ❌ DON'T RESET: setAttemptCount(0)
+  // ❌ DON'T RESET: setShowEscapeHatch(false)
+  // Reason: Must track total attempts across retries for escape hatch to work
+};
+```
+
+**CORRECT Button Condition Pattern:**
+```typescript
+// ✅ CORRECT: Only hide button when escape hatch is ACTIVELY showing
+{!(showEscapeHatch && needsRetry) && (
+  <Button onClick={handleSubmit}>Submit</Button>
+)}
+
+// ❌ WRONG: Hides button forever after escape hatch earned
+{!showEscapeHatch && (
+  <Button onClick={handleSubmit}>Submit</Button>
+)}
+```
+
+**Why This Matters:**
+- If you reset `attemptCount`, escape hatch never triggers (infinite retry loop)
+- If you reset `showEscapeHatch`, escape hatch disappears after "Try One More Time"
+- Wrong button condition = no submit button appears after clicking "Try Again"
 
 ### Rejection Trigger Phrases
 
@@ -504,12 +537,13 @@ Gemini feedback containing ANY of these phrases triggers retry:
 
 **Must test every validation implementation:**
 1. ✅ Valid response → Green feedback, proceed
-2. ✅ Complaint (1st attempt) → Yellow retry feedback
-3. ✅ Complaint (2nd attempt) → Escape hatch appears
+2. ✅ Complaint (1st attempt) → Yellow retry feedback, can retry
+3. ✅ Complaint (2nd attempt) → Escape hatch appears, submit button hidden
 4. ✅ Gibberish → Pre-filter rejection, no API call
 5. ✅ Too short → Pre-filter rejection
-6. ✅ "Try One More Time" → Resets everything
-7. ✅ "Continue Anyway" → Proceeds to certificate
+6. ✅ "Try One More Time" → Form clears, escape hatch hides, submit button reappears
+7. ✅ Submit bad response again → Escape hatch immediately reappears (attempts persist)
+8. ✅ "Continue Anyway" → Proceeds to next activity/certificate
 
 ### Critical Configuration
 

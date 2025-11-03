@@ -27,6 +27,7 @@ import SimplifiedSolutionsSorter from '@/components/EnvironmentalModule/Simplifi
 import { Certificate } from '@/components/Certificate';
 
 const MODULE_ID = 'ai-environmental-impact';
+const waterBottleIcon = '/images/water-bottle.png';
 
 // Video URLs (5 separate files - note the double spaces in BBC filenames)
 // Using relative Firebase Storage paths (not gs:// URLs) for PremiumVideoPlayer compatibility
@@ -80,6 +81,9 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   const [exitTicketAttemptCount, setExitTicketAttemptCount] = useState(0);
   const [showExitTicketEscapeHatch, setShowExitTicketEscapeHatch] = useState(false);
 
+  // Water Footprint Tracker state (Segment 6)
+  const [totalDrops, setTotalDrops] = useState(0);
+
   // Certificate state
   const [showCertificate, setShowCertificate] = useState(false);
 
@@ -87,24 +91,28 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   const MIN_REFLECTION_LENGTH = 150;
   const MIN_EXIT_TICKET_LENGTH = 100;
 
-  // Segment definitions (16 total after adding intro + 3 new segments)
+  // Segment definitions (20 total after adding intro + water comparison + scale footprint + exponential ladder + 3 new segments + transition)
   const segments = [
     { id: 0, title: 'Welcome to Module', type: 'intro' as const },
     { id: 1, title: 'The Hidden Cost (Hook)', type: 'video' as const },
     { id: 2, title: 'What Do You Think?', type: 'quiz' as const },
     { id: 3, title: 'The Answer Revealed', type: 'video' as const },
-    { id: 4, title: 'The Drop (BBC Part 1)', type: 'video' as const },
-    { id: 5, title: 'Quick Quiz', type: 'quiz' as const },
-    { id: 6, title: 'Why So Thirsty? (BBC Part 2)', type: 'video' as const },
-    { id: 7, title: 'Beyond Water: Energy & Carbon', type: 'interactive' as const },
-    { id: 8, title: 'The Big Picture (BBC Part 3)', type: 'video' as const },
-    { id: 9, title: 'Environmental Calculator', type: 'interactive' as const },
-    { id: 10, title: 'Comparison Matrix', type: 'interactive' as const },
-    { id: 11, title: 'Student Reflection', type: 'reflection' as const },
-    { id: 12, title: 'The Paradox & Future', type: 'video' as const },
-    { id: 13, title: 'AI Solutions Sorting', type: 'interactive' as const },
-    { id: 14, title: 'Your Most Efficient Tool', type: 'video' as const },
-    { id: 15, title: 'Exit Ticket', type: 'exit-ticket' as const },
+    { id: 4, title: 'Ready to Dive Deeper?', type: 'transition' as const },
+    { id: 5, title: 'The Drop (BBC Part 1)', type: 'video' as const },
+    { id: 6, title: 'Your Water Footprint', type: 'interactive' as const },
+    { id: 7, title: 'Scale Your Impact', type: 'interactive' as const },
+    { id: 8, title: 'Why So Thirsty? (BBC Part 2)', type: 'video' as const },
+    { id: 9, title: 'The Exponential Ladder', type: 'video' as const },
+    { id: 10, title: 'Quick Quiz', type: 'quiz' as const },
+    { id: 11, title: 'Beyond Water: Energy & Carbon', type: 'interactive' as const },
+    { id: 12, title: 'The Big Picture (BBC Part 3)', type: 'video' as const },
+    { id: 13, title: 'Environmental Calculator', type: 'interactive' as const },
+    { id: 14, title: 'Comparison Matrix', type: 'interactive' as const },
+    { id: 15, title: 'Student Reflection', type: 'reflection' as const },
+    { id: 16, title: 'The Paradox & Future', type: 'video' as const },
+    { id: 17, title: 'AI Solutions Sorting', type: 'interactive' as const },
+    { id: 18, title: 'Your Most Efficient Tool', type: 'video' as const },
+    { id: 19, title: 'Exit Ticket', type: 'exit-ticket' as const },
   ];
 
   // Register activities for Developer Mode
@@ -444,7 +452,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
               id: 'animated-hook',
               title: 'The Hidden Cost - Part 1',
               start: 0,
-              end: 34,
+              end: 34.3,
               source: VIDEO_URLS.animated,
               description: "What's the hidden cost of AI?",
               mandatory: true,
@@ -621,8 +629,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
             {
               id: 'animated-reveal',
               title: 'The Hidden Cost - Answer',
-              start: 34,
-              end: 49.5,
+              start: 34.5,
+              end: 48.5,
               source: VIDEO_URLS.animated,
               description: "The answer revealed",
               mandatory: true,
@@ -636,6 +644,60 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         />
       </CardContent>
     </Card>
+  );
+
+  const renderTransition = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto"
+    >
+      <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50">
+        <CardHeader>
+          <div className="flex items-center gap-3 mb-4">
+            <Droplets className="w-12 h-12 text-blue-600" />
+            <CardTitle className="text-3xl font-bold text-gray-900">
+              Ready to Dive Deeper?
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6 text-gray-900">
+          <p className="text-lg leading-relaxed">
+            You've learned that AI uses water. But how much water are we really talking about? And why does AI even need water in the first place?
+          </p>
+
+          <div className="bg-white p-6 rounded-lg border border-blue-200 shadow-sm">
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900">
+              <AlertCircle className="w-6 h-6 text-blue-600" />
+              What's Coming Next
+            </h3>
+            <ul className="space-y-3 text-gray-800">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <span><strong>The real numbers:</strong> See exactly how much water AI actually uses</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <span><strong>The mystery revealed:</strong> Discover why AI systems need water</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <span><strong>The bigger picture:</strong> Energy and carbon emissions beyond just water</span>
+              </li>
+            </ul>
+          </div>
+
+          <Button
+            onClick={handleNextSegment}
+            size="lg"
+            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+          >
+            <ChevronRight className="mr-2 w-5 h-5" />
+            Continue to BBC Documentary
+          </Button>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 
   const renderSegment = () => {
@@ -658,8 +720,12 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
       case 3:
         return renderAnimatedReveal();
 
-      // Segment 4: The Drop (Hook) - BBC Part 1 (was Segment 0)
+      // Segment 4: Transition Screen
       case 4:
+        return renderTransition();
+
+      // Segment 5: The Drop (Hook) - BBC Part 1
+      case 5:
         return (
           <Card>
             <CardHeader>
@@ -702,8 +768,411 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 5: Quick Quiz (was Segment 1)
-      case 5:
+      // Segment 6: Interactive Water Footprint Tracker (NEW)
+      case 6:
+        // 1 cup = 15 drops (1 drop = 1/15 teaspoon)
+        const totalCups = totalDrops / 15;
+        const displayCups = Math.floor(totalCups);
+        const remainingDrops = totalDrops % 15;
+
+        const activities = [
+          { id: 'quick', label: 'Quick question', icon: '⚡', drops: 1, desc: '1 exchange' },
+          { id: 'question', label: 'Ask ChatGPT a longer question', icon: '❓', drops: 3, desc: '3 exchanges' },
+          { id: 'brainstorm', label: 'Brainstorm essay ideas', icon: '💡', drops: 5, desc: '5 exchanges' },
+          { id: 'summarize', label: 'Summarize an article', icon: '📄', drops: 4, desc: '4 exchanges' },
+          { id: 'explain', label: 'Explain a concept in depth', icon: '🧠', drops: 6, desc: '6 exchanges' },
+          { id: 'debug', label: 'Debug code together', icon: '🐛', drops: 8, desc: '8 exchanges' },
+        ];
+
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Droplets className="w-6 h-6 text-blue-600" />
+                💧 What's Your AI Water Footprint?
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Track your daily AI usage and see how much water it uses
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Part 1: Reflection Prompt - SHORTENED */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-4">
+                <p className="text-gray-900 text-center">
+                  <strong>Think about your day.</strong> Click each AI task below based on how often you might do it:
+                </p>
+              </div>
+
+              {/* Part 2: Interactive Tracker */}
+              <div className="bg-white border-2 border-blue-300 rounded-lg p-6">
+                {/* Activity Buttons Grid */}
+                <div className="grid md:grid-cols-2 gap-3 mb-6">
+                  {activities.map((activity) => (
+                    <Button
+                      key={activity.id}
+                      onClick={() => setTotalDrops(totalDrops + activity.drops)}
+                      className="h-auto p-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white flex flex-col items-start"
+                      size="lg"
+                    >
+                      <div className="flex items-center justify-between w-full mb-1">
+                        <span className="text-2xl mr-2">{activity.icon}</span>
+                        <span className="text-xs bg-white/20 px-2 py-1 rounded">+{activity.drops} drops</span>
+                      </div>
+                      <span className="text-sm font-medium text-left">{activity.label}</span>
+                      <span className="text-xs text-blue-100 mt-1">({activity.desc})</span>
+                    </Button>
+                  ))}
+                </div>
+
+                {/* Counter Display */}
+                <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-lg font-semibold text-gray-900">Your Total Water Usage:</span>
+                    <span className="text-3xl font-bold text-blue-700">{totalDrops} drops</span>
+                  </div>
+
+                  {/* Visual Display - Cups + Drops */}
+                  {totalDrops > 0 && (
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 mb-2">Your Visual Footprint:</p>
+                      <div className="bg-white rounded-lg p-4 border border-blue-200 min-h-[80px] flex flex-wrap gap-2 items-center">
+                        {/* Show spoons (each = 15 drops = 1 teaspoon) */}
+                        {Array.from({ length: displayCups }).map((_, i) => (
+                          <motion.span
+                            key={`spoon-${i}`}
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ duration: 0.5, type: 'spring' }}
+                            className="text-4xl"
+                            title="1 teaspoon (15 drops)"
+                          >
+                            🥄
+                          </motion.span>
+                        ))}
+                        {/* Show remaining drops */}
+                        {Array.from({ length: remainingDrops }).map((_, i) => (
+                          <motion.span
+                            key={`drop-${i}`}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="text-xl"
+                          >
+                            💧
+                          </motion.span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Water Calculation */}
+                  <div className="bg-gradient-to-r from-cyan-100 to-blue-100 rounded-lg p-4 border border-cyan-300">
+                    {displayCups > 0 ? (
+                      <p className="text-lg text-gray-900">
+                        <strong className="text-blue-700">{displayCups} teaspoon{displayCups > 1 ? 's' : ''}</strong>
+                        {remainingDrops > 0 && <span> + {remainingDrops} drop{remainingDrops > 1 ? 's' : ''}</span>}
+                        <span className="ml-2">of water</span>
+                      </p>
+                    ) : (
+                      <p className="text-lg text-gray-900">
+                        <strong className="text-blue-700">{totalDrops} drop{totalDrops > 1 ? 's' : ''}</strong> of water
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-600 mt-1">
+                      (15 drops = 1 teaspoon 🥄)
+                    </p>
+                  </div>
+                </div>
+
+                {/* Insight Messages */}
+                {totalDrops === 0 && (
+                  <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                    <p className="text-sm text-gray-700">
+                      <strong>Tip:</strong> Click the buttons above to track your daily AI usage!
+                    </p>
+                  </div>
+                )}
+
+                {totalDrops > 0 && totalDrops < 15 && (
+                  <div className="bg-green-50 border border-green-300 rounded-lg p-4">
+                    <p className="text-sm text-gray-700">
+                      <strong>Light user!</strong> You're building up to your first teaspoon. Keep tracking!
+                    </p>
+                  </div>
+                )}
+
+                {totalDrops >= 15 && totalDrops < 45 && (
+                  <div className="bg-blue-50 border border-blue-300 rounded-lg p-4">
+                    <p className="text-sm text-gray-700">
+                      <strong>Moderate user!</strong> You've passed 1 teaspoon — that's {displayCups} teaspoon{displayCups > 1 ? 's' : ''} of water per day!
+                    </p>
+                  </div>
+                )}
+
+                {totalDrops >= 45 && (
+                  <div className="bg-purple-50 border border-purple-300 rounded-lg p-4">
+                    <p className="text-sm text-gray-700">
+                      <strong>Heavy user!</strong> That's {displayCups} teaspoons of water per day. Multiply this by millions of users worldwide! 🌍
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Continue Button */}
+              {totalDrops > 0 && (
+                <Button onClick={handleNextSegment} size="lg" className="w-full bg-green-600 hover:bg-green-700 text-white">
+                  See Your Impact at Scale
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 7: Scale Your Impact (NEW - shows personal usage scaled up)
+      case 7:
+        // Calculate scaled impacts
+        const dropsPerDay = totalDrops;
+        const schoolStudents = 1700;
+        const ocHighSchoolers = 300000; // Orange County ~300k high school students
+        const caHighSchoolers = 2100000; // California ~2.1M high school students
+        const usHighSchoolers = 15000000; // US ~15M high school students
+
+        const schoolDrops = dropsPerDay * schoolStudents;
+        const ocDrops = dropsPerDay * ocHighSchoolers;
+        const caDrops = dropsPerDay * caHighSchoolers;
+        const usDrops = dropsPerDay * usHighSchoolers;
+
+        // Convert to water bottles (assuming 500ml bottle = 100 drops, where 1 drop = 5ml)
+        const dropsPerBottle = 100;
+        const schoolBottles = Math.round(schoolDrops / dropsPerBottle);
+        const ocBottles = Math.round(ocDrops / dropsPerBottle);
+        const caBottles = Math.round(caDrops / dropsPerBottle);
+        const usBottles = Math.round(usDrops / dropsPerBottle);
+
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Leaf className="w-6 h-6 text-green-600" />
+                Your Impact at Scale
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                See how your daily AI usage adds up across your school, county, state, and nation
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Personal Usage Recap */}
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Your Daily Usage</h3>
+                <div className="text-5xl font-bold text-blue-700 mb-2">{dropsPerDay} drops</div>
+                <p className="text-gray-700">
+                  ({Math.floor(dropsPerDay / 15)} teaspoon{Math.floor(dropsPerDay / 15) !== 1 ? 's' : ''} of water per day)
+                </p>
+              </div>
+
+              <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-4 text-center">
+                <p className="text-gray-900 text-lg">
+                  Now, let's see what happens if <strong>everyone</strong> uses AI like you do...
+                </p>
+              </div>
+
+              {/* Scaled Impacts */}
+              <div className="space-y-4">
+                {/* Your School */}
+                <motion.div
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-6"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    🏫 Your School ({schoolStudents.toLocaleString()} students)
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <p className="text-3xl font-bold text-green-700">{schoolBottles.toLocaleString()}</p>
+                    <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
+                    <div className="flex flex-col">
+                      <p className="text-lg font-semibold text-gray-900">water bottles</p>
+                      <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Orange County */}
+                <motion.div
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-lg p-6"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    🏙️ Orange County High Schoolers ({(ocHighSchoolers / 1000).toFixed(0)}K students)
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <p className="text-3xl font-bold text-blue-700">{ocBottles.toLocaleString()}</p>
+                    <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
+                    <div className="flex flex-col">
+                      <p className="text-lg font-semibold text-gray-900">water bottles</p>
+                      <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* California */}
+                <motion.div
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-6"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    🌴 California High Schoolers ({(caHighSchoolers / 1000000).toFixed(1)}M students)
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <p className="text-3xl font-bold text-orange-700">{caBottles.toLocaleString()}</p>
+                    <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
+                    <div className="flex flex-col">
+                      <p className="text-lg font-semibold text-gray-900">water bottles</p>
+                      <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* United States */}
+                <motion.div
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 }}
+                  className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-6"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    🇺🇸 High Schoolers ({(usHighSchoolers / 1000000).toFixed(0)}M students)
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <p className="text-3xl font-bold text-purple-700">{usBottles.toLocaleString()}</p>
+                    <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
+                    <div className="flex flex-col">
+                      <p className="text-lg font-semibold text-gray-900">water bottles</p>
+                      <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 bg-white rounded-lg p-3 border border-purple-200">
+                    <p className="text-xs text-gray-700">
+                      That's <strong>{(usBottles / 1000000).toFixed(1)} million</strong> water bottles <strong>every single day</strong> — just from high school students using AI like you do!
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Key Takeaway */}
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  💡 The Power of Individual Choices
+                </h3>
+                <p className="text-gray-900 leading-relaxed">
+                  Your personal AI usage might seem small — just {dropsPerDay} drops per day. But when millions of people make the same choices, it adds up to a massive environmental impact. <strong>Every query matters.</strong>
+                </p>
+              </div>
+
+              <Button onClick={handleNextSegment} size="lg" className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                Continue to the Exponential Ladder
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 8: Why So Thirsty? - BBC Part 2
+      case 8:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Droplets className="w-6 h-6 text-blue-600" />
+                Why So Thirsty? The Technical Explanation
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Understand WHY AI systems need so much water for cooling
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  This video explains the technical reason: AI chips get extremely hot and require liquid cooling systems that use clean drinking water.
+                </p>
+              </div>
+
+              <PremiumVideoPlayer
+                videoUrl={VIDEO_URLS.bbcPart2}
+                videoId="environmental-segment-2"
+                segments={[
+                  {
+                    id: 'bbc-part-2',
+                    title: 'Why So Thirsty? The Technical Explanation',
+                    start: 0,
+                    end: -1,
+                    source: VIDEO_URLS.bbcPart2,
+                    description: 'How AI chips get hot and require liquid cooling',
+                    mandatory: true,
+                  }
+                ]}
+                onSegmentComplete={() => {}}
+                onModuleComplete={handleNextSegment}
+                enableSubtitles={true}
+                hideSegmentNavigator={true}
+                allowSeeking={false}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 9: The Exponential Ladder - Animated visualization
+      case 9:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-purple-600" />
+                The Exponential Ladder
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Watch how AI resource usage scales from text to images to video
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  This animation shows the "exponential ladder" - how each type of AI task (text, image, video) uses dramatically more resources than the one before it.
+                </p>
+              </div>
+
+              <PremiumVideoPlayer
+                videoUrl={VIDEO_URLS.animated}
+                videoId="env-impact-exponential-ladder"
+                segments={[
+                  {
+                    id: 'exponential-ladder',
+                    title: 'The Exponential Ladder',
+                    start: 45,
+                    end: 136,
+                    source: VIDEO_URLS.animated,
+                    description: 'Visualizing how resource usage scales: text → image → video',
+                    mandatory: true,
+                  }
+                ]}
+                onSegmentComplete={() => {}}
+                onModuleComplete={handleNextSegment}
+                enableSubtitles={true}
+                hideSegmentNavigator={true}
+                allowSeeking={false}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 10: Quick Quiz - Understanding the Exponential Ladder
+      case 10:
         return (
           <Card>
             <CardHeader>
@@ -785,52 +1254,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 6: Why So Thirsty? - BBC Part 2 (was Segment 2)
-      case 6:
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Droplets className="w-6 h-6 text-blue-600" />
-                Why So Thirsty? The Technical Explanation
-              </CardTitle>
-              <p className="text-gray-700 mt-2">
-                Understand WHY AI systems need so much water for cooling
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-gray-700">
-                  This video explains the technical reason: AI chips get extremely hot and require liquid cooling systems that use clean drinking water.
-                </p>
-              </div>
-
-              <PremiumVideoPlayer
-                videoUrl={VIDEO_URLS.bbcPart2}
-                videoId="environmental-segment-2"
-                segments={[
-                  {
-                    id: 'bbc-part-2',
-                    title: 'Why So Thirsty? The Technical Explanation',
-                    start: 0,
-                    end: -1,
-                    source: VIDEO_URLS.bbcPart2,
-                    description: 'How AI chips get hot and require liquid cooling',
-                    mandatory: true,
-                  }
-                ]}
-                onSegmentComplete={() => {}}
-                onModuleComplete={handleNextSegment}
-                enableSubtitles={true}
-                hideSegmentNavigator={true}
-                allowSeeking={false}
-              />
-            </CardContent>
-          </Card>
-        );
-
-      // Segment 7: Beyond Water - Energy & Carbon (Text Card) (was Segment 3)
-      case 7:
+      // Segment 11: Beyond Water - Energy & Carbon (Text Card) (was Segment 10, was Segment 9, was Segment 8, originally Segment 3)
+      case 11:
         return (
           <Card>
             <CardHeader>
@@ -882,8 +1307,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 8: The Big Picture - Animated (was Segment 4)
-      case 8:
+      // Segment 12: The Big Picture - Animated (was Segment 11, was Segment 10, was Segment 9, originally Segment 4)
+      case 12:
         return (
           <Card>
             <CardHeader>
@@ -926,16 +1351,16 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 9: Environmental Calculator (was Segment 5)
-      case 9:
+      // Segment 13: Environmental Calculator (was Segment 12, was Segment 11, was Segment 10, originally Segment 5)
+      case 13:
         return <EnvironmentalCalculator onComplete={handleNextSegment} />;
 
-      // Segment 10: Comparison Matrix (was Segment 6)
-      case 10:
+      // Segment 14: Comparison Matrix (was Segment 13, was Segment 12, was Segment 11, originally Segment 6)
+      case 14:
         return <EnvironmentalImpactMatrix onComplete={handleNextSegment} />;
 
-      // Segment 11: Student Reflection (with AI validation) (was Segment 7)
-      case 11:
+      // Segment 15: Student Reflection (with AI validation) (was Segment 14, was Segment 13, was Segment 12, originally Segment 7)
+      case 15:
         return (
           <Card>
             <CardHeader>
@@ -1068,7 +1493,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
               )}
 
               {/* Submit / Continue Button */}
-              {!showReflectionEscapeHatch && (
+              {!(showReflectionEscapeHatch && reflectionNeedsRetry) && (
                 <Button
                   onClick={() => {
                     if (showReflectionFeedback && !reflectionNeedsRetry) {
@@ -1112,8 +1537,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 12: The Paradox & Future - BBC Part 3 (was Segment 8)
-      case 12:
+      // Segment 16: The Paradox & Future - BBC Part 3 (was Segment 15, was Segment 14, was Segment 13, originally Segment 8)
+      case 16:
         return (
           <Card>
             <CardHeader>
@@ -1156,12 +1581,12 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 13: AI Solutions Sorting (was Segment 9)
-      case 13:
+      // Segment 17: AI Solutions Sorting (was Segment 16, was Segment 15, was Segment 14, originally Segment 9)
+      case 17:
         return <SimplifiedSolutionsSorter onComplete={handleNextSegment} />;
 
-      // Segment 14: Your Most Efficient Tool - Animated (was Segment 10)
-      case 14:
+      // Segment 18: Your Most Efficient Tool - Animated (was Segment 17, was Segment 16, was Segment 15, originally Segment 10)
+      case 18:
         return (
           <Card>
             <CardHeader>
@@ -1204,8 +1629,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 15: Exit Ticket (with AI validation) (was Segment 11)
-      case 15:
+      // Segment 19: Exit Ticket (with AI validation) (was Segment 18, was Segment 17, was Segment 16, originally Segment 11)
+      case 19:
         const bothValid = exitTicket1.length >= MIN_EXIT_TICKET_LENGTH && exitTicket2.length >= MIN_EXIT_TICKET_LENGTH;
         const needsRetry = exitTicket1NeedsRetry || exitTicket2NeedsRetry;
 
@@ -1377,7 +1802,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
               )}
 
               {/* Submit / Continue Button */}
-              {!showExitTicketEscapeHatch && (
+              {!(showExitTicketEscapeHatch && needsRetry) && (
                 <Button
                   onClick={() => {
                     if (showExitTicketFeedback && !needsRetry) {
@@ -1455,6 +1880,48 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           Understanding AI's environmental cost and the path to sustainability
         </p>
       </div>
+
+      {/* Developer Mode Navigation */}
+      {isDevModeActive && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-red-800">Developer Mode Active</span>
+              <span className="text-xs text-red-600">
+                Segment {currentSegment + 1} of {segments.length}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  if (currentSegment > 0) {
+                    setCurrentSegment(currentSegment - 1);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+                disabled={currentSegment === 0}
+                className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+                size="sm"
+              >
+                ← Previous
+              </Button>
+              <Button
+                onClick={() => {
+                  if (currentSegment < segments.length - 1) {
+                    setCurrentSegment(currentSegment + 1);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+                disabled={currentSegment === segments.length - 1}
+                className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+                size="sm"
+              >
+                Next →
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Progress Bar */}
       <div className="bg-white border border-gray-300 rounded-lg p-4">

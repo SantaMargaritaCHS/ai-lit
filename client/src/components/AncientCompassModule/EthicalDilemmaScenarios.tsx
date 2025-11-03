@@ -399,7 +399,7 @@ export default function EthicalDilemmaScenarios({ onComplete }: EthicalDilemmaSc
               )}
 
               {/* Submit / Continue Button */}
-              {!showEscapeHatch && (
+              {!(showEscapeHatch && needsRetry) && (
                 <Button
                   onClick={() => {
                     if (showFeedback && !needsRetry) {
