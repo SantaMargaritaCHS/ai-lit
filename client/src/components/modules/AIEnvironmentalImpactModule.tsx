@@ -1603,7 +1603,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                     id: 'exponential-ladder',
                     title: 'The Exponential Ladder',
                     start: 114,
-                    end: 213,
+                    end: 213.5,
                     source: VIDEO_URLS.animated,
                     description: 'Visualizing how resource usage scales: text → image → video',
                     mandatory: true,
