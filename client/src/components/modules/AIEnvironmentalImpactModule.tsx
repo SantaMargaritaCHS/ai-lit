@@ -13,7 +13,9 @@ import {
   CheckCircle2,
   ChevronRight,
   Zap,
-  Cloud
+  Cloud,
+  Brain,
+  Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumVideoPlayer } from '@/components/PremiumVideoPlayer';
@@ -81,6 +83,21 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   const [exitTicketAttemptCount, setExitTicketAttemptCount] = useState(0);
   const [showExitTicketEscapeHatch, setShowExitTicketEscapeHatch] = useState(false);
 
+  // Calculator reveal state (Segment 7)
+  const [revealedLevels, setRevealedLevels] = useState({
+    school: false,
+    orangeCounty: false,
+    california: false,
+    usa: false
+  });
+
+  // BBC Part 2 Comprehension Check state (Segment 9)
+  const [bbcQ1Answer, setBbcQ1Answer] = useState<string | null>(null);
+  const [bbcQ2Answer, setBbcQ2Answer] = useState<string | null>(null);
+  const [bbcQ3Answer, setBbcQ3Answer] = useState<string | null>(null);
+  const [showBbcFeedback, setShowBbcFeedback] = useState(false);
+  const [bbcAllCorrect, setBbcAllCorrect] = useState(false);
+
   // Water Footprint Tracker state (Segment 6)
   const [totalDrops, setTotalDrops] = useState(0);
 
@@ -101,18 +118,20 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     { id: 5, title: 'The Drop (BBC Part 1)', type: 'video' as const },
     { id: 6, title: 'Your Water Footprint', type: 'interactive' as const },
     { id: 7, title: 'Scale Your Impact', type: 'interactive' as const },
-    { id: 8, title: 'Why So Thirsty? (BBC Part 2)', type: 'video' as const },
-    { id: 9, title: 'The Exponential Ladder', type: 'video' as const },
-    { id: 10, title: 'Quick Quiz', type: 'quiz' as const },
-    { id: 11, title: 'Beyond Water: Energy & Carbon', type: 'interactive' as const },
-    { id: 12, title: 'The Big Picture (BBC Part 3)', type: 'video' as const },
-    { id: 13, title: 'Environmental Calculator', type: 'interactive' as const },
-    { id: 14, title: 'Comparison Matrix', type: 'interactive' as const },
-    { id: 15, title: 'Student Reflection', type: 'reflection' as const },
-    { id: 16, title: 'The Paradox & Future', type: 'video' as const },
-    { id: 17, title: 'AI Solutions Sorting', type: 'interactive' as const },
-    { id: 18, title: 'Your Most Efficient Tool', type: 'video' as const },
-    { id: 19, title: 'Exit Ticket', type: 'exit-ticket' as const },
+    { id: 8, title: 'Why So Thirsty? (BBC Part 2 - Part 1)', type: 'video' as const },
+    { id: 9, title: 'Comprehension Check: Liquid Cooling', type: 'quiz' as const },
+    { id: 10, title: 'Global Impact & Community Concerns', type: 'video' as const },
+    { id: 11, title: 'The Exponential Ladder', type: 'video' as const },
+    { id: 12, title: 'Quick Quiz', type: 'quiz' as const },
+    { id: 13, title: 'Beyond Water: Energy & Carbon', type: 'interactive' as const },
+    { id: 14, title: 'The Big Picture (BBC Part 3)', type: 'video' as const },
+    { id: 15, title: 'Environmental Calculator', type: 'interactive' as const },
+    { id: 16, title: 'Comparison Matrix', type: 'interactive' as const },
+    { id: 17, title: 'Student Reflection', type: 'reflection' as const },
+    { id: 18, title: 'The Paradox & Future', type: 'video' as const },
+    { id: 19, title: 'AI Solutions Sorting', type: 'interactive' as const },
+    { id: 20, title: 'Your Most Efficient Tool', type: 'video' as const },
+    { id: 21, title: 'Exit Ticket', type: 'exit-ticket' as const },
   ];
 
   // Register activities for Developer Mode
@@ -140,6 +159,18 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     window.addEventListener('goToActivity', handleGoToActivity as EventListener);
     return () => window.removeEventListener('goToActivity', handleGoToActivity as EventListener);
   }, []);
+
+  // Reset revealed levels when entering calculator segment (Segment 7)
+  useEffect(() => {
+    if (currentSegment === 7) {
+      setRevealedLevels({
+        school: false,
+        orangeCounty: false,
+        california: false,
+        usa: false
+      });
+    }
+  }, [currentSegment]);
 
   // Progress persistence
   useEffect(() => {
@@ -347,6 +378,37 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   const handleExitTicketContinueAnyway = () => {
     console.log('Student bypassed exit ticket validation after', exitTicketAttemptCount, 'attempts');
     handleNextSegment();
+  };
+
+  // BBC Part 2 Comprehension Check handlers (Segment 9)
+  const handleBbcCheckSubmit = () => {
+    if (!bbcQ1Answer || !bbcQ2Answer || !bbcQ3Answer) {
+      return; // All questions must be answered
+    }
+
+    const q1Correct = bbcQ1Answer === 'energy-intensive';
+    const q2Correct = bbcQ2Answer === 'evaporates';
+    const q3Correct = bbcQ3Answer === 'drinking-water';
+
+    const allCorrect = q1Correct && q2Correct && q3Correct;
+
+    setShowBbcFeedback(true);
+    setBbcAllCorrect(allCorrect);
+
+    if (allCorrect) {
+      // Auto-proceed after showing success message
+      setTimeout(() => {
+        handleNextSegment();
+      }, 2000);
+    }
+  };
+
+  const handleBbcCheckReset = () => {
+    setBbcQ1Answer(null);
+    setBbcQ2Answer(null);
+    setBbcQ3Answer(null);
+    setShowBbcFeedback(false);
+    setBbcAllCorrect(false);
   };
 
   // Render functions for new segments
@@ -989,14 +1051,29 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                     🏫 Your School ({schoolStudents.toLocaleString()} students)
                   </h3>
-                  <div className="flex items-center gap-3">
-                    <p className="text-3xl font-bold text-green-700">{schoolBottles.toLocaleString()}</p>
-                    <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
-                    <div className="flex flex-col">
-                      <p className="text-lg font-semibold text-gray-900">water bottles</p>
-                      <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
-                    </div>
-                  </div>
+                  {!revealedLevels.school ? (
+                    <Button
+                      onClick={() => setRevealedLevels(prev => ({ ...prev, school: true }))}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      size="lg"
+                    >
+                      Click to Reveal Water Usage
+                    </Button>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center gap-3"
+                    >
+                      <p className="text-3xl font-bold text-green-700">{schoolBottles.toLocaleString()}</p>
+                      <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
+                      <div className="flex flex-col">
+                        <p className="text-lg font-semibold text-gray-900">water bottles</p>
+                        <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
 
                 {/* Orange County */}
@@ -1009,14 +1086,30 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                     🏙️ Orange County High Schoolers ({(ocHighSchoolers / 1000).toFixed(0)}K students)
                   </h3>
-                  <div className="flex items-center gap-3">
-                    <p className="text-3xl font-bold text-blue-700">{ocBottles.toLocaleString()}</p>
-                    <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
-                    <div className="flex flex-col">
-                      <p className="text-lg font-semibold text-gray-900">water bottles</p>
-                      <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
-                    </div>
-                  </div>
+                  {!revealedLevels.orangeCounty ? (
+                    <Button
+                      onClick={() => setRevealedLevels(prev => ({ ...prev, orangeCounty: true }))}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      size="lg"
+                      disabled={!revealedLevels.school}
+                    >
+                      {revealedLevels.school ? 'Click to Reveal Water Usage' : '🔒 Reveal Previous Level First'}
+                    </Button>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center gap-3"
+                    >
+                      <p className="text-3xl font-bold text-blue-700">{ocBottles.toLocaleString()}</p>
+                      <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
+                      <div className="flex flex-col">
+                        <p className="text-lg font-semibold text-gray-900">water bottles</p>
+                        <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
 
                 {/* California */}
@@ -1029,14 +1122,30 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                     🌴 California High Schoolers ({(caHighSchoolers / 1000000).toFixed(1)}M students)
                   </h3>
-                  <div className="flex items-center gap-3">
-                    <p className="text-3xl font-bold text-orange-700">{caBottles.toLocaleString()}</p>
-                    <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
-                    <div className="flex flex-col">
-                      <p className="text-lg font-semibold text-gray-900">water bottles</p>
-                      <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
-                    </div>
-                  </div>
+                  {!revealedLevels.california ? (
+                    <Button
+                      onClick={() => setRevealedLevels(prev => ({ ...prev, california: true }))}
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                      size="lg"
+                      disabled={!revealedLevels.orangeCounty}
+                    >
+                      {revealedLevels.orangeCounty ? 'Click to Reveal Water Usage' : '🔒 Reveal Previous Level First'}
+                    </Button>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center gap-3"
+                    >
+                      <p className="text-3xl font-bold text-orange-700">{caBottles.toLocaleString()}</p>
+                      <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
+                      <div className="flex flex-col">
+                        <p className="text-lg font-semibold text-gray-900">water bottles</p>
+                        <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
 
                 {/* United States */}
@@ -1049,19 +1158,36 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                     🇺🇸 High Schoolers ({(usHighSchoolers / 1000000).toFixed(0)}M students)
                   </h3>
-                  <div className="flex items-center gap-3">
-                    <p className="text-3xl font-bold text-purple-700">{usBottles.toLocaleString()}</p>
-                    <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
-                    <div className="flex flex-col">
-                      <p className="text-lg font-semibold text-gray-900">water bottles</p>
-                      <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 bg-white rounded-lg p-3 border border-purple-200">
-                    <p className="text-xs text-gray-700">
-                      That's <strong>{(usBottles / 1000000).toFixed(1)} million</strong> water bottles <strong>every single day</strong> — just from high school students using AI like you do!
-                    </p>
-                  </div>
+                  {!revealedLevels.usa ? (
+                    <Button
+                      onClick={() => setRevealedLevels(prev => ({ ...prev, usa: true }))}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                      size="lg"
+                      disabled={!revealedLevels.california}
+                    >
+                      {revealedLevels.california ? 'Click to Reveal Water Usage' : '🔒 Reveal Previous Level First'}
+                    </Button>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <p className="text-3xl font-bold text-purple-700">{usBottles.toLocaleString()}</p>
+                        <img src={waterBottleIcon} alt="water bottle" className="w-8 h-8 inline-block" />
+                        <div className="flex flex-col">
+                          <p className="text-lg font-semibold text-gray-900">water bottles</p>
+                          <p className="text-sm text-gray-700">per day (16.9 oz each)</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 bg-white rounded-lg p-3 border border-purple-200">
+                        <p className="text-xs text-gray-700">
+                          That's <strong>{(usBottles / 1000000).toFixed(1)} million</strong> water bottles <strong>every single day</strong> — just from high school students using AI like you do!
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
               </div>
 
@@ -1075,9 +1201,19 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                 </p>
               </div>
 
-              <Button onClick={handleNextSegment} size="lg" className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                Continue to Learn Why AI Is So Thirsty
-                <ArrowRight className="ml-2 w-5 h-5" />
+              <Button
+                onClick={handleNextSegment}
+                size="lg"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                disabled={!revealedLevels.school || !revealedLevels.orangeCounty || !revealedLevels.california || !revealedLevels.usa}
+              >
+                {revealedLevels.school && revealedLevels.orangeCounty && revealedLevels.california && revealedLevels.usa
+                  ? 'Continue to Learn Why AI Is So Thirsty'
+                  : '🔒 Reveal All Levels to Continue'
+                }
+                {revealedLevels.school && revealedLevels.orangeCounty && revealedLevels.california && revealedLevels.usa && (
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                )}
               </Button>
             </CardContent>
           </Card>
@@ -1108,10 +1244,10 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                 videoId="environmental-segment-2"
                 segments={[
                   {
-                    id: 'bbc-part-2',
-                    title: 'Why So Thirsty? The Technical Explanation',
+                    id: 'bbc-part-2-section-1',
+                    title: 'Why So Thirsty? The Technical Explanation (Part 1)',
                     start: 0,
-                    end: -1,
+                    end: 113.5,
                     source: VIDEO_URLS.bbcPart2,
                     description: 'How AI chips get hot and require liquid cooling',
                     mandatory: true,
@@ -1127,8 +1263,270 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 9: The Exponential Ladder - Animated visualization
+      // Segment 9: BBC Part 2 Comprehension Check
       case 9:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Brain className="w-6 h-6 text-blue-600" />
+                Comprehension Check: Liquid Cooling
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Test your understanding of what you just learned about AI cooling systems
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Question 1 */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900">
+                  1. Why can't data centers use regular air cooling systems for AI?
+                </h3>
+                <div className="space-y-2">
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q1"
+                      value="too-expensive"
+                      checked={bbcQ1Answer === 'too-expensive'}
+                      onChange={(e) => setBbcQ1Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">Air cooling is too expensive</span>
+                  </label>
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q1"
+                      value="energy-intensive"
+                      checked={bbcQ1Answer === 'energy-intensive'}
+                      onChange={(e) => setBbcQ1Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">AI chips are too energy-intensive and generate too much heat</span>
+                  </label>
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q1"
+                      value="not-available"
+                      checked={bbcQ1Answer === 'not-available'}
+                      onChange={(e) => setBbcQ1Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">Air cooling systems are not available for data centers</span>
+                  </label>
+                </div>
+                {showBbcFeedback && bbcQ1Answer === 'energy-intensive' && (
+                  <div className="bg-green-50 border border-green-300 rounded-lg p-3 text-sm text-green-800">
+                    ✓ Correct! AI infrastructure is so energy-intensive that air cooling isn't sufficient.
+                  </div>
+                )}
+                {showBbcFeedback && bbcQ1Answer !== 'energy-intensive' && (
+                  <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
+                    ✗ Not quite. Think about what the video said about AI chips and power requirements.
+                  </div>
+                )}
+              </div>
+
+              {/* Question 2 */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900">
+                  2. What happens to the water used in liquid cooling systems?
+                </h3>
+                <div className="space-y-2">
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q2"
+                      value="recycled"
+                      checked={bbcQ2Answer === 'recycled'}
+                      onChange={(e) => setBbcQ2Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">It's completely recycled and reused</span>
+                  </label>
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q2"
+                      value="evaporates"
+                      checked={bbcQ2Answer === 'evaporates'}
+                      onChange={(e) => setBbcQ2Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">Up to 80% evaporates and is lost</span>
+                  </label>
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q2"
+                      value="returned-clean"
+                      checked={bbcQ2Answer === 'returned-clean'}
+                      onChange={(e) => setBbcQ2Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">It's returned to water sources completely clean</span>
+                  </label>
+                </div>
+                {showBbcFeedback && bbcQ2Answer === 'evaporates' && (
+                  <div className="bg-green-50 border border-green-300 rounded-lg p-3 text-sm text-green-800">
+                    ✓ Correct! The video explained that up to 80% evaporates during the cooling process.
+                  </div>
+                )}
+                {showBbcFeedback && bbcQ2Answer !== 'evaporates' && (
+                  <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
+                    ✗ Not quite. Remember what happens in the cooling towers.
+                  </div>
+                )}
+              </div>
+
+              {/* Question 3 */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900">
+                  3. Why is liquid cooling a concern for communities?
+                </h3>
+                <div className="space-y-2">
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q3"
+                      value="too-noisy"
+                      checked={bbcQ3Answer === 'too-noisy'}
+                      onChange={(e) => setBbcQ3Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">Cooling systems are too noisy for residential areas</span>
+                  </label>
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q3"
+                      value="drinking-water"
+                      checked={bbcQ3Answer === 'drinking-water'}
+                      onChange={(e) => setBbcQ3Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">It uses drinking water needed for human consumption and irrigation</span>
+                  </label>
+                  <label className="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                    <input
+                      type="radio"
+                      name="q3"
+                      value="air-pollution"
+                      checked={bbcQ3Answer === 'air-pollution'}
+                      onChange={(e) => setBbcQ3Answer(e.target.value)}
+                      className="mt-1"
+                      disabled={showBbcFeedback && bbcAllCorrect}
+                    />
+                    <span className="text-gray-900">It causes air pollution in the surrounding area</span>
+                  </label>
+                </div>
+                {showBbcFeedback && bbcQ3Answer === 'drinking-water' && (
+                  <div className="bg-green-50 border border-green-300 rounded-lg p-3 text-sm text-green-800">
+                    ✓ Correct! The video explained that clean drinking water is needed for cooling, taking it from sources used for human consumption and irrigation.
+                  </div>
+                )}
+                {showBbcFeedback && bbcQ3Answer !== 'drinking-water' && (
+                  <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
+                    ✗ Not quite. Think about what type of water is required for liquid cooling.
+                  </div>
+                )}
+              </div>
+
+              {/* Overall Feedback */}
+              {showBbcFeedback && bbcAllCorrect && (
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-4">
+                  <h3 className="font-bold text-green-900 mb-2">🎉 Excellent! All correct!</h3>
+                  <p className="text-sm text-green-800">
+                    You clearly understood the technical challenges of AI cooling. Let's continue learning about the global impact...
+                  </p>
+                </div>
+              )}
+
+              {showBbcFeedback && !bbcAllCorrect && (
+                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                  <h3 className="font-semibold text-yellow-900 mb-2">Review your answers</h3>
+                  <p className="text-sm text-yellow-800 mb-3">
+                    Some answers need correction. Review the feedback above and try again!
+                  </p>
+                  <Button
+                    onClick={handleBbcCheckReset}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              )}
+
+              {!showBbcFeedback && (
+                <Button
+                  onClick={handleBbcCheckSubmit}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  disabled={!bbcQ1Answer || !bbcQ2Answer || !bbcQ3Answer}
+                >
+                  {bbcQ1Answer && bbcQ2Answer && bbcQ3Answer ? 'Check My Answers' : 'Answer All Questions to Continue'}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 10: BBC Part 2 Continuation (from 1:54)
+      case 10:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Globe className="w-6 h-6 text-green-600" />
+                Global Impact & Community Concerns
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                See how communities worldwide are responding to data center water usage
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  This continues the BBC report, showing community protests and the broader supply chain water usage.
+                </p>
+              </div>
+
+              <PremiumVideoPlayer
+                videoUrl={VIDEO_URLS.bbcPart2}
+                videoId="environmental-segment-2-part-2"
+                segments={[
+                  {
+                    id: 'bbc-part-2-section-2',
+                    title: 'Global Impact & Community Concerns',
+                    start: 114,
+                    end: 999999,
+                    source: VIDEO_URLS.bbcPart2,
+                    description: 'Community protests and supply chain water usage',
+                    mandatory: true,
+                  }
+                ]}
+                onSegmentComplete={() => {}}
+                onModuleComplete={handleNextSegment}
+                enableSubtitles={true}
+                hideSegmentNavigator={true}
+                allowSeeking={false}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 11: The Exponential Ladder - Animated visualization
+      case 11:
         return (
           <Card>
             <CardHeader>
@@ -1172,7 +1570,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 10: Quick Quiz - Understanding the Exponential Ladder
-      case 10:
+      case 12:
         return (
           <Card>
             <CardHeader>
@@ -1255,7 +1653,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 11: Beyond Water - Energy & Carbon (Text Card) (was Segment 10, was Segment 9, was Segment 8, originally Segment 3)
-      case 11:
+      case 13:
         return (
           <Card>
             <CardHeader>
@@ -1308,7 +1706,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 12: The Big Picture - Animated (was Segment 11, was Segment 10, was Segment 9, originally Segment 4)
-      case 12:
+      case 14:
         return (
           <Card>
             <CardHeader>
@@ -1352,15 +1750,15 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 13: Environmental Calculator (was Segment 12, was Segment 11, was Segment 10, originally Segment 5)
-      case 13:
+      case 15:
         return <EnvironmentalCalculator onComplete={handleNextSegment} />;
 
       // Segment 14: Comparison Matrix (was Segment 13, was Segment 12, was Segment 11, originally Segment 6)
-      case 14:
+      case 16:
         return <EnvironmentalImpactMatrix onComplete={handleNextSegment} />;
 
       // Segment 15: Student Reflection (with AI validation) (was Segment 14, was Segment 13, was Segment 12, originally Segment 7)
-      case 15:
+      case 17:
         return (
           <Card>
             <CardHeader>
@@ -1538,7 +1936,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 16: The Paradox & Future - BBC Part 3 (was Segment 15, was Segment 14, was Segment 13, originally Segment 8)
-      case 16:
+      case 18:
         return (
           <Card>
             <CardHeader>
@@ -1582,11 +1980,11 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 17: AI Solutions Sorting (was Segment 16, was Segment 15, was Segment 14, originally Segment 9)
-      case 17:
+      case 19:
         return <SimplifiedSolutionsSorter onComplete={handleNextSegment} />;
 
       // Segment 18: Your Most Efficient Tool - Animated (was Segment 17, was Segment 16, was Segment 15, originally Segment 10)
-      case 18:
+      case 20:
         return (
           <Card>
             <CardHeader>
@@ -1630,7 +2028,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 19: Exit Ticket (with AI validation) (was Segment 18, was Segment 17, was Segment 16, originally Segment 11)
-      case 19:
+      case 21:
         const bothValid = exitTicket1.length >= MIN_EXIT_TICKET_LENGTH && exitTicket2.length >= MIN_EXIT_TICKET_LENGTH;
         const needsRetry = exitTicket1NeedsRetry || exitTicket2NeedsRetry;
 
