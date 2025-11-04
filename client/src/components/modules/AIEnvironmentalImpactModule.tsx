@@ -71,13 +71,10 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   const [reflectionAttemptCount, setReflectionAttemptCount] = useState(0);
   const [showReflectionEscapeHatch, setShowReflectionEscapeHatch] = useState(false);
 
-  // Exit ticket state (Segment 15 - was Segment 11) - with AI validation
-  const [exitTicket1, setExitTicket1] = useState('');
-  const [exitTicket2, setExitTicket2] = useState('');
-  const [exitTicket1Feedback, setExitTicket1Feedback] = useState('');
-  const [exitTicket2Feedback, setExitTicket2Feedback] = useState('');
-  const [exitTicket1NeedsRetry, setExitTicket1NeedsRetry] = useState(false);
-  const [exitTicket2NeedsRetry, setExitTicket2NeedsRetry] = useState(false);
+  // Exit ticket state (Segment 20) - with AI validation (single question)
+  const [exitTicket, setExitTicket] = useState('');
+  const [exitTicketFeedback, setExitTicketFeedback] = useState('');
+  const [exitTicketNeedsRetry, setExitTicketNeedsRetry] = useState(false);
   const [isGeneratingExitTicketFeedback, setIsGeneratingExitTicketFeedback] = useState(false);
   const [showExitTicketFeedback, setShowExitTicketFeedback] = useState(false);
   const [exitTicketAttemptCount, setExitTicketAttemptCount] = useState(0);
@@ -328,31 +325,19 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   // Exit ticket handlers with AI validation
   const handleSubmitExitTicket = async () => {
     setIsGeneratingExitTicketFeedback(true);
-    setExitTicket1NeedsRetry(false);
-    setExitTicket2NeedsRetry(false);
+    setExitTicketNeedsRetry(false);
 
     try {
-      const [feedback1, feedback2] = await Promise.all([
-        generateEducationFeedback(
-          exitTicket1.trim(),
-          "What is one intentional choice you can make next time you use an AI tool to be more mindful of its environmental cost?"
-        ),
-        generateEducationFeedback(
-          exitTicket2.trim(),
-          "What's a project where you could choose to use your own creativity instead of an AI tool?"
-        ),
-      ]);
+      const feedback = await generateEducationFeedback(
+        exitTicket.trim(),
+        "What difference does it make to be aware of AI's environmental cost?"
+      );
 
-      const finalFeedback1 = feedback1 && feedback1.trim().length > 0
-        ? feedback1
-        : "Thank you for sharing your commitment to mindful AI usage.";
+      const finalFeedback = feedback && feedback.trim().length > 0
+        ? feedback
+        : "Thank you for sharing your thoughtful reflection on AI's environmental impact.";
 
-      const finalFeedback2 = feedback2 && feedback2.trim().length > 0
-        ? feedback2
-        : "Great idea to use your own creativity! Your imagination is completely sustainable.";
-
-      setExitTicket1Feedback(finalFeedback1);
-      setExitTicket2Feedback(finalFeedback2);
+      setExitTicketFeedback(finalFeedback);
 
       const checkRejection = (text: string) =>
         text.toLowerCase().includes('does not address') ||
@@ -366,13 +351,10 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         text.toLowerCase().includes('monitored for inappropriate') ||
         text.toLowerCase().includes('answer the original question');
 
-      const retry1 = checkRejection(feedback1);
-      const retry2 = checkRejection(feedback2);
+      const needsRetry = checkRejection(feedback);
+      setExitTicketNeedsRetry(needsRetry);
 
-      setExitTicket1NeedsRetry(retry1);
-      setExitTicket2NeedsRetry(retry2);
-
-      if (retry1 || retry2) {
+      if (needsRetry) {
         const newAttemptCount = exitTicketAttemptCount + 1;
         setExitTicketAttemptCount(newAttemptCount);
 
@@ -384,10 +366,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
       setShowExitTicketFeedback(true);
     } catch (error) {
       console.error('[Exit Ticket] Error:', error);
-      setExitTicket1Feedback("Thank you for your thoughtful response.");
-      setExitTicket2Feedback("Great idea to use your own creativity!");
-      setExitTicket1NeedsRetry(false);
-      setExitTicket2NeedsRetry(false);
+      setExitTicketFeedback("Thank you for your thoughtful reflection on AI's environmental impact.");
+      setExitTicketNeedsRetry(false);
       setShowExitTicketFeedback(true);
     } finally {
       setIsGeneratingExitTicketFeedback(false);
@@ -395,13 +375,10 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   };
 
   const handleExitTicketTryAgain = () => {
-    setExitTicket1('');
-    setExitTicket2('');
-    setExitTicket1Feedback('');
-    setExitTicket2Feedback('');
+    setExitTicket('');
+    setExitTicketFeedback('');
     setShowExitTicketFeedback(false);
-    setExitTicket1NeedsRetry(false);
-    setExitTicket2NeedsRetry(false);
+    setExitTicketNeedsRetry(false);
     // DON'T reset exitTicketAttemptCount - need to track total attempts for escape hatch
     // DON'T reset showExitTicketEscapeHatch - if earned, keep it available
   };
@@ -2331,108 +2308,61 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
 
       // Segment 20: Exit Ticket (with AI validation)
       case 20:
-        const bothValid = exitTicket1.length >= MIN_EXIT_TICKET_LENGTH && exitTicket2.length >= MIN_EXIT_TICKET_LENGTH;
-        const needsRetry = exitTicket1NeedsRetry || exitTicket2NeedsRetry;
-
         return (
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <CheckCircle className="w-6 h-6 text-green-600" />
-                Exit Ticket: Your Personal Action Plan
+                Exit Ticket: Awareness and Reflection
               </CardTitle>
               <p className="text-gray-700 mt-2">
-                Reflect on what you've learned and commit to mindful AI usage
+                Reflect on what you've learned about AI's environmental impact
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Question 1 */}
+              {/* Single Question */}
               <div className="space-y-3">
                 <h3 className="font-semibold text-gray-900 text-lg">
-                  1. What is one intentional choice you can make next time you use an AI tool to be more mindful of its environmental cost?
+                  What difference does it make to be aware of AI's environmental cost?
                 </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Consider how this awareness might change how you think about or use AI tools in your daily life.
+                </p>
                 <Textarea
-                  value={exitTicket1}
-                  onChange={(e) => setExitTicket1(e.target.value)}
-                  disabled={showExitTicketFeedback && !needsRetry}
-                  placeholder="Describe a specific action you'll take (e.g., 'I'll batch my ChatGPT questions instead of asking one at a time' or 'I'll use text generation instead of images when possible')..."
-                  rows={4}
+                  value={exitTicket}
+                  onChange={(e) => setExitTicket(e.target.value)}
+                  disabled={showExitTicketFeedback && !exitTicketNeedsRetry}
+                  placeholder="Share your thoughts on how being aware of AI's water, energy, and carbon impact affects your perspective. Does it change anything? Why or why not?"
+                  rows={5}
                   className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
                 />
                 <p className="text-xs text-gray-600">
-                  {exitTicket1.length} / {MIN_EXIT_TICKET_LENGTH} characters minimum
+                  {exitTicket.length} / {MIN_EXIT_TICKET_LENGTH} characters minimum
                 </p>
 
-                {/* AI Feedback for Question 1 */}
-                {showExitTicketFeedback && exitTicket1Feedback && (
+                {/* AI Feedback */}
+                {showExitTicketFeedback && exitTicketFeedback && (
                   <AnimatePresence>
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className={`border-2 rounded-lg p-4 ${
-                        exitTicket1NeedsRetry
+                        exitTicketNeedsRetry
                           ? 'bg-yellow-50 border-yellow-400'
                           : 'bg-green-50 border-green-400'
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        {exitTicket1NeedsRetry ? (
+                        {exitTicketNeedsRetry ? (
                           <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                         ) : (
                           <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                         )}
                         <div className="w-full">
                           <h5 className="text-sm font-semibold text-gray-900 mb-1">
-                            {exitTicket1NeedsRetry ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
+                            {exitTicketNeedsRetry ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
                           </h5>
-                          <p className="text-sm text-gray-900">{exitTicket1Feedback}</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                )}
-              </div>
-
-              {/* Question 2 */}
-              <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900 text-lg">
-                  2. What's a project where you could choose to use your own creativity instead of an AI tool?
-                </h3>
-                <Textarea
-                  value={exitTicket2}
-                  onChange={(e) => setExitTicket2(e.target.value)}
-                  disabled={showExitTicketFeedback && !needsRetry}
-                  placeholder="Think of a specific project or assignment where using your own imagination would be just as good (or better!) than using AI..."
-                  rows={4}
-                  className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
-                />
-                <p className="text-xs text-gray-600">
-                  {exitTicket2.length} / {MIN_EXIT_TICKET_LENGTH} characters minimum
-                </p>
-
-                {/* AI Feedback for Question 2 */}
-                {showExitTicketFeedback && exitTicket2Feedback && (
-                  <AnimatePresence>
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`border-2 rounded-lg p-4 ${
-                        exitTicket2NeedsRetry
-                          ? 'bg-yellow-50 border-yellow-400'
-                          : 'bg-green-50 border-green-400'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        {exitTicket2NeedsRetry ? (
-                          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                        ) : (
-                          <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        )}
-                        <div className="w-full">
-                          <h5 className="text-sm font-semibold text-gray-900 mb-1">
-                            {exitTicket2NeedsRetry ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
-                          </h5>
-                          <p className="text-sm text-gray-900">{exitTicket2Feedback}</p>
+                          <p className="text-sm text-gray-900">{exitTicketFeedback}</p>
                         </div>
                       </div>
                     </motion.div>
@@ -2448,12 +2378,12 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                   className="flex items-center justify-center gap-3 text-blue-700 bg-blue-50 rounded-lg p-4 border border-blue-200"
                 >
                   <Loader className="w-5 h-5 animate-spin" />
-                  <span>Analyzing your responses with AI...</span>
+                  <span>Analyzing your response with AI...</span>
                 </motion.div>
               )}
 
               {/* Escape Hatch */}
-              {showExitTicketEscapeHatch && needsRetry && (
+              {showExitTicketEscapeHatch && exitTicketNeedsRetry && (
                 <AnimatePresence>
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -2467,18 +2397,18 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                           ⚠️ Multiple Attempts Detected
                         </h3>
                         <p className="text-gray-900 mb-3">
-                          You've tried {exitTicketAttemptCount} times and the AI feedback suggests your responses need improvement.
+                          You've tried {exitTicketAttemptCount} times and the AI feedback suggests your response needs improvement.
                         </p>
                         <p className="text-gray-900 mb-3">
                           <strong className="text-yellow-700">You have two options:</strong>
                         </p>
                         <ol className="text-gray-900 mb-4 space-y-1 ml-4">
-                          <li>1. Try again with different responses that address the questions</li>
+                          <li>1. Try again with a different response that addresses the question</li>
                           <li>2. Continue anyway and get your certificate</li>
                         </ol>
                         <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-4">
                           <p className="text-gray-900 text-sm">
-                            ⚠️ <strong className="text-yellow-700">Important:</strong> If you continue, your responses will be flagged for instructor review.
+                            ⚠️ <strong className="text-yellow-700">Important:</strong> If you continue, your response will be flagged for instructor review.
                           </p>
                         </div>
                         <div className="flex gap-3">
@@ -2502,25 +2432,25 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
               )}
 
               {/* Submit / Continue Button */}
-              {!(showExitTicketEscapeHatch && needsRetry) && (
+              {!(showExitTicketEscapeHatch && exitTicketNeedsRetry) && (
                 <Button
                   onClick={() => {
-                    if (showExitTicketFeedback && !needsRetry) {
+                    if (showExitTicketFeedback && !exitTicketNeedsRetry) {
                       handleNextSegment();
-                    } else if (showExitTicketFeedback && needsRetry) {
+                    } else if (showExitTicketFeedback && exitTicketNeedsRetry) {
                       handleExitTicketTryAgain();
                     } else {
                       handleSubmitExitTicket();
                     }
                   }}
-                  disabled={!showExitTicketFeedback && (!bothValid || isGeneratingExitTicketFeedback)}
+                  disabled={!showExitTicketFeedback && (exitTicket.length < MIN_EXIT_TICKET_LENGTH || isGeneratingExitTicketFeedback)}
                   size="lg"
                   className={`w-full ${
-                    showExitTicketFeedback && !needsRetry
+                    showExitTicketFeedback && !exitTicketNeedsRetry
                       ? 'bg-green-600 hover:bg-green-700 text-white'
-                      : showExitTicketFeedback && needsRetry
+                      : showExitTicketFeedback && exitTicketNeedsRetry
                       ? 'bg-orange-600 hover:bg-orange-700 text-white'
-                      : bothValid && !isGeneratingExitTicketFeedback
+                      : exitTicket.length >= MIN_EXIT_TICKET_LENGTH && !isGeneratingExitTicketFeedback
                       ? 'bg-blue-600 hover:bg-blue-700 text-white'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
@@ -2530,15 +2460,15 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                       <Loader className="w-5 h-5 animate-spin inline mr-2" />
                       Submitting...
                     </>
-                  ) : showExitTicketFeedback && !needsRetry ? (
+                  ) : showExitTicketFeedback && !exitTicketNeedsRetry ? (
                     <>
                       Get Your Certificate
                       <ArrowRight className="ml-2 w-5 h-5" />
                     </>
-                  ) : showExitTicketFeedback && needsRetry ? (
+                  ) : showExitTicketFeedback && exitTicketNeedsRetry ? (
                     'Try Again'
                   ) : (
-                    'Submit Responses'
+                    'Submit Response'
                   )}
                 </Button>
               )}
