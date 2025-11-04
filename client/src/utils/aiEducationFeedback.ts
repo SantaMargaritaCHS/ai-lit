@@ -33,6 +33,26 @@ export const isNonsensical = (response: string): boolean => {
   return false;
 };
 
+// Check if AI feedback contains rejection trigger phrases
+export const checkFeedbackRejection = (feedback: string): boolean => {
+  const lowerFeedback = feedback.toLowerCase();
+
+  const rejectionPhrases = [
+    'does not address',
+    'please re-read',
+    'inappropriate language',
+    'off-topic',
+    'must elaborate',
+    'insufficient',
+    'needs more depth',
+    'random text',
+    'monitored for inappropriate',
+    'answer the original question'
+  ];
+
+  return rejectionPhrases.some(phrase => lowerFeedback.includes(phrase));
+};
+
 export const generateEducationFeedback = async (
   response: string,
   question: string,

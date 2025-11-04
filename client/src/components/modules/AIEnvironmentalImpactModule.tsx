@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumVideoPlayer } from '@/components/PremiumVideoPlayer';
-import { generateEducationFeedback } from '@/utils/aiEducationFeedback';
+import { generateEducationFeedback, checkFeedbackRejection } from '@/utils/aiEducationFeedback';
 import { useDevMode } from '@/context/DevModeContext';
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 import { saveProgress, loadProgress, clearProgress } from '@/lib/progressPersistence';
@@ -198,36 +198,37 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     }
   }, [currentSegment, completedSegments]);
 
-  // Dev mode response generators for reflection
-  const getDevGoodReflectionResponse = () => {
-    return "I think tech companies should be MOST responsible for reducing AI's environmental impact because they directly control the data centers and can make the biggest changes. For example, companies like Google and Microsoft could invest in renewable energy for their data centers, optimize their AI models to use less power, and implement better water cooling systems like the closed-loop systems mentioned in the module. While governments can create regulations and individual users can make conscious choices (like using text AI instead of video generation), tech companies have the technical expertise and resources to innovate sustainable solutions. The video showed that liquid cooling evaporates 80% of drinking water - companies could switch to seawater or recycled water instead. They're also the ones who can develop more efficient AI chips that generate less heat in the first place. However, I do think it's a shared responsibility where all stakeholders need to play a role.";
-  };
+  // Dev mode configuration - consolidated test responses
+  const DEV_RESPONSES = {
+    reflection: {
+      good: "I think tech companies should be MOST responsible for reducing AI's environmental impact because they directly control the data centers and can make the biggest changes. For example, companies like Google and Microsoft could invest in renewable energy for their data centers, optimize their AI models to use less power, and implement better water cooling systems like the closed-loop systems mentioned in the module. While governments can create regulations and individual users can make conscious choices (like using text AI instead of video generation), tech companies have the technical expertise and resources to innovate sustainable solutions. The video showed that liquid cooling evaporates 80% of drinking water - companies could switch to seawater or recycled water instead. They're also the ones who can develop more efficient AI chips that generate less heat in the first place. However, I do think it's a shared responsibility where all stakeholders need to play a role.",
+      generic: "I think everyone should be responsible because it's important. AI uses a lot of resources and that's bad for the environment. People should just be more careful about how they use it and companies should make it better. Governments should make rules too.",
+      complaint: "This module is confusing and I don't understand why we have to learn about this. The videos are boring and too long. I just want to finish this assignment and move on. Can't we just use AI however we want without worrying about all this environmental stuff?",
+      gibberish: "asdfkj alksjdf laskdjf ;lkj ;lkj ;lkj water water blah blah blah idk lol whatever just let me pass this thing aaaaaa"
+    },
+    exitTicket: {
+      good: "Being aware of AI's environmental cost completely changes my perspective. Before this module, I just thought about whether AI could help me with a task - I never considered the water, energy, and carbon footprint behind every query. Now I understand that generating a single image with AI can use as much water as filling a water bottle, and video generation uses exponentially more. This awareness makes me more intentional about when and how I use AI. I might still use it, but I'll think twice before generating multiple versions of something or using video generation when a simpler tool could work. It's like learning about any environmental impact - once you know, you can't unknow it, and it affects your choices even if you don't completely change your behavior. The awareness itself is valuable because it helps me be a more informed and responsible user of technology.",
+      generic: "I think being aware of AI's environmental cost is important. It makes me think more about using AI and stuff. I guess I'll try to use it less or be more careful. It's good to know about these things.",
+      complaint: "Honestly I don't think it makes any difference at all. Why should I care about AI's environmental cost when big companies are the ones running the data centers? This module is just trying to make us feel guilty about using technology. I'm going to keep using AI however I want because it's convenient.",
+      gibberish: "idk lol blah blah water bottles whatever ajsdfkl asjdflk just let me finish this aaaaaa so boring"
+    }
+  } as const;
 
-  const getDevGenericReflectionResponse = () => {
-    return "I think everyone should be responsible because it's important. AI uses a lot of resources and that's bad for the environment. People should just be more careful about how they use it and companies should make it better. Governments should make rules too.";
-  };
+  const DEV_FEEDBACK = {
+    reflection: "Excellent reflection! You've identified tech companies as having the most direct control and provided specific examples like renewable energy investment, liquid cooling optimization, and more efficient AI chips. Your acknowledgment that this is a shared responsibility while identifying the primary actor shows nuanced understanding. Well done!",
+    exitTicket: "Excellent reflection! You've articulated how awareness creates a cognitive shift that influences decision-making even without complete behavioral change. Your acknowledgment that 'once you know, you can't unknow it' demonstrates deep understanding of how knowledge impacts agency. Well done!"
+  } as const;
 
-  const getDevComplaintReflectionResponse = () => {
-    return "This module is confusing and I don't understand why we have to learn about this. The videos are boring and too long. I just want to finish this assignment and move on. Can't we just use AI however we want without worrying about all this environmental stuff?";
-  };
-
-  const getDevGibberishReflectionResponse = () => {
-    return "asdfkj alksjdf laskdjf ;lkj ;lkj ;lkj water water blah blah blah idk lol whatever just let me pass this thing aaaaaa";
-  };
-
+  // Dev mode helper functions
   const handleDevAutoFillReflection = () => {
     if (!isDevModeActive) return;
 
-    const goodResponse = getDevGoodReflectionResponse();
-    setReflection(goodResponse);
-    setReflectionFeedback("Excellent reflection! You've identified tech companies as having the most direct control and provided specific examples like renewable energy investment, liquid cooling optimization, and more efficient AI chips. Your acknowledgment that this is a shared responsibility while identifying the primary actor shows nuanced understanding. Well done!");
+    setReflection(DEV_RESPONSES.reflection.good);
+    setReflectionFeedback(DEV_FEEDBACK.reflection);
     setShowReflectionFeedback(true);
     setReflectionNeedsRetry(false);
 
-    // Auto-complete after brief delay
-    setTimeout(() => {
-      handleNextSegment();
-    }, 1000);
+    setTimeout(() => handleNextSegment(), 1000);
   };
 
   const handleNextSegment = () => {
@@ -273,17 +274,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
 
       setReflectionFeedback(finalFeedback);
 
-      const feedbackIndicatesRetry =
-        aiFeedback.toLowerCase().includes('does not address') ||
-        aiFeedback.toLowerCase().includes('please re-read') ||
-        aiFeedback.toLowerCase().includes('inappropriate language') ||
-        aiFeedback.toLowerCase().includes('off-topic') ||
-        aiFeedback.toLowerCase().includes('must elaborate') ||
-        aiFeedback.toLowerCase().includes('insufficient') ||
-        aiFeedback.toLowerCase().includes('needs more depth') ||
-        aiFeedback.toLowerCase().includes('random text') ||
-        aiFeedback.toLowerCase().includes('monitored for inappropriate') ||
-        aiFeedback.toLowerCase().includes('answer the original question');
+      const feedbackIndicatesRetry = checkFeedbackRejection(aiFeedback);
 
       if (feedbackIndicatesRetry) {
         setReflectionNeedsRetry(true);
@@ -299,7 +290,6 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
 
       setShowReflectionFeedback(true);
     } catch (error) {
-      console.error('[Reflection] Error:', error);
       setReflectionFeedback("Thank you for your thoughtful reflection on AI's environmental impact.");
       setReflectionNeedsRetry(false);
       setShowReflectionFeedback(true);
@@ -318,7 +308,6 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   };
 
   const handleReflectionContinueAnyway = () => {
-    console.log('Student bypassed reflection validation after', reflectionAttemptCount, 'attempts');
     handleNextSegment();
   };
 
@@ -339,19 +328,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
 
       setExitTicketFeedback(finalFeedback);
 
-      const checkRejection = (text: string) =>
-        text.toLowerCase().includes('does not address') ||
-        text.toLowerCase().includes('please re-read') ||
-        text.toLowerCase().includes('inappropriate language') ||
-        text.toLowerCase().includes('off-topic') ||
-        text.toLowerCase().includes('must elaborate') ||
-        text.toLowerCase().includes('insufficient') ||
-        text.toLowerCase().includes('needs more depth') ||
-        text.toLowerCase().includes('random text') ||
-        text.toLowerCase().includes('monitored for inappropriate') ||
-        text.toLowerCase().includes('answer the original question');
-
-      const needsRetry = checkRejection(feedback);
+      const needsRetry = checkFeedbackRejection(feedback);
       setExitTicketNeedsRetry(needsRetry);
 
       if (needsRetry) {
@@ -365,7 +342,6 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
 
       setShowExitTicketFeedback(true);
     } catch (error) {
-      console.error('[Exit Ticket] Error:', error);
       setExitTicketFeedback("Thank you for your thoughtful reflection on AI's environmental impact.");
       setExitTicketNeedsRetry(false);
       setShowExitTicketFeedback(true);
@@ -384,40 +360,18 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   };
 
   const handleExitTicketContinueAnyway = () => {
-    console.log('Student bypassed exit ticket validation after', exitTicketAttemptCount, 'attempts');
     handleNextSegment();
-  };
-
-  // Dev mode response generators for exit ticket
-  const getDevGoodExitTicketResponse = () => {
-    return "Being aware of AI's environmental cost completely changes my perspective. Before this module, I just thought about whether AI could help me with a task - I never considered the water, energy, and carbon footprint behind every query. Now I understand that generating a single image with AI can use as much water as filling a water bottle, and video generation uses exponentially more. This awareness makes me more intentional about when and how I use AI. I might still use it, but I'll think twice before generating multiple versions of something or using video generation when a simpler tool could work. It's like learning about any environmental impact - once you know, you can't unknow it, and it affects your choices even if you don't completely change your behavior. The awareness itself is valuable because it helps me be a more informed and responsible user of technology.";
-  };
-
-  const getDevGenericExitTicketResponse = () => {
-    return "I think being aware of AI's environmental cost is important. It makes me think more about using AI and stuff. I guess I'll try to use it less or be more careful. It's good to know about these things.";
-  };
-
-  const getDevComplaintExitTicketResponse = () => {
-    return "Honestly I don't think it makes any difference at all. Why should I care about AI's environmental cost when big companies are the ones running the data centers? This module is just trying to make us feel guilty about using technology. I'm going to keep using AI however I want because it's convenient.";
-  };
-
-  const getDevGibberishExitTicketResponse = () => {
-    return "idk lol blah blah water bottles whatever ajsdfkl asjdflk just let me finish this aaaaaa so boring";
   };
 
   const handleDevAutoFillExitTicket = () => {
     if (!isDevModeActive) return;
 
-    const goodResponse = getDevGoodExitTicketResponse();
-    setExitTicket(goodResponse);
-    setExitTicketFeedback("Excellent reflection! You've articulated how awareness creates a cognitive shift that influences decision-making even without complete behavioral change. Your acknowledgment that 'once you know, you can't unknow it' demonstrates deep understanding of how knowledge impacts agency. Well done!");
+    setExitTicket(DEV_RESPONSES.exitTicket.good);
+    setExitTicketFeedback(DEV_FEEDBACK.exitTicket);
     setShowExitTicketFeedback(true);
     setExitTicketNeedsRetry(false);
 
-    // Auto-complete after brief delay
-    setTimeout(() => {
-      handleNextSegment();
-    }, 1000);
+    setTimeout(() => handleNextSegment(), 1000);
   };
 
   // BBC Part 2 Comprehension Check handlers (Segment 9)
@@ -1952,28 +1906,28 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                       Auto-Fill & Complete
                     </Button>
                     <Button
-                      onClick={() => setReflection(getDevGoodReflectionResponse())}
+                      onClick={() => setReflection(DEV_RESPONSES.reflection.good)}
                       className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
                       size="sm"
                     >
                       Fill Good Response
                     </Button>
                     <Button
-                      onClick={() => setReflection(getDevGenericReflectionResponse())}
+                      onClick={() => setReflection(DEV_RESPONSES.reflection.generic)}
                       className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
                       size="sm"
                     >
                       Fill Generic Response
                     </Button>
                     <Button
-                      onClick={() => setReflection(getDevComplaintReflectionResponse())}
+                      onClick={() => setReflection(DEV_RESPONSES.reflection.complaint)}
                       className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
                       size="sm"
                     >
                       Fill Complaint
                     </Button>
                     <Button
-                      onClick={() => setReflection(getDevGibberishReflectionResponse())}
+                      onClick={() => setReflection(DEV_RESPONSES.reflection.gibberish)}
                       className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
                       size="sm"
                     >
@@ -2386,28 +2340,28 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                         Auto-Fill & Complete
                       </Button>
                       <Button
-                        onClick={() => setExitTicket(getDevGoodExitTicketResponse())}
+                        onClick={() => setExitTicket(DEV_RESPONSES.exitTicket.good)}
                         className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
                         size="sm"
                       >
                         Fill Good Response
                       </Button>
                       <Button
-                        onClick={() => setExitTicket(getDevGenericExitTicketResponse())}
+                        onClick={() => setExitTicket(DEV_RESPONSES.exitTicket.generic)}
                         className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
                         size="sm"
                       >
                         Fill Generic Response
                       </Button>
                       <Button
-                        onClick={() => setExitTicket(getDevComplaintExitTicketResponse())}
+                        onClick={() => setExitTicket(DEV_RESPONSES.exitTicket.complaint)}
                         className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
                         size="sm"
                       >
                         Fill Complaint
                       </Button>
                       <Button
-                        onClick={() => setExitTicket(getDevGibberishExitTicketResponse())}
+                        onClick={() => setExitTicket(DEV_RESPONSES.exitTicket.gibberish)}
                         className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
                         size="sm"
                       >
