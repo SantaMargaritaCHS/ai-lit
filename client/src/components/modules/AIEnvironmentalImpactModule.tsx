@@ -388,6 +388,38 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     handleNextSegment();
   };
 
+  // Dev mode response generators for exit ticket
+  const getDevGoodExitTicketResponse = () => {
+    return "Being aware of AI's environmental cost completely changes my perspective. Before this module, I just thought about whether AI could help me with a task - I never considered the water, energy, and carbon footprint behind every query. Now I understand that generating a single image with AI can use as much water as filling a water bottle, and video generation uses exponentially more. This awareness makes me more intentional about when and how I use AI. I might still use it, but I'll think twice before generating multiple versions of something or using video generation when a simpler tool could work. It's like learning about any environmental impact - once you know, you can't unknow it, and it affects your choices even if you don't completely change your behavior. The awareness itself is valuable because it helps me be a more informed and responsible user of technology.";
+  };
+
+  const getDevGenericExitTicketResponse = () => {
+    return "I think being aware of AI's environmental cost is important. It makes me think more about using AI and stuff. I guess I'll try to use it less or be more careful. It's good to know about these things.";
+  };
+
+  const getDevComplaintExitTicketResponse = () => {
+    return "Honestly I don't think it makes any difference at all. Why should I care about AI's environmental cost when big companies are the ones running the data centers? This module is just trying to make us feel guilty about using technology. I'm going to keep using AI however I want because it's convenient.";
+  };
+
+  const getDevGibberishExitTicketResponse = () => {
+    return "idk lol blah blah water bottles whatever ajsdfkl asjdflk just let me finish this aaaaaa so boring";
+  };
+
+  const handleDevAutoFillExitTicket = () => {
+    if (!isDevModeActive) return;
+
+    const goodResponse = getDevGoodExitTicketResponse();
+    setExitTicket(goodResponse);
+    setExitTicketFeedback("Excellent reflection! You've articulated how awareness creates a cognitive shift that influences decision-making even without complete behavioral change. Your acknowledgment that 'once you know, you can't unknow it' demonstrates deep understanding of how knowledge impacts agency. Well done!");
+    setShowExitTicketFeedback(true);
+    setExitTicketNeedsRetry(false);
+
+    // Auto-complete after brief delay
+    setTimeout(() => {
+      handleNextSegment();
+    }, 1000);
+  };
+
   // BBC Part 2 Comprehension Check handlers (Segment 9)
   const handleBbcCheckSubmit = () => {
     if (!bbcQ1Answer || !bbcQ2Answer || !bbcQ3Answer) {
@@ -2339,6 +2371,52 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                 <p className="text-xs text-gray-600">
                   {exitTicket.length} / {MIN_EXIT_TICKET_LENGTH} characters minimum
                 </p>
+
+                {/* Dev Mode Shortcuts */}
+                {isDevModeActive && !showExitTicketFeedback && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Exit Ticket Shortcuts</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={handleDevAutoFillExitTicket}
+                        className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                        size="sm"
+                      >
+                        <Zap className="w-3 h-3 mr-1" />
+                        Auto-Fill & Complete
+                      </Button>
+                      <Button
+                        onClick={() => setExitTicket(getDevGoodExitTicketResponse())}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
+                        size="sm"
+                      >
+                        Fill Good Response
+                      </Button>
+                      <Button
+                        onClick={() => setExitTicket(getDevGenericExitTicketResponse())}
+                        className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+                        size="sm"
+                      >
+                        Fill Generic Response
+                      </Button>
+                      <Button
+                        onClick={() => setExitTicket(getDevComplaintExitTicketResponse())}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
+                        size="sm"
+                      >
+                        Fill Complaint
+                      </Button>
+                      <Button
+                        onClick={() => setExitTicket(getDevGibberishExitTicketResponse())}
+                        className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+                        size="sm"
+                      >
+                        Fill Gibberish
+                      </Button>
+                    </div>
+                    <p className="text-xs text-red-600 mt-1">Test validation: good, generic, complaint, or gibberish responses</p>
+                  </div>
+                )}
 
                 {/* AI Feedback */}
                 {showExitTicketFeedback && exitTicketFeedback && (
