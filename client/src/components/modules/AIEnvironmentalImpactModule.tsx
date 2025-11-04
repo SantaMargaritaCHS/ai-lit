@@ -2186,7 +2186,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                     id: 'moving-forward',
                     title: 'Moving Forward: Your Role in AI\'s Future',
                     start: 280,
-                    end: 337,
+                    end: 337.5,
                     source: VIDEO_URLS.hiddenCost,
                     description: 'What you can do to make a difference',
                     mandatory: true,
