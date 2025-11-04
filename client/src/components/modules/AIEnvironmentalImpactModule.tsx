@@ -120,7 +120,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     { id: 7, title: 'Scale Your Impact', type: 'interactive' as const },
     { id: 8, title: 'Why So Thirsty? (BBC Part 2 - Part 1)', type: 'video' as const },
     { id: 9, title: 'Comprehension Check: Liquid Cooling', type: 'quiz' as const },
-    { id: 10, title: 'Global Impact & Community Concerns', type: 'video' as const },
+    { id: 10, title: 'Is All AI Usage the Same?', type: 'transition' as const },
     { id: 11, title: 'The Exponential Ladder', type: 'video' as const },
     { id: 12, title: 'Quick Quiz', type: 'quiz' as const },
     { id: 13, title: 'Beyond Water: Energy & Carbon', type: 'interactive' as const },
@@ -1482,46 +1482,42 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 10: BBC Part 2 Continuation (from 1:54)
+      // Segment 10: Transition - Is All AI Usage the Same?
       case 10:
         return (
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Globe className="w-6 h-6 text-green-600" />
-                Global Impact & Community Concerns
+                <Sparkles className="w-6 h-6 text-purple-600" />
+                But Wait... Is All AI Usage the Same?
               </CardTitle>
-              <p className="text-gray-700 mt-2">
-                See how communities worldwide are responding to data center water usage
-              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-gray-700">
-                  This continues the BBC report, showing community protests and the broader supply chain water usage.
+            <CardContent className="space-y-6">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-8 text-center">
+                <h3 className="text-3xl font-bold text-purple-900 mb-4">
+                  Does every AI interaction cause the same impact?
+                </h3>
+                <p className="text-xl text-gray-700 mb-6">
+                  Think about it: Does asking ChatGPT a simple text question use the same amount of water as generating an image? Or creating a video?
                 </p>
+                <div className="bg-white rounded-lg p-6 border-2 border-purple-200">
+                  <p className="text-lg font-semibold text-gray-900 mb-3">
+                    The answer might surprise you...
+                  </p>
+                  <p className="text-gray-700">
+                    Different types of AI tasks use dramatically different amounts of resources. Let's explore what's called the <strong>"Exponential Ladder"</strong> of AI water usage.
+                  </p>
+                </div>
               </div>
 
-              <PremiumVideoPlayer
-                videoUrl={VIDEO_URLS.bbcPart2}
-                videoId="environmental-segment-2-part-2"
-                segments={[
-                  {
-                    id: 'bbc-part-2-section-2',
-                    title: 'Global Impact & Community Concerns',
-                    start: 114,
-                    end: 999999,
-                    source: VIDEO_URLS.bbcPart2,
-                    description: 'Community protests and supply chain water usage',
-                    mandatory: true,
-                  }
-                ]}
-                onSegmentComplete={() => {}}
-                onModuleComplete={handleNextSegment}
-                enableSubtitles={true}
-                hideSegmentNavigator={true}
-                allowSeeking={false}
-              />
+              <Button
+                onClick={handleNextSegment}
+                size="lg"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                Discover the Exponential Ladder
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
             </CardContent>
           </Card>
         );
@@ -1553,8 +1549,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                   {
                     id: 'exponential-ladder',
                     title: 'The Exponential Ladder',
-                    start: 45,
-                    end: 136,
+                    start: 114,
+                    end: 213,
                     source: VIDEO_URLS.animated,
                     description: 'Visualizing how resource usage scales: text → image → video',
                     mandatory: true,
