@@ -1327,7 +1327,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                 )}
                 {showBbcFeedback && bbcQ1Answer !== 'energy-intensive' && (
                   <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
-                    ✗ Not quite. Think about what the video said about AI chips and power requirements.
+                    ✗ Not quite. The video mentioned that AI infrastructure generates much more heat than regular computing. Air cooling was fine until AI came along because AI data centers are so much more __________-intensive.
                   </div>
                 )}
               </div>
@@ -1382,7 +1382,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                 )}
                 {showBbcFeedback && bbcQ2Answer !== 'evaporates' && (
                   <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
-                    ✗ Not quite. Remember what happens in the cooling towers.
+                    ✗ Not quite. The video explained what happens in the cooling towers: fans and water vapor dissipate heat. The water recirculates several times, but overall up to ___% of the water is lost through evaporation.
                   </div>
                 )}
               </div>
@@ -1437,7 +1437,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                 )}
                 {showBbcFeedback && bbcQ3Answer !== 'drinking-water' && (
                   <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
-                    ✗ Not quite. Think about what type of water is required for liquid cooling.
+                    ✗ Not quite. The video said the water must be clean to prevent bacteria and corrosion - which means using ________ water. This water is being extracted from sources needed for other purposes like irrigation and human consumption.
                   </div>
                 )}
               </div>
