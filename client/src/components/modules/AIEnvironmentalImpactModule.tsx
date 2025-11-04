@@ -1493,19 +1493,72 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-8 text-center">
-                <h3 className="text-3xl font-bold text-purple-900 mb-4">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-8">
+                <h3 className="text-3xl font-bold text-purple-900 mb-6 text-center">
                   Does every AI interaction cause the same impact?
                 </h3>
-                <p className="text-xl text-gray-700 mb-6">
-                  Think about it: Does asking ChatGPT a simple text question use the same amount of water as generating an image? Or creating a video?
-                </p>
-                <div className="bg-white rounded-lg p-6 border-2 border-purple-200">
-                  <p className="text-lg font-semibold text-gray-900 mb-3">
-                    The answer might surprise you...
+
+                {/* Visual Comparison Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  {/* Text Generation */}
+                  <div className="bg-white rounded-lg p-5 border-2 border-blue-200 text-center hover:shadow-lg transition-shadow">
+                    <div className="text-4xl mb-3">💬</div>
+                    <h4 className="font-bold text-blue-900 mb-2">Text Query</h4>
+                    <p className="text-sm text-gray-700 mb-2">
+                      "What's the weather today?"
+                    </p>
+                    <p className="text-xs text-gray-600 italic">ChatGPT, Gemini, Claude</p>
+                  </div>
+
+                  {/* Image Generation */}
+                  <div className="bg-white rounded-lg p-5 border-2 border-green-200 text-center hover:shadow-lg transition-shadow">
+                    <div className="text-4xl mb-3">🎨</div>
+                    <h4 className="font-bold text-green-900 mb-2">Image Generation</h4>
+                    <p className="text-sm text-gray-700 mb-2">
+                      "A sunset over mountains"
+                    </p>
+                    <p className="text-xs text-gray-600 italic">DALL-E, Midjourney, Stable Diffusion</p>
+                  </div>
+
+                  {/* Video Generation */}
+                  <div className="bg-white rounded-lg p-5 border-2 border-orange-200 text-center hover:shadow-lg transition-shadow">
+                    <div className="text-4xl mb-3">🎬</div>
+                    <h4 className="font-bold text-orange-900 mb-2">Video Generation</h4>
+                    <p className="text-sm text-gray-700 mb-2">
+                      "A person walking on the beach"
+                    </p>
+                    <p className="text-xs text-gray-600 italic">Sora, Runway, Pika</p>
+                  </div>
+                </div>
+
+                {/* Question */}
+                <div className="bg-white rounded-lg p-6 border-2 border-purple-300 mb-6">
+                  <p className="text-xl font-semibold text-center text-gray-900 mb-4">
+                    🤔 Which one uses the most water?
+                  </p>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="bg-blue-50 rounded-lg p-3">
+                      <p className="text-3xl mb-1">💬</p>
+                      <p className="text-xs font-semibold text-blue-900">Text?</p>
+                    </div>
+                    <div className="bg-green-50 rounded-lg p-3">
+                      <p className="text-3xl mb-1">🎨</p>
+                      <p className="text-xs font-semibold text-green-900">Image?</p>
+                    </div>
+                    <div className="bg-orange-50 rounded-lg p-3">
+                      <p className="text-3xl mb-1">🎬</p>
+                      <p className="text-xs font-semibold text-orange-900">Video?</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Answer Teaser */}
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-6 border-2 border-yellow-400 text-center">
+                  <p className="text-lg font-bold text-gray-900 mb-2">
+                    ⚡ The answer might shock you...
                   </p>
                   <p className="text-gray-700">
-                    Different types of AI tasks use dramatically different amounts of resources. Let's explore what's called the <strong>"Exponential Ladder"</strong> of AI water usage.
+                    Different types of AI tasks use <strong>dramatically different</strong> amounts of resources. Let's explore what's called the <strong>"Exponential Ladder"</strong> of AI water usage.
                   </p>
                 </div>
               </div>
