@@ -126,9 +126,9 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     { id: 13, title: 'Beyond Water: Energy & Carbon', type: 'interactive' as const },
     { id: 14, title: 'Who Should Be Responsible?', type: 'transition' as const },
     { id: 15, title: 'Student Reflection', type: 'reflection' as const },
-    { id: 16, title: 'The Paradox & Future', type: 'video' as const },
+    { id: 16, title: 'The Paradox: AI as Problem and Solution', type: 'video' as const },
     { id: 17, title: 'AI Solutions Sorting', type: 'interactive' as const },
-    { id: 18, title: 'Your Most Efficient Tool', type: 'video' as const },
+    { id: 18, title: 'Moving Forward: Your Role in AI\'s Future', type: 'video' as const },
     { id: 19, title: 'Exit Ticket', type: 'exit-ticket' as const },
   ];
 
@@ -2032,13 +2032,14 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 16: The Paradox & Future - BBC Part 3 (was Segment 15, was Segment 14, was Segment 13, originally Segment 8)
-      case 18:
+      // Segment 16: The Paradox - AI as Problem and Solution
+      case 16:
         return (
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <Leaf className="w-6 h-6 text-green-600" />
-                The Paradox & The Future: AI as Part of the Solution
+                The Paradox: AI as Problem and Solution
               </CardTitle>
               <p className="text-gray-700 mt-2">
                 Discover how AI can also help solve environmental problems
@@ -2052,16 +2053,16 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
               </div>
 
               <PremiumVideoPlayer
-                videoUrl={VIDEO_URLS.bbcPart3}
-                videoId="environmental-segment-8"
+                videoUrl={VIDEO_URLS.hiddenCost}
+                videoId="environmental-segment-paradox"
                 segments={[
                   {
-                    id: 'bbc-part-3',
-                    title: 'The Paradox & The Future',
-                    start: 0,
-                    end: -1,
-                    source: VIDEO_URLS.bbcPart3,
-                    description: 'How AI can also help solve environmental problems',
+                    id: 'paradox-segment',
+                    title: 'The Paradox: AI as Problem and Solution',
+                    start: 233,
+                    end: 280,
+                    source: VIDEO_URLS.hiddenCost,
+                    description: 'How AI creates and solves environmental problems',
                     mandatory: true,
                   }
                 ]}
@@ -2075,41 +2076,41 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 17: AI Solutions Sorting (was Segment 16, was Segment 15, was Segment 14, originally Segment 9)
-      case 19:
+      // Segment 17: AI Solutions Sorting
+      case 17:
         return <SimplifiedSolutionsSorter onComplete={handleNextSegment} />;
 
-      // Segment 18: Your Most Efficient Tool - Animated (was Segment 17, was Segment 16, was Segment 15, originally Segment 10)
-      case 20:
+      // Segment 18: Moving Forward - Your Role
+      case 18:
         return (
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <Sparkles className="w-6 h-6 text-purple-600" />
-                Your Most Efficient Tool: Your Brain
+                Moving Forward: Your Role in AI's Future
               </CardTitle>
               <p className="text-gray-700 mt-2">
-                Discover why your brain is the ultimate sustainable computer
+                What you can do to make a difference
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <p className="text-sm text-gray-700">
-                  This final video segment brings the focus back to YOU - the most powerful and sustainable tool you have.
+                  This final video segment brings the focus back to YOU and what actions you can take moving forward.
                 </p>
               </div>
 
               <PremiumVideoPlayer
-                videoUrl={VIDEO_URLS.animated}
-                videoId="environmental-segment-10"
+                videoUrl={VIDEO_URLS.hiddenCost}
+                videoId="environmental-segment-moving-forward"
                 segments={[
                   {
-                    id: 'your-brain',
-                    title: 'Your Most Efficient Tool',
-                    start: 258,
-                    end: 328,
-                    source: VIDEO_URLS.animated,
-                    description: 'Your brain as the ultimate sustainable computer',
+                    id: 'moving-forward',
+                    title: 'Moving Forward: Your Role in AI\'s Future',
+                    start: 280,
+                    end: 337,
+                    source: VIDEO_URLS.hiddenCost,
+                    description: 'What you can do to make a difference',
                     mandatory: true,
                   }
                 ]}
@@ -2123,8 +2124,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 19: Exit Ticket (with AI validation) (was Segment 18, was Segment 17, was Segment 16, originally Segment 11)
-      case 21:
+      // Segment 19: Exit Ticket (with AI validation)
+      case 19:
         const bothValid = exitTicket1.length >= MIN_EXIT_TICKET_LENGTH && exitTicket2.length >= MIN_EXIT_TICKET_LENGTH;
         const needsRetry = exitTicket1NeedsRetry || exitTicket2NeedsRetry;
 
