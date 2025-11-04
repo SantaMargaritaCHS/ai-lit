@@ -200,6 +200,38 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     }
   }, [currentSegment, completedSegments]);
 
+  // Dev mode response generators for reflection
+  const getDevGoodReflectionResponse = () => {
+    return "I think tech companies should be MOST responsible for reducing AI's environmental impact because they directly control the data centers and can make the biggest changes. For example, companies like Google and Microsoft could invest in renewable energy for their data centers, optimize their AI models to use less power, and implement better water cooling systems like the closed-loop systems mentioned in the module. While governments can create regulations and individual users can make conscious choices (like using text AI instead of video generation), tech companies have the technical expertise and resources to innovate sustainable solutions. The video showed that liquid cooling evaporates 80% of drinking water - companies could switch to seawater or recycled water instead. They're also the ones who can develop more efficient AI chips that generate less heat in the first place. However, I do think it's a shared responsibility where all stakeholders need to play a role.";
+  };
+
+  const getDevGenericReflectionResponse = () => {
+    return "I think everyone should be responsible because it's important. AI uses a lot of resources and that's bad for the environment. People should just be more careful about how they use it and companies should make it better. Governments should make rules too.";
+  };
+
+  const getDevComplaintReflectionResponse = () => {
+    return "This module is confusing and I don't understand why we have to learn about this. The videos are boring and too long. I just want to finish this assignment and move on. Can't we just use AI however we want without worrying about all this environmental stuff?";
+  };
+
+  const getDevGibberishReflectionResponse = () => {
+    return "asdfkj alksjdf laskdjf ;lkj ;lkj ;lkj water water blah blah blah idk lol whatever just let me pass this thing aaaaaa";
+  };
+
+  const handleDevAutoFillReflection = () => {
+    if (!isDevModeActive) return;
+
+    const goodResponse = getDevGoodReflectionResponse();
+    setReflection(goodResponse);
+    setReflectionFeedback("Excellent reflection! You've identified tech companies as having the most direct control and provided specific examples like renewable energy investment, liquid cooling optimization, and more efficient AI chips. Your acknowledgment that this is a shared responsibility while identifying the primary actor shows nuanced understanding. Well done!");
+    setShowReflectionFeedback(true);
+    setReflectionNeedsRetry(false);
+
+    // Auto-complete after brief delay
+    setTimeout(() => {
+      handleNextSegment();
+    }, 1000);
+  };
+
   const handleNextSegment = () => {
     if (!completedSegments.includes(currentSegment)) {
       setCompletedSegments([...completedSegments, currentSegment]);
@@ -1895,6 +1927,52 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                   ? '✓ Ready for AI feedback'
                   : `${reflection.length} / ${MIN_REFLECTION_LENGTH} characters minimum`}
               </p>
+
+              {/* Dev Mode Shortcuts */}
+              {isDevModeActive && !showReflectionFeedback && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Reflection Shortcuts</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={handleDevAutoFillReflection}
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      <Zap className="w-3 h-3 mr-1" />
+                      Auto-Fill & Complete
+                    </Button>
+                    <Button
+                      onClick={() => setReflection(getDevGoodReflectionResponse())}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Good Response
+                    </Button>
+                    <Button
+                      onClick={() => setReflection(getDevGenericReflectionResponse())}
+                      className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Generic Response
+                    </Button>
+                    <Button
+                      onClick={() => setReflection(getDevComplaintReflectionResponse())}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Complaint
+                    </Button>
+                    <Button
+                      onClick={() => setReflection(getDevGibberishReflectionResponse())}
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
+                      size="sm"
+                    >
+                      Fill Gibberish
+                    </Button>
+                  </div>
+                  <p className="text-xs text-red-600 mt-1">Test validation: good, generic, complaint, or gibberish responses</p>
+                </div>
+              )}
 
               {/* Loading state */}
               {isGeneratingReflectionFeedback && (
