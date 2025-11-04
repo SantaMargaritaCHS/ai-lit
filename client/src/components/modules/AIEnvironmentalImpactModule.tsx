@@ -2052,12 +2052,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {isGeneratingReflectionFeedback ? (
-                    <>
-                      <Loader className="w-5 h-5 animate-spin inline mr-2" />
-                      Submitting...
-                    </>
-                  ) : showReflectionFeedback && !reflectionNeedsRetry ? (
+                  {showReflectionFeedback && !reflectionNeedsRetry ? (
                     <>
                       Continue
                       <ArrowRight className="ml-2 w-5 h-5" />
@@ -2487,12 +2482,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {isGeneratingExitTicketFeedback ? (
-                    <>
-                      <Loader className="w-5 h-5 animate-spin inline mr-2" />
-                      Submitting...
-                    </>
-                  ) : showExitTicketFeedback && !exitTicketNeedsRetry ? (
+                  {showExitTicketFeedback && !exitTicketNeedsRetry ? (
                     <>
                       Get Your Certificate
                       <ArrowRight className="ml-2 w-5 h-5" />
