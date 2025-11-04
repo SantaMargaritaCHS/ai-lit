@@ -651,6 +651,66 @@ find client/src -name "*.tsx" -exec wc -l {} \; | sort -rn | head -10
 grep -r "console.log" client/src --include="*.tsx" --include="*.ts" | wc -l
 ```
 
+## 🔍 Code Quality & DeepSource
+
+**Purpose**: Automated code quality analysis, security scanning, and test coverage tracking via DeepSource platform.
+
+**Configuration**: `.deepsource.toml` (repository root)
+
+**How Claude Gets Notified:**
+1. **GitHub PR Comments** - DeepSource automatically comments on PRs with analysis results (visible when reviewing PRs)
+2. **Manual Checks** - User can ask: "Check DeepSource" or "What issues did DeepSource find?"
+3. **CLI Commands** - Use helper script or direct CLI
+
+**Quick Commands:**
+```bash
+# Check DeepSource CLI status
+npm run deepsource:status
+
+# List issues in specific file
+npm run deepsource:issues client/src/components/modules/SomeModule.tsx
+
+# View all recent issues (requires authentication)
+deepsource issues list . --limit 50
+
+# Open DeepSource dashboard
+npm run deepsource:dashboard
+```
+
+**CLI Setup (one-time):**
+```bash
+# Install DeepSource CLI
+curl https://deepsource.io/cli | sh
+
+# Authenticate (opens browser)
+deepsource auth login
+```
+
+**What DeepSource Analyzes:**
+- ✅ Code quality issues (unused vars, complexity, anti-patterns)
+- ✅ Security vulnerabilities (hardcoded secrets, XSS, injection risks)
+- ✅ TypeScript/React best practices
+- ✅ Test coverage metrics
+- ✅ Dependency vulnerabilities (SCA)
+- ✅ Style/formatting (Prettier integration)
+
+**When to Check DeepSource:**
+- After creating a PR (check automated comments)
+- Before merging to main
+- After major refactoring
+- When user reports quality issues
+- Periodically (weekly) for codebase health
+
+**Integration with Workflow:**
+- DeepSource runs automatically on every commit/PR
+- Results appear as GitHub Check status (pass/fail)
+- Can enable Autofix™ to automatically remediate issues
+- Prettier transformer auto-formats code
+
+**Dashboard**: https://deepsource.io (authenticate with GitHub)
+
+**Note**: DeepSource requires repository activation via their web dashboard after pushing `.deepsource.toml`.
+
 ## 🤖 Specialized Agents
 
 **Location**: `.claude/agents/` (7 agents + README)

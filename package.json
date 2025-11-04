@@ -13,7 +13,11 @@
     "mcp:full": "node scripts/mcp/test-runner.js --suite=all --verbose",
     "mcp:module": "node scripts/mcp/test-runner.js --module=$MODULE",
     "mcp:accessibility": "node scripts/mcp/test-runner.js --suite=accessibility",
-    "mcp:report": "node scripts/mcp/report-generator.js --latest"
+    "mcp:report": "node scripts/mcp/report-generator.js --latest",
+    "deepsource:check": "bash scripts/check-deepsource.sh",
+    "deepsource:status": "deepsource repo status || echo 'DeepSource CLI not installed. Run: curl https://deepsource.io/cli | sh'",
+    "deepsource:issues": "deepsource issues list",
+    "deepsource:dashboard": "deepsource repo view"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
