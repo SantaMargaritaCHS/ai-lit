@@ -108,7 +108,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
   const MIN_REFLECTION_LENGTH = 150;
   const MIN_EXIT_TICKET_LENGTH = 100;
 
-  // Segment definitions (20 total after adding intro + water comparison + scale footprint + exponential ladder + 3 new segments + transition)
+  // Segment definitions (20 total)
   const segments = [
     { id: 0, title: 'Welcome to Module', type: 'intro' as const },
     { id: 1, title: 'The Hidden Cost (Hook)', type: 'video' as const },
@@ -124,14 +124,12 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     { id: 11, title: 'The Exponential Ladder', type: 'video' as const },
     { id: 12, title: 'Quick Quiz', type: 'quiz' as const },
     { id: 13, title: 'Beyond Water: Energy & Carbon', type: 'interactive' as const },
-    { id: 14, title: 'The Big Picture (BBC Part 3)', type: 'video' as const },
-    { id: 15, title: 'Environmental Calculator', type: 'interactive' as const },
-    { id: 16, title: 'Comparison Matrix', type: 'interactive' as const },
-    { id: 17, title: 'Student Reflection', type: 'reflection' as const },
-    { id: 18, title: 'The Paradox & Future', type: 'video' as const },
-    { id: 19, title: 'AI Solutions Sorting', type: 'interactive' as const },
-    { id: 20, title: 'Your Most Efficient Tool', type: 'video' as const },
-    { id: 21, title: 'Exit Ticket', type: 'exit-ticket' as const },
+    { id: 14, title: 'Who Should Be Responsible?', type: 'transition' as const },
+    { id: 15, title: 'Student Reflection', type: 'reflection' as const },
+    { id: 16, title: 'The Paradox & Future', type: 'video' as const },
+    { id: 17, title: 'AI Solutions Sorting', type: 'interactive' as const },
+    { id: 18, title: 'Your Most Efficient Tool', type: 'video' as const },
+    { id: 19, title: 'Exit Ticket', type: 'exit-ticket' as const },
   ];
 
   // Register activities for Developer Mode
@@ -1756,59 +1754,107 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         );
 
       // Segment 12: The Big Picture - Animated (was Segment 11, was Segment 10, was Segment 9, originally Segment 4)
+      // Segment 14: Critical Thinking - Who Should Be Responsible?
       case 14:
         return (
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Leaf className="w-6 h-6 text-green-600" />
-                The Big Picture: Training Costs & Community Impact
+                <Brain className="w-6 h-6 text-purple-600" />
+                Critical Thinking: Who Should Be Responsible?
               </CardTitle>
-              <p className="text-gray-700 mt-2">
-                See how AI's environmental impact scales from one user to entire communities
-              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <p className="text-sm text-gray-700">
-                  This segment shows the massive one-time cost to train AI models and the real-world impact on towns like The Dalles, Oregon.
-                </p>
+            <CardContent className="space-y-6">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-300 rounded-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                  Now that you know AI's environmental impact...
+                </h3>
+
+                <div className="space-y-6">
+                  {/* The Question */}
+                  <div className="bg-white rounded-lg p-6 border-2 border-purple-300">
+                    <p className="text-xl font-semibold text-center text-purple-900 mb-4">
+                      🤔 Who should be responsible for reducing this impact?
+                    </p>
+                  </div>
+
+                  {/* Stakeholder Options */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* AI Companies */}
+                    <div className="bg-white rounded-lg p-5 border-2 border-blue-200 hover:shadow-lg transition-shadow">
+                      <div className="text-3xl mb-3 text-center">🏢</div>
+                      <h4 className="font-bold text-blue-900 mb-2 text-center">AI Companies</h4>
+                      <p className="text-sm text-gray-700 text-center">
+                        OpenAI, Google, Meta, Microsoft
+                      </p>
+                      <p className="text-xs text-gray-600 mt-2 italic text-center">
+                        Build more efficient systems?
+                      </p>
+                    </div>
+
+                    {/* Users */}
+                    <div className="bg-white rounded-lg p-5 border-2 border-green-200 hover:shadow-lg transition-shadow">
+                      <div className="text-3xl mb-3 text-center">👥</div>
+                      <h4 className="font-bold text-green-900 mb-2 text-center">Individual Users</h4>
+                      <p className="text-sm text-gray-700 text-center">
+                        You, your friends, everyone who uses AI
+                      </p>
+                      <p className="text-xs text-gray-600 mt-2 italic text-center">
+                        Make conscious choices about usage?
+                      </p>
+                    </div>
+
+                    {/* Governments */}
+                    <div className="bg-white rounded-lg p-5 border-2 border-orange-200 hover:shadow-lg transition-shadow">
+                      <div className="text-3xl mb-3 text-center">🏛️</div>
+                      <h4 className="font-bold text-orange-900 mb-2 text-center">Governments</h4>
+                      <p className="text-sm text-gray-700 text-center">
+                        Create regulations and standards
+                      </p>
+                      <p className="text-xs text-gray-600 mt-2 italic text-center">
+                        Enforce environmental limits?
+                      </p>
+                    </div>
+
+                    {/* Everyone */}
+                    <div className="bg-white rounded-lg p-5 border-2 border-purple-200 hover:shadow-lg transition-shadow">
+                      <div className="text-3xl mb-3 text-center">🌍</div>
+                      <h4 className="font-bold text-purple-900 mb-2 text-center">All of Us</h4>
+                      <p className="text-sm text-gray-700 text-center">
+                        Shared responsibility across stakeholders
+                      </p>
+                      <p className="text-xs text-gray-600 mt-2 italic text-center">
+                        Collective action?
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Reflection Prompt */}
+                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-6 border-2 border-yellow-400">
+                    <p className="text-center text-gray-900 font-semibold mb-2">
+                      💭 There's no single "right" answer...
+                    </p>
+                    <p className="text-sm text-center text-gray-700">
+                      This is a complex issue involving technology companies, individual choices, government policy, and global cooperation. Think about this question as we continue exploring solutions.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <PremiumVideoPlayer
-                videoUrl={VIDEO_URLS.animated}
-                videoId="environmental-segment-4"
-                segments={[
-                  {
-                    id: 'big-picture',
-                    title: 'The Big Picture',
-                    start: 154,
-                    end: 213,
-                    source: VIDEO_URLS.animated,
-                    description: 'Training costs and community impact',
-                    mandatory: true,
-                  }
-                ]}
-                onSegmentComplete={() => {}}
-                onModuleComplete={handleNextSegment}
-                enableSubtitles={true}
-                hideSegmentNavigator={true}
-                allowSeeking={false}
-              />
+              <Button
+                onClick={handleNextSegment}
+                size="lg"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                Continue to Student Reflection
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
             </CardContent>
           </Card>
         );
 
-      // Segment 13: Environmental Calculator (was Segment 12, was Segment 11, was Segment 10, originally Segment 5)
-      case 15:
-        return <EnvironmentalCalculator onComplete={handleNextSegment} />;
-
-      // Segment 14: Comparison Matrix (was Segment 13, was Segment 12, was Segment 11, originally Segment 6)
-      case 16:
-        return <EnvironmentalImpactMatrix onComplete={handleNextSegment} />;
-
       // Segment 15: Student Reflection (with AI validation) (was Segment 14, was Segment 13, was Segment 12, originally Segment 7)
-      case 17:
+      case 15:
         return (
           <Card>
             <CardHeader>
