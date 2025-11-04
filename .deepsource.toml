@@ -1,24 +1,39 @@
 version = 1
 
+# JavaScript/TypeScript analyzer for React codebase
 [[analyzers]]
 name = "javascript"
 enabled = true
 
   [analyzers.meta]
+  # Use TypeScript parser
   plugins = ["react"]
-  environment = ["browser", "es2022", "node"]
+  environment = [
+    "browser",
+    "es2022",
+    "node"
+  ]
+
+  # Style and formatting preferences
   style_guide = "airbnb"
+
+  # Skip node_modules and build artifacts
   skip_doc_coverage = ["node_modules", "dist", "build"]
+
+  # Dialect
   dialect = "typescript"
 
+# Test coverage tracking
 [[analyzers]]
 name = "test-coverage"
 enabled = true
 
+# Security and dependency scanning
 [[analyzers]]
 name = "secrets"
 enabled = true
 
+# Exclude patterns
 [[exclude_patterns]]
 name = "node_modules"
 
@@ -31,6 +46,20 @@ name = "build"
 [[exclude_patterns]]
 name = "*.min.js"
 
+[[exclude_patterns]]
+name = "vite.config.ts"
+
+[[exclude_patterns]]
+name = "postcss.config.js"
+
+[[exclude_patterns]]
+name = "tailwind.config.js"
+
+# Transformers (auto-formatting)
 [[transformers]]
 name = "prettier"
 enabled = true
+
+[[transformers]]
+name = "standardjs"
+enabled = false
