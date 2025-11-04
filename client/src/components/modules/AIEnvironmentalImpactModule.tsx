@@ -394,13 +394,6 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
 
     setShowBbcFeedback(true);
     setBbcAllCorrect(allCorrect);
-
-    if (allCorrect) {
-      // Auto-proceed after showing success message
-      setTimeout(() => {
-        handleNextSegment();
-      }, 2000);
-    }
   };
 
   const handleBbcCheckReset = () => {
@@ -1446,9 +1439,17 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
               {showBbcFeedback && bbcAllCorrect && (
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-4">
                   <h3 className="font-bold text-green-900 mb-2">🎉 Excellent! All correct!</h3>
-                  <p className="text-sm text-green-800">
+                  <p className="text-sm text-green-800 mb-4">
                     You clearly understood the technical challenges of AI cooling. Let's continue learning about the global impact...
                   </p>
+                  <Button
+                    onClick={handleNextSegment}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    size="lg"
+                  >
+                    Continue to Global Impact
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
                 </div>
               )}
 
