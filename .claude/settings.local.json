@@ -32,7 +32,9 @@
       "WebFetch(domain:arxiv.org)",
       "WebFetch(domain:www.seangoedecke.com)",
       "WebFetch(domain:www.datacenterdynamics.com)",
-      "WebFetch(domain:docs.deepsource.com)"
+      "WebFetch(domain:docs.deepsource.com)",
+      "Bash(git branch:*)",
+      "Bash(git rev-parse:*)"
     ],
     "deny": [],
     "ask": []
