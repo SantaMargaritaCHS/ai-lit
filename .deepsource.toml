@@ -1,6 +1,6 @@
 version = 1
 
-# JavaScript/TypeScript analyzer for React codebase
+# JavaScript/TypeScript analyzer for React codebase - AI Literacy Platform
 [[analyzers]]
 name = "javascript"
 enabled = true
