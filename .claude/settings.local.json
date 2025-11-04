@@ -34,7 +34,8 @@
       "WebFetch(domain:www.datacenterdynamics.com)",
       "WebFetch(domain:docs.deepsource.com)",
       "Bash(git branch:*)",
-      "Bash(git rev-parse:*)"
+      "Bash(git rev-parse:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
