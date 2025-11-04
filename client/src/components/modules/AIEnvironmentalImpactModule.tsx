@@ -42,7 +42,7 @@ const VIDEO_URLS = {
 };
 
 interface AIEnvironmentalImpactModuleProps {
-  onComplete: () => void;
+  onComplete?: () => void;
   userName?: string;
 }
 
@@ -2512,7 +2512,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
         completionDate={new Date().toLocaleDateString()}
         onDownload={() => {
           clearProgress(MODULE_ID);
-          onComplete();
+          onComplete?.();
         }}
       />
     );
