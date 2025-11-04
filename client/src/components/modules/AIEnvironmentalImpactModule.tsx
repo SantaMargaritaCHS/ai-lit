@@ -127,9 +127,10 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
     { id: 14, title: 'Who Should Be Responsible?', type: 'transition' as const },
     { id: 15, title: 'Student Reflection', type: 'reflection' as const },
     { id: 16, title: 'The Paradox: AI as Problem and Solution', type: 'video' as const },
-    { id: 17, title: 'AI Solutions Sorting', type: 'interactive' as const },
-    { id: 18, title: 'Moving Forward: Your Role in AI\'s Future', type: 'video' as const },
-    { id: 19, title: 'Exit Ticket', type: 'exit-ticket' as const },
+    { id: 17, title: 'Promising Solutions on the Horizon', type: 'transition' as const },
+    { id: 18, title: 'AI Solutions Sorting', type: 'interactive' as const },
+    { id: 19, title: 'Moving Forward: Your Role in AI\'s Future', type: 'video' as const },
+    { id: 20, title: 'Exit Ticket', type: 'exit-ticket' as const },
   ];
 
   // Register activities for Developer Mode
@@ -2154,12 +2155,138 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 17: AI Solutions Sorting
+      // Segment 17: Promising Solutions on the Horizon
       case 17:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-green-600" />
+                Promising Solutions on the Horizon
+              </CardTitle>
+              <p className="text-gray-700 mt-2">
+                Innovation and hope for a sustainable AI future
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-lg p-6">
+                <p className="text-center text-gray-900 font-semibold mb-4">
+                  💡 While AI creates environmental challenges, tech companies and researchers are working on exciting solutions!
+                </p>
+              </div>
+
+              {/* Tech Company Commitments */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    🏢
+                  </div>
+                  Tech Company Innovations
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-1">💧 Water Neutrality by 2030</h4>
+                    <p className="text-sm text-gray-700">Google, Microsoft, and Meta have pledged to return as much water as they use</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-1">❄️ Evaporation-Free Cooling</h4>
+                    <p className="text-sm text-gray-700">New cooling systems that don't evaporate any water at all</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-1">♻️ Heat Recycling</h4>
+                    <p className="text-sm text-gray-700">Using AI-generated heat to warm homes and buildings</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-1">🌊 Seawater Cooling</h4>
+                    <p className="text-sm text-gray-700">Using ocean water instead of freshwater for cooling</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Future Technologies */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    🚀
+                  </div>
+                  Futuristic Approaches
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                    <h4 className="font-semibold text-purple-900 mb-1">🌊 Underwater Data Centers</h4>
+                    <p className="text-sm text-gray-700">Moving servers beneath the ocean for natural cooling</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                    <h4 className="font-semibold text-purple-900 mb-1">🧊 Arctic Facilities</h4>
+                    <p className="text-sm text-gray-700">Building data centers in cold climates to reduce cooling needs</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                    <h4 className="font-semibold text-purple-900 mb-1">🛰️ Space-Based Computing</h4>
+                    <p className="text-sm text-gray-700">Experimental satellites for backup and computing tasks</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                    <h4 className="font-semibold text-purple-900 mb-1">⚡ Next-Gen AI Chips</h4>
+                    <p className="text-sm text-gray-700">More efficient hardware that uses less power and generates less heat</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Helping the Environment */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    🌱
+                  </div>
+                  AI Solving Environmental Problems
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <h4 className="font-semibold text-green-900 mb-1">☀️ Renewable Energy Optimization</h4>
+                    <p className="text-sm text-gray-700">AI makes solar and wind power grids more efficient</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <h4 className="font-semibold text-green-900 mb-1">🌍 Climate Prediction</h4>
+                    <p className="text-sm text-gray-700">Better weather models and climate change forecasting</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <h4 className="font-semibold text-green-900 mb-1">💧 Smart Water Management</h4>
+                    <p className="text-sm text-gray-700">AI-powered irrigation and leak detection systems</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <h4 className="font-semibold text-green-900 mb-1">🌳 Carbon Capture</h4>
+                    <p className="text-sm text-gray-700">Optimizing technologies that remove CO₂ from the atmosphere</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Optimistic Message */}
+              <div className="bg-gradient-to-r from-yellow-50 to-green-50 rounded-lg p-6 border-2 border-yellow-400">
+                <p className="text-center text-gray-900 text-lg font-semibold mb-2">
+                  🌟 "Generative AI is still very, very young"
+                </p>
+                <p className="text-center text-gray-700 text-sm">
+                  As the industry matures, we can learn together as a society how to minimize water and energy use while maximizing AI's benefits. The solutions are coming!
+                </p>
+              </div>
+
+              <Button
+                onClick={handleNextSegment}
+                size="lg"
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                Continue to Explore Solutions
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </CardContent>
+          </Card>
+        );
+
+      // Segment 18: AI Solutions Sorting
+      case 18:
         return <SimplifiedSolutionsSorter onComplete={handleNextSegment} />;
 
-      // Segment 18: Moving Forward - Your Role
-      case 18:
+      // Segment 19: Moving Forward - Your Role
+      case 19:
         return (
           <Card>
             <CardHeader>
@@ -2202,8 +2329,8 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
           </Card>
         );
 
-      // Segment 19: Exit Ticket (with AI validation)
-      case 19:
+      // Segment 20: Exit Ticket (with AI validation)
+      case 20:
         const bothValid = exitTicket1.length >= MIN_EXIT_TICKET_LENGTH && exitTicket2.length >= MIN_EXIT_TICKET_LENGTH;
         const needsRetry = exitTicket1NeedsRetry || exitTicket2NeedsRetry;
 
