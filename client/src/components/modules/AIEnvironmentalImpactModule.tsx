@@ -1076,7 +1076,7 @@ export default function AIEnvironmentalImpactModule({ onComplete, userName = "St
               </div>
 
               <Button onClick={handleNextSegment} size="lg" className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                Continue to the Exponential Ladder
+                Continue to Learn Why AI Is So Thirsty
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </CardContent>
