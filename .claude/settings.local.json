@@ -35,7 +35,9 @@
       "WebFetch(domain:docs.deepsource.com)",
       "Bash(git branch:*)",
       "Bash(git rev-parse:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git ls-tree:*)"
     ],
     "deny": [],
     "ask": []
