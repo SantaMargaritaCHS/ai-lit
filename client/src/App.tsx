@@ -18,6 +18,9 @@ import AIEnvironmentalImpactModule from './components/modules/AIEnvironmentalImp
 import IntroductionToPromptingModule from './components/modules/IntroductionToPromptingModule';
 import AncientCompassModule from './components/modules/AncientCompassModule';
 
+// Import Module Builder (isolated - does not affect existing modules)
+import { ModuleBuilderPage } from './components/builder';
+
 const moduleMap = {
   'what-is-ai': WhatIsAIModule,
   'intro-to-gen-ai': IntroToGenAIModule,
@@ -39,6 +42,8 @@ function App() {
             <Router>
               <Switch>
                 <Route path="/" component={HomePage} />
+                {/* Module Builder - Isolated route (does not affect existing modules) */}
+                <Route path="/builder" component={ModuleBuilderPage} />
                 <Route path="/module/:moduleId">
                   {(params) => <ModulePage moduleId={params.moduleId} moduleMap={moduleMap} />}
                 </Route>
