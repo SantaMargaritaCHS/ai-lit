@@ -87,12 +87,32 @@ client/src/components/builder/
 
 ---
 
-### Phase 1.2: Video Segment Editor
+### Phase 1.2: Video Segment Editor with Transcript Extraction
 **Tasks**:
 - [ ] Create `VideoSegmentEditor.tsx` component
 - [ ] Firebase Storage video URL input
 - [ ] Time-code segment definition UI
 - [ ] Segment preview functionality
+- [ ] **Transcript extraction/upload** (CRITICAL for AI content generation)
+  - YouTube video → Auto-extract via YouTube Data API
+  - Uploaded video → Speech-to-text (Google Cloud Speech-to-Text or Whisper API)
+  - Manual transcript upload (fallback option)
+- [ ] Transcript display and editing interface
+- [ ] Associate transcript segments with time-coded video segments
+
+**Why Transcripts Matter**:
+Videos are the primary source of educational content. Transcripts enable:
+- AI-generated quiz questions based on video content (Phase 2.2)
+- AI-generated reflection prompts aligned with video topics (Phase 2.3)
+- AI-generated scenarios related to video themes (Phase 2.4)
+- Context-aware content that matches the module's learning objectives
+
+**Implementation Approach**:
+1. Detect video source (YouTube, Firebase Storage, external)
+2. Auto-extract transcript if available (YouTube captions)
+3. Offer speech-to-text for uploaded videos (API integration)
+4. Allow manual transcript upload (VTT, SRT, or plain text)
+5. Store transcript with timestamps for segment alignment
 
 **Reference Files**:
 - `client/src/components/modules/AIEnvironmentalImpactModule.tsx` (time-coded segments)
@@ -102,6 +122,16 @@ client/src/components/builder/
 - [ ] Can add/remove/reorder video segments
 - [ ] Time codes validate correctly
 - [ ] Preview shows correct segment
+- [ ] Transcript extraction works for YouTube videos
+- [ ] Manual transcript upload works
+- [ ] Transcript segments align with video time codes
+- [ ] Transcript text is editable
+- [ ] Transcript data exports with module JSON
+
+**API Research Needed**:
+- YouTube Data API v3 (captions endpoint)
+- Google Cloud Speech-to-Text API (for uploaded videos)
+- Alternative: OpenAI Whisper API (potentially more cost-effective)
 
 **Status**: Not started
 **Completion Date**: TBD
@@ -244,6 +274,7 @@ interface ActivityDefinition {
 **Tasks**:
 - [ ] Create `client/src/services/builderAIService.ts`
 - [ ] Gemini API prompts for each content type
+- [ ] **Transcript-aware generation** (uses video transcripts from Phase 1.2)
 - [ ] Token management and rate limiting
 - [ ] Error handling and retries
 
@@ -251,11 +282,61 @@ interface ActivityDefinition {
 - `client/src/services/geminiClient.ts` (API config)
 - `client/src/utils/aiEducationFeedback.ts` (prompt patterns)
 
-**AI Generation Types**:
-1. **Quiz Questions**: Generate multiple-choice questions from video content
+**AI Generation Types** (All powered by video transcripts):
+1. **Quiz Questions**: Generate multiple-choice questions from video transcript
+   - Analyzes transcript content to identify key concepts
+   - Creates questions with 4 options (1 correct, 3 plausible distractors)
+   - Generates educational hints (never reveals correct answer)
+
 2. **Reflection Prompts**: Age-appropriate prompts (14-18 years)
+   - Based on video transcript themes and learning objectives
+   - Encourages critical thinking about video content
+   - Avoids anthropomorphization of AI (per project guidelines)
+
 3. **Scenario Content**: Ethical dilemmas, case studies
+   - Derives scenarios from video transcript examples
+   - Creates stakeholder perspectives
+   - Generates discussion questions
+
 4. **Hint Generation**: Educational hints for quiz answers
+   - Context-aware based on transcript content
+   - Guides students toward understanding without revealing answers
+
+**Transcript Integration Architecture**:
+```typescript
+interface TranscriptData {
+  fullText: string;
+  segments: {
+    startTime: number;
+    endTime: number;
+    text: string;
+  }[];
+  videoUrl: string;
+  videoTitle: string;
+}
+
+// Gemini prompt example
+const quizPrompt = `
+You are an educational content creator for high school students (ages 14-18).
+
+Video Title: ${transcript.videoTitle}
+Video Transcript:
+${transcript.fullText}
+
+Generate 3 multiple-choice quiz questions that:
+- Test understanding of key concepts from the video
+- Use age-appropriate language
+- Have 4 options each (1 correct, 3 plausible distractors)
+- Include educational hints that guide without revealing answers
+...
+`;
+```
+
+**Why This Matters**:
+- Transcript provides rich context for AI generation
+- Ensures generated content aligns with video content
+- Reduces manual content creation from 60 hours to ~6 hours per module
+- Maintains educational quality through context-aware generation
 
 **Status**: Not started
 **Completion Date**: TBD
@@ -265,19 +346,30 @@ interface ActivityDefinition {
 ### Phase 2.2: Quiz Question Generator UI
 **Tasks**:
 - [ ] Create `QuizGenerator.tsx` component
-- [ ] Input: Video URL or topic description
-- [ ] AI generation trigger
+- [ ] **Input: Video + Transcript** (from Phase 1.2 Video Segment Editor)
+- [ ] AI generation trigger (sends transcript to Gemini)
+- [ ] Real-time generation progress indicator
 - [ ] Review/edit interface for generated questions
+- [ ] Batch generation (e.g., "Generate 5 questions")
 - [ ] Export to module assembly
+
+**User Flow**:
+1. User selects video segment from Phase 1.2
+2. Transcript is automatically loaded
+3. User specifies: # of questions, difficulty level, focus topics
+4. Gemini analyzes transcript and generates questions
+5. User reviews, edits, approves generated questions
+6. Questions are added to module assembly
 
 **Reference Files**:
 - `client/src/components/ResponsibleEthicalAIModule/activities/IntroductionToAI.tsx` (quiz pattern)
 
 **Verification Checklist**:
-- [ ] Generates relevant questions
+- [ ] Generates relevant questions based on transcript
 - [ ] Questions match module theme
 - [ ] Age-appropriate language (14-18)
 - [ ] Can edit before adding to module
+- [ ] Transcript context improves question quality vs. generic prompts
 
 **Status**: Not started
 **Completion Date**: TBD
@@ -636,6 +728,7 @@ client/src/components/modules/[GeneratedModuleName]/
 ### Recent Activity Log
 | Date | Activity | Notes |
 |------|----------|-------|
+| 2025-11-10 | 📝 Enhanced Phase 1.2 & 2.1 | Added transcript extraction to Phase 1.2, integrated transcript-aware AI generation in Phase 2.1-2.2 |
 | 2025-11-10 | ✅ Phase 1.1 Complete | Foundation setup: plan doc, HomePage link, /builder route, ModuleBuilderPage, docs |
 | 2025-11-10 | Created BUILDER_PROGRESS.md | Comprehensive 16-week plan with 4 phases, 17 sub-phases, verification gates |
 | | | |
