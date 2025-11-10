@@ -19,7 +19,7 @@ import IntroductionToPromptingModule from './components/modules/IntroductionToPr
 import AncientCompassModule from './components/modules/AncientCompassModule';
 
 // Import Module Builder (isolated - does not affect existing modules)
-import { ModuleBuilderPage } from './components/builder';
+import { ModuleBuilderPage, BuilderErrorBoundary } from './components/builder';
 
 const moduleMap = {
   'what-is-ai': WhatIsAIModule,
@@ -43,7 +43,11 @@ function App() {
               <Switch>
                 <Route path="/" component={HomePage} />
                 {/* Module Builder - Isolated route (does not affect existing modules) */}
-                <Route path="/builder" component={ModuleBuilderPage} />
+                <Route path="/builder">
+                  <BuilderErrorBoundary fallbackMessage="The module builder encountered an issue">
+                    <ModuleBuilderPage />
+                  </BuilderErrorBoundary>
+                </Route>
                 <Route path="/module/:moduleId">
                   {(params) => <ModulePage moduleId={params.moduleId} moduleMap={moduleMap} />}
                 </Route>

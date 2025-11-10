@@ -18,3 +18,7 @@ export { default as ScenarioGenerator } from './ScenarioGenerator';
 export { default as CodeExporter } from './CodeExporter';
 export { default as BuilderTips } from './BuilderTips';
 export { default as ValidationPanel } from './ValidationPanel';
+export { default as LoadingSpinner } from './LoadingSpinner';
+export { default as EmptyState } from './EmptyState';
+export { default as BuilderErrorBoundary } from './BuilderErrorBoundary';
+export { default as SaveIndicator, useSaveIndicator } from './SaveIndicator';
