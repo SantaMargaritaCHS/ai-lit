@@ -9,6 +9,7 @@ import QuizGenerator from './QuizGenerator';
 import ReflectionGenerator from './ReflectionGenerator';
 import ScenarioGenerator from './ScenarioGenerator';
 import CodeExporter from './CodeExporter';
+import BuilderTips from './BuilderTips';
 
 /**
  * ModuleBuilderPage - Main container for the module builder interface
@@ -347,24 +348,28 @@ export default function ModuleBuilderPage() {
 
         {activeTab === 'video-editor' && (
           <div className="max-w-7xl mx-auto">
+            <BuilderTips context="video-editor" />
             <VideoSegmentEditor />
           </div>
         )}
 
         {activeTab === 'activity-catalog' && (
           <div className="max-w-7xl mx-auto">
+            <BuilderTips context="activity-catalog" />
             <ActivityCatalog />
           </div>
         )}
 
         {activeTab === 'module-assembly' && (
           <div className="max-w-7xl mx-auto">
+            <BuilderTips context="module-assembly" />
             <ModuleAssembly />
           </div>
         )}
 
         {activeTab === 'preview' && (
           <div className="max-w-7xl mx-auto">
+            <BuilderTips context="preview" />
             <ModulePreview
               moduleTitle="Sample Module"
               moduleDescription="This is a preview of how your module will look to students"
@@ -375,24 +380,28 @@ export default function ModuleBuilderPage() {
 
         {activeTab === 'quiz-generator' && (
           <div className="max-w-7xl mx-auto">
+            <BuilderTips context="quiz-generator" />
             <QuizGenerator />
           </div>
         )}
 
         {activeTab === 'reflection-generator' && (
           <div className="max-w-7xl mx-auto">
+            <BuilderTips context="reflection-generator" />
             <ReflectionGenerator />
           </div>
         )}
 
         {activeTab === 'scenario-generator' && (
           <div className="max-w-7xl mx-auto">
+            <BuilderTips context="scenario-generator" />
             <ScenarioGenerator />
           </div>
         )}
 
         {activeTab === 'code-exporter' && (
           <div className="max-w-7xl mx-auto">
+            <BuilderTips context="code-exporter" />
             <CodeExporter />
           </div>
         )}
