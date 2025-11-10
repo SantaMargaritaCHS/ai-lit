@@ -4,6 +4,7 @@ import { ArrowLeft, Wrench, Info, FileVideo, Blocks, Eye, Download } from 'lucid
 import VideoSegmentEditor from './VideoSegmentEditor';
 import ActivityCatalog from './ActivityCatalog';
 import ModuleAssembly from './ModuleAssembly';
+import ModulePreview from './ModulePreview';
 
 /**
  * ModuleBuilderPage - Main container for the module builder interface
@@ -47,7 +48,7 @@ export default function ModuleBuilderPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Phase 1.4 - Module Assembly</span>
+              <span className="text-xs text-gray-500">Phase 1.5 - Module Preview</span>
             </div>
           </div>
 
@@ -89,13 +90,14 @@ export default function ModuleBuilderPage() {
               </button>
               <button
                 onClick={() => setActiveTab('preview')}
-                disabled
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
-                title="Coming in Phase 1.5"
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'preview'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
               >
                 <Eye className="w-4 h-4" />
                 Preview
-                <span className="text-xs">(Soon)</span>
               </button>
             </div>
           )}
@@ -255,6 +257,16 @@ export default function ModuleBuilderPage() {
         {activeTab === 'module-assembly' && (
           <div className="max-w-7xl mx-auto">
             <ModuleAssembly />
+          </div>
+        )}
+
+        {activeTab === 'preview' && (
+          <div className="max-w-7xl mx-auto">
+            <ModulePreview
+              moduleTitle="Sample Module"
+              moduleDescription="This is a preview of how your module will look to students"
+              activities={[]}
+            />
           </div>
         )}
       </main>

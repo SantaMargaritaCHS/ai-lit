@@ -11,3 +11,4 @@ export { default as ModuleBuilderPage } from './ModuleBuilderPage';
 export { default as VideoSegmentEditor } from './VideoSegmentEditor';
 export { default as ActivityCatalog } from './ActivityCatalog';
 export { default as ModuleAssembly } from './ModuleAssembly';
+export { default as ModulePreview } from './ModulePreview';
