@@ -17,3 +17,4 @@ export { default as ReflectionGenerator } from './ReflectionGenerator';
 export { default as ScenarioGenerator } from './ScenarioGenerator';
 export { default as CodeExporter } from './CodeExporter';
 export { default as BuilderTips } from './BuilderTips';
+export { default as ValidationPanel } from './ValidationPanel';

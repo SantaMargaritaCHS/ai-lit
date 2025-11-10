@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import ValidationPanel from './ValidationPanel';
 
 /**
  * ModuleAssembly - Drag-and-drop interface for assembling modules
@@ -206,6 +207,29 @@ export default function ModuleAssembly() {
     return activityType?.icon || '📄';
   };
 
+  // Helper to create module definition for validation
+  const getCurrentModuleDefinition = (): ModuleDefinition | undefined => {
+    if (!moduleTitle.trim() || activities.length === 0) {
+      return undefined;
+    }
+
+    return {
+      id: moduleTitle.toLowerCase().replace(/\s+/g, '-'),
+      title: moduleTitle,
+      description: moduleDescription,
+      targetAudience,
+      estimatedTime,
+      activities,
+      videos: [],
+      metadata: {
+        author: 'Module Builder',
+        version: '1.0.0',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    };
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -333,6 +357,11 @@ export default function ModuleAssembly() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Phase 4.1: Validation Panel */}
+      {moduleTitle.trim() && activities.length > 0 && (
+        <ValidationPanel moduleDefinition={getCurrentModuleDefinition()} mode="quick" />
+      )}
 
       {/* Activity Assembly Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
