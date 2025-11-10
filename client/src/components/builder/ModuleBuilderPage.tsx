@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, Wrench, Info } from 'lucide-react';
+import { ArrowLeft, Wrench, Info, FileVideo, Blocks, Eye, Download } from 'lucide-react';
+import VideoSegmentEditor from './VideoSegmentEditor';
 
 /**
  * ModuleBuilderPage - Main container for the module builder interface
@@ -16,8 +17,11 @@ import { ArrowLeft, Wrench, Info } from 'lucide-react';
  * Phase 3: TypeScript code generation
  * Phase 4: Validation and polish
  */
+
+type Tab = 'welcome' | 'video-editor' | 'activity-catalog' | 'module-assembly' | 'preview';
+
 export default function ModuleBuilderPage() {
-  const [activeTab, setActiveTab] = useState<'welcome' | 'builder'>('welcome');
+  const [activeTab, setActiveTab] = useState<Tab>('welcome');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100">
@@ -41,9 +45,56 @@ export default function ModuleBuilderPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Phase 1.1 - Foundation</span>
+              <span className="text-xs text-gray-500">Phase 1.2 - Video Editor</span>
             </div>
           </div>
+
+          {/* Navigation Tabs */}
+          {activeTab !== 'welcome' && (
+            <div className="flex gap-2 mt-4 border-t border-gray-200 pt-4">
+              <button
+                onClick={() => setActiveTab('video-editor')}
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'video-editor'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
+              >
+                <FileVideo className="w-4 h-4" />
+                Video Editor
+              </button>
+              <button
+                onClick={() => setActiveTab('activity-catalog')}
+                disabled
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                title="Coming in Phase 1.3"
+              >
+                <Blocks className="w-4 h-4" />
+                Activity Catalog
+                <span className="text-xs">(Soon)</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('module-assembly')}
+                disabled
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                title="Coming in Phase 1.4"
+              >
+                <Wrench className="w-4 h-4" />
+                Module Assembly
+                <span className="text-xs">(Soon)</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('preview')}
+                disabled
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                title="Coming in Phase 1.5"
+              >
+                <Eye className="w-4 h-4" />
+                Preview
+                <span className="text-xs">(Soon)</span>
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -142,7 +193,7 @@ export default function ModuleBuilderPage() {
               {/* Action Buttons */}
               <div className="flex items-center justify-center gap-4 pt-4 border-t border-gray-200">
                 <button
-                  onClick={() => setActiveTab('builder')}
+                  onClick={() => setActiveTab('video-editor')}
                   className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg"
                 >
                   Get Started
@@ -185,24 +236,23 @@ export default function ModuleBuilderPage() {
           </div>
         )}
 
-        {activeTab === 'builder' && (
+        {activeTab === 'video-editor' && (
+          <div className="max-w-7xl mx-auto">
+            <VideoSegmentEditor />
+          </div>
+        )}
+
+        {activeTab === 'activity-catalog' && (
           <div className="max-w-6xl mx-auto">
-            {/* Placeholder for actual builder interface */}
+            {/* Placeholder for Phase 1.3 */}
             <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-              <Wrench className="w-16 h-16 text-purple-600 mx-auto mb-4" />
+              <Blocks className="w-16 h-16 text-purple-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Builder Interface Coming Soon
+                Activity Catalog Coming Soon
               </h2>
               <p className="text-gray-600 mb-6">
-                The visual builder interface is under active development.
-                Next steps: Video Segment Editor, Activity Catalog, Module Assembly.
+                Browse reusable activities from MODULE_ACTIVITY_INVENTORY.md
               </p>
-              <button
-                onClick={() => setActiveTab('welcome')}
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
-              >
-                Back to Welcome
-              </button>
             </div>
           </div>
         )}

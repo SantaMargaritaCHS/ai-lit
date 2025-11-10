@@ -8,3 +8,4 @@
  */
 
 export { default as ModuleBuilderPage } from './ModuleBuilderPage';
+export { default as VideoSegmentEditor } from './VideoSegmentEditor';
