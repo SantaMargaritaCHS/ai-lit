@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, ChevronUp, ChevronDown, Settings, Eye, Save, Play, FileDown } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Plus, Trash2, ChevronUp, ChevronDown, Settings, Eye, Save, Play, FileDown, Upload, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 /**
  * ModuleAssembly - Drag-and-drop interface for assembling modules
  *
- * Phase 1.4 of Module Builder
+ * Phase 1.4 + 1.6 of Module Builder
  *
  * Features:
  * - Sequential activity arrangement
@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
  * - Configure activity properties
  * - Visual module flow
  * - JSON export of complete module definition
+ * - JSON import (Phase 1.6) - Resume previous work
  *
  * Future enhancement: Full drag-and-drop using @dnd-kit/core
  */
@@ -54,6 +55,10 @@ export default function ModuleAssembly() {
   const [activities, setActivities] = useState<ActivityConfig[]>([]);
   const [editingActivity, setEditingActivity] = useState<string | null>(null);
   const [showAddActivity, setShowAddActivity] = useState(false);
+
+  // Phase 1.6: JSON Import
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Temporary activity types until integration with ActivityCatalog
   const activityTypes = [
@@ -138,6 +143,64 @@ export default function ModuleAssembly() {
     URL.revokeObjectURL(url);
   };
 
+  // Phase 1.6: Import Module JSON
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const importModuleJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImportStatus(null);
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Validate structure
+      if (!data.id || !data.title || !data.activities || !Array.isArray(data.activities)) {
+        throw new Error('Invalid module definition format. Missing required fields.');
+      }
+
+      // Validate activities
+      for (const activity of data.activities) {
+        if (!activity.id || !activity.type || !activity.name || typeof activity.position !== 'number') {
+          throw new Error('Invalid activity format in module definition.');
+        }
+      }
+
+      // Import successful - populate state
+      setModuleTitle(data.title || '');
+      setModuleDescription(data.description || '');
+      setTargetAudience(data.targetAudience || 'High School (Ages 14-18)');
+      setEstimatedTime(data.estimatedTime || '20 min');
+      setActivities(data.activities || []);
+
+      setImportStatus({
+        type: 'success',
+        message: `Successfully imported "${data.title}" with ${data.activities.length} activities!`,
+      });
+
+      // Clear status after 5 seconds
+      setTimeout(() => setImportStatus(null), 5000);
+    } catch (err: any) {
+      console.error('Import error:', err);
+      setImportStatus({
+        type: 'error',
+        message: err.message || 'Failed to import module. Please check the file format.',
+      });
+
+      // Clear error after 10 seconds
+      setTimeout(() => setImportStatus(null), 10000);
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const getActivityTypeIcon = (type: string): string => {
     const activityType = activityTypes.find((t) => t.id === type);
     return activityType?.icon || '📄';
@@ -153,17 +216,60 @@ export default function ModuleAssembly() {
             Arrange activities in sequence to build your module
           </p>
         </div>
-        {activities.length > 0 && (
+        <div className="flex gap-2">
+          {/* Phase 1.6: Import Button */}
           <Button
-            onClick={exportModuleJSON}
-            disabled={!moduleTitle.trim()}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={handleImportClick}
+            variant="outline"
+            className="border-purple-300 text-purple-700 hover:bg-purple-50"
           >
-            <FileDown className="w-4 h-4 mr-2" />
-            Export Module JSON
+            <Upload className="w-4 h-4 mr-2" />
+            Import JSON
           </Button>
-        )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={importModuleJSON}
+            className="hidden"
+          />
+
+          {/* Export Button */}
+          {activities.length > 0 && (
+            <Button
+              onClick={exportModuleJSON}
+              disabled={!moduleTitle.trim()}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              Export JSON
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Import Status Message */}
+      {importStatus && (
+        <Card className={importStatus.type === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              {importStatus.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              ) : (
+                <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              )}
+              <div className="flex-1">
+                <h3 className={`text-sm font-semibold mb-1 ${importStatus.type === 'success' ? 'text-green-900' : 'text-red-900'}`}>
+                  {importStatus.type === 'success' ? '✅ Import Successful' : '❌ Import Failed'}
+                </h3>
+                <p className={`text-sm ${importStatus.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+                  {importStatus.message}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Module Metadata */}
       <Card>
