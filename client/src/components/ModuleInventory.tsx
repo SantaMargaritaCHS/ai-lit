@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, Search, ChevronDown, ChevronRight, FileCode, BookOpen } from 'lucide-react';
+import { X, Copy, Check, Search, ChevronDown, ChevronRight, FileCode, BookOpen, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,9 +13,11 @@ interface Activity {
   name: string;
   location: string;
   description: string;
+  visualDescription: string;  // What the activity looks like to students
   usedIn: string[];
   reusability: 'high' | 'medium' | 'low';
   example?: string;
+  screenshot?: string;  // Optional screenshot path
 }
 
 const ACTIVITY_CATALOG: Record<string, Activity[]> = {
@@ -24,6 +26,7 @@ const ACTIVITY_CATALOG: Record<string, Activity[]> = {
       name: 'PremiumVideoPlayer',
       location: 'client/src/components/PremiumVideoPlayer.tsx',
       description: 'Segmented video playback with mandatory viewing, time-coded chapters',
+      visualDescription: '📺 Video player with chapter navigation sidebar on the right. Shows current segment title, progress bar, play/pause controls, and volume slider. Auto-advances to next activity when segment ends. Cannot skip ahead (unless dev mode active). Clean, modern interface with optional closed captions.',
       usedIn: ['All 9 modules'],
       reusability: 'high',
       example: `<PremiumVideoPlayer
@@ -47,6 +50,7 @@ const ACTIVITY_CATALOG: Record<string, Activity[]> = {
       name: 'Multiple Choice Quiz',
       location: 'Inline pattern (see Ancient Compass lines 1000-1165)',
       description: 'Radio button selection with hints for wrong answers, never reveals correct answer',
+      visualDescription: '📝 Clean quiz card with question text at top (large, bold font). Four radio button options below as clickable cards with hover effects (light blue on hover). After selecting and clicking "Check Answer": GREEN border + checkmark icon for CORRECT answer with explanation text. YELLOW border + lightbulb icon for WRONG answer with educational hint (never reveals correct answer). "Try Again" button for wrong answers, "Continue" button for correct.',
       usedIn: ['Ancient Compass', 'Intro to Gen AI', 'Understanding LLMs'],
       reusability: 'high',
       example: `const QUIZ_QUESTIONS = [{
@@ -61,6 +65,7 @@ const ACTIVITY_CATALOG: Record<string, Activity[]> = {
       name: 'Matching Activity',
       location: 'Inline pattern (see Ancient Compass lines 582-829)',
       description: 'Match items from left column to options on right',
+      visualDescription: '🔗 Left column shows scenario cards (gray backgrounds). Right side has colorful pill-shaped buttons for each principle/category. Click a pill to select it for that row - selected pills highlight in BLUE with white text. After submitting: GREEN checkmarks appear next to correct matches. ORANGE hints appear for incorrect matches (never shows correct answer). All scenarios must be matched before submitting.',
       usedIn: ['Ancient Compass'],
       reusability: 'high',
       example: `const [matching, setMatching] = useState<Record<number, string>>({});
@@ -72,6 +77,7 @@ const ACTIVITY_CATALOG: Record<string, Activity[]> = {
       name: 'AI-Validated Reflection',
       location: 'Uses client/src/utils/aiEducationFeedback.ts',
       description: 'Open-ended responses with Gemini AI validation + 2-attempt escape hatch',
+      visualDescription: '✍️ Large text area with question prompt at top. Character/word count display. Submit button triggers AI validation. GREEN feedback box appears for good responses with encouraging message + Continue button. YELLOW feedback box for responses needing improvement with specific guidance + "Try Again" button. After 2 failed attempts: ORANGE escape hatch box appears with 2 options: "Try One More Time" or "Continue Anyway" (warns may be flagged for instructor review).',
       usedIn: ['Understanding LLMs', 'What Is AI', 'Intro to Gen AI', 'AI Environmental Impact', 'Ancient Compass'],
       reusability: 'high',
       example: `import { isNonsensical, generateEducationFeedback } from '@/utils/aiEducationFeedback';
@@ -88,6 +94,7 @@ const handleSubmit = async () => {
       name: 'Environmental Calculator',
       location: 'client/src/components/EnvironmentalModule/EnvironmentalCalculator.tsx',
       description: 'Calculate carbon footprint of AI queries with visual feedback',
+      visualDescription: '⚡ Interactive calculator with sliders for different AI models (ChatGPT, Gemini, etc.). Move sliders to set daily query counts. Real-time carbon footprint display in grams CO2e updates as you slide. Visual comparisons show equivalents: "Like driving X miles" or "Takes X trees to offset". Colorful gradient background changes based on total impact. Educational stats sidebar explains AI energy consumption.',
       usedIn: ['AI Environmental Impact'],
       reusability: 'medium',
       example: `<EnvironmentalCalculator onComplete={() => next()} />`
@@ -96,6 +103,7 @@ const handleSubmit = async () => {
       name: 'Environmental Impact Matrix',
       location: 'client/src/components/EnvironmentalModule/EnvironmentalImpactMatrix.tsx',
       description: 'Drag-and-drop 2x2 matrix for categorizing AI applications',
+      visualDescription: '📊 2x2 grid with colored quadrants: High Impact/High Benefit (top-right, green), High Impact/Low Benefit (top-left, red), Low Impact/High Benefit (bottom-right, blue), Low Impact/Low Benefit (bottom-left, gray). Draggable cards with AI application names (e.g., "Medical Diagnosis AI", "Streaming Recommendations"). Drag cards into appropriate quadrant. Visual feedback when hovering over drop zones. Summary shows count in each quadrant.',
       usedIn: ['AI Environmental Impact'],
       reusability: 'medium',
       example: `<EnvironmentalImpactMatrix onComplete={() => next()} />`
@@ -104,6 +112,7 @@ const handleSubmit = async () => {
       name: 'Solutions Sorter',
       location: 'client/src/components/EnvironmentalModule/SimplifiedSolutionsSorter.tsx',
       description: 'Sort items into categories with visual feedback',
+      visualDescription: '🗂️ Two-column layout: "Personal Actions" (left, blue header) and "Industry/Policy Changes" (right, purple header). Draggable solution cards start in neutral area at top (gray). Drag cards into appropriate column. Cards snap into place with animation. Check marks appear when correctly sorted. Can rearrange by dragging between columns. Progress bar shows completion percentage.',
       usedIn: ['AI Environmental Impact'],
       reusability: 'medium',
       example: `<SimplifiedSolutionsSorter onComplete={() => next()} />`
@@ -112,6 +121,7 @@ const handleSubmit = async () => {
       name: 'Tokenization Demo',
       location: 'client/src/components/UnderstandingLLMModule/activities/TokenizationDemo.tsx',
       description: 'Live text → token breakdown with color-coding',
+      visualDescription: '🎨 Text input box at top where students type sentences. Below, live visualization shows text broken into tokens with each token in a colored pill/badge (rotating rainbow colors). Token count display updates in real-time. Example sentences provided as buttons to quick-test. Shows how words split differently (e.g., "running" → "run" + "ning"). Educational notes explain tokenization.',
       usedIn: ['Understanding LLMs'],
       reusability: 'medium',
       example: `<TokenizationDemo onComplete={() => next()} />`
@@ -120,6 +130,7 @@ const handleSubmit = async () => {
       name: 'Beat the Predictor Game',
       location: 'client/src/components/UnderstandingLLMModule/activities/BeatThePredictorGame.tsx',
       description: 'Interactive word prediction game (student vs AI)',
+      visualDescription: '🎮 Game-style interface showing incomplete sentence at top. Two prediction boxes side-by-side: "Your Prediction" (input field) and "AI Prediction" (revealed after submitting). Score tracker shows "You: X | AI: X". After submitting: reveals AI prediction + explanation of why AI chose it. Green highlight if you matched AI, neutral if different. Multiple rounds build cumulative score. Leaderboard-style final score display.',
       usedIn: ['Understanding LLMs'],
       reusability: 'medium',
       example: `<BeatThePredictorGame onComplete={() => next()} />`
@@ -128,6 +139,7 @@ const handleSubmit = async () => {
       name: 'Policy Comparison Table',
       location: 'client/src/components/PrivacyModule/PolicyComparisonTable.tsx',
       description: 'Side-by-side comparison of privacy policies across platforms',
+      visualDescription: '📋 Multi-column table with platform logos at top (ChatGPT, Gemini, Claude, etc.). Rows compare: Data Collection, Data Retention, Third-Party Sharing, User Rights, Account Deletion. Each cell has colored icons: ✓ (green) for user-friendly, ⚠️ (orange) for concerning, ✗ (red) for problematic. Expandable rows show detailed explanations. Sticky header for scrolling. Summary highlights at bottom.',
       usedIn: ['Privacy & Data Rights'],
       reusability: 'medium',
       example: `<PolicyComparisonTable onComplete={() => next()} />`
@@ -136,6 +148,7 @@ const handleSubmit = async () => {
       name: 'TC Timer Challenge',
       location: 'client/src/components/PrivacyModule/TCTimerChallenge.tsx',
       description: 'Timed challenge to read Terms & Conditions',
+      visualDescription: '⏱️ Split screen: Left side shows real Terms & Conditions text in scrollable box (small font, legal jargon). Right side has LARGE timer counting up (minutes:seconds). "Start Reading" button begins timer. Stats below timer: "Average T&C length: 15,000 words", "Average reading time: 45 minutes". As timer climbs, color changes yellow → orange → red. Humorous reveal at end: "Ain\'t nobody got time for that!" with cartoon image. Educational message about importance of understanding AI terms.',
       usedIn: ['Privacy & Data Rights'],
       reusability: 'medium',
       example: `<TCTimerChallenge onComplete={() => next()} />`
@@ -146,6 +159,7 @@ const handleSubmit = async () => {
       name: 'Ethical Dilemma Scenarios',
       location: 'client/src/components/AncientCompassModule/EthicalDilemmaScenarios.tsx',
       description: 'Present ethical scenarios with AI-validated responses',
+      visualDescription: '⚖️ Card-based interface: Scenario title at top (e.g., "Facial Recognition at School"). Story/situation text in narrative format (2-3 paragraphs). Purple badges showing relevant ethical principles (e.g., "Human Dignity", "Common Good"). Question prompt: "What would you do and why?" Large text area for response. AI validation provides feedback on ethical reasoning (not right/wrong, but depth of analysis). 2-attempt escape hatch if needed.',
       usedIn: ['Ancient Compass'],
       reusability: 'medium',
       example: `<EthicalDilemmaScenarios onComplete={() => next()} />`
@@ -154,6 +168,7 @@ const handleSubmit = async () => {
       name: 'Stakeholder Perspectives',
       location: 'client/src/components/AncientCompassModule/StakeholderPerspectives.tsx',
       description: 'Analyze issues from multiple stakeholder viewpoints',
+      visualDescription: '👥 Scenario card shows AI issue at top (e.g., "AI in Gig Economy"). Four stakeholder icons/avatars: Workers, Companies, Regulators, Consumers. Two reflection questions below with text areas. Question 1: "Whose interests conflict?" Question 2: "How might Catholic Social Teaching principles guide solutions?" Responses get AI validation for systems thinking and empathy. Each question has its own 2-attempt escape hatch.',
       usedIn: ['Ancient Compass'],
       reusability: 'medium',
       example: `<StakeholderPerspectives onComplete={() => next()} />`
@@ -162,6 +177,7 @@ const handleSubmit = async () => {
       name: 'Revolution Comparison Chart',
       location: 'client/src/components/AncientCompassModule/RevolutionComparisonChart.tsx',
       description: 'Compare Industrial Revolution to AI Revolution',
+      visualDescription: '🏭 Two-column comparison table. Left column: "Industrial Revolution" (brown header with factory icon). Right column: "AI Revolution" (blue header with robot icon). Rows to fill in: Workers Affected, Ethical Concerns, Pace of Change, Environmental Impact. Text inputs in each cell. Visual timeline graphics at top show 1760-1840 vs 2010-present. After filling chart, reflection question at bottom with AI validation and escape hatch.',
       usedIn: ['Ancient Compass'],
       reusability: 'medium',
       example: `<RevolutionComparisonChart onComplete={() => next()} />`
@@ -170,6 +186,7 @@ const handleSubmit = async () => {
       name: 'Personal AI Audit',
       location: 'client/src/components/AncientCompassModule/PersonalAIAudit.tsx',
       description: 'Students audit their own AI tool usage',
+      visualDescription: '🔍 Three-step personal audit interface. Step 1: "List Your AI Tools" - Add button creates new entry fields (tool name, frequency of use). Step 2: "Evaluate Each Tool" - For each tool, rate against ethical principles using 1-5 star system (Human Dignity, Common Good, Solidarity). Color codes: Red (1-2 stars) = concerning, Yellow (3 stars) = neutral, Green (4-5 stars) = aligned. Step 3: "Commit to Change" - Checkbox list of commitments with "Sign Your Name" input. Certificate-style completion.',
       usedIn: ['Ancient Compass'],
       reusability: 'medium',
       example: `<PersonalAIAudit onComplete={() => next()} />`
@@ -180,6 +197,7 @@ const handleSubmit = async () => {
       name: 'Exit Ticket Pattern',
       location: 'Inline in modules (see Ancient Compass lines 1168-1418)',
       description: 'Module-ending reflection with 2-3 prompt options, AI validation, escape hatch',
+      visualDescription: '🎫 Choice interface at top: 2-3 prompt cards displayed horizontally (like game show panels). Each card has: Title (e.g., "Personal Application", "Critical Analysis"), Icon, and Preview text. Click to select (card highlights in blue). Selected prompt expands below with full question. Large text area for response. AI validation provides personalized feedback on reflection depth. 2-attempt escape hatch if needed. Minimum word count displayed (typically 50-150 words).',
       usedIn: ['All 9 modules'],
       reusability: 'high',
       example: `const EXIT_PROMPTS = [
@@ -195,6 +213,7 @@ const handleSubmit = async () => {
       name: 'Certificate Component',
       location: 'client/src/components/Certificate.tsx',
       description: 'Completion certificate with download functionality',
+      visualDescription: '🏆 Formal certificate design with decorative border. Top: "Certificate of Completion" in elegant serif font. Center: Student name in large text. Below: Module title, completion date, score (if applicable). Bottom: Instructor signature line with "AI Literacy Platform" title. Blue and gold color scheme. "Download Certificate" button at bottom (downloads as image). Confetti animation plays on first appearance.',
       usedIn: ['All 9 modules'],
       reusability: 'high',
       example: `<Certificate
@@ -226,6 +245,7 @@ export function ModuleInventory({ isOpen, onClose }: ModuleInventoryProps) {
     const filtered = activities.filter(activity =>
       activity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       activity.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activity.visualDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
       activity.usedIn.some(module => module.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     if (filtered.length > 0) {
@@ -322,7 +342,17 @@ export function ModuleInventory({ isOpen, onClose }: ModuleInventoryProps) {
                                 </span>
                               </div>
                               <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
-                              <div className="flex items-center gap-4 text-xs text-gray-500">
+
+                              {/* Visual Description Section */}
+                              <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Eye className="w-4 h-4 text-purple-600" />
+                                  <span className="text-xs font-semibold text-purple-900">What Students See:</span>
+                                </div>
+                                <p className="text-sm text-purple-900 leading-relaxed">{activity.visualDescription}</p>
+                              </div>
+
+                              <div className="flex items-center gap-4 text-xs text-gray-500 mt-3">
                                 <span className="flex items-center gap-1">
                                   <FileCode className="w-3 h-3" />
                                   {activity.location}
@@ -404,7 +434,7 @@ export function ModuleInventory({ isOpen, onClose }: ModuleInventoryProps) {
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 bg-gray-50">
           <p className="text-xs text-gray-600 text-center">
-            💡 Tip: Click any "Copy" button to copy code examples or file paths. Reference these components when building new modules.
+            💡 Tip: Each activity now shows what students actually see! Use the purple "What Students See" boxes to understand the visual experience.
           </p>
         </div>
       </div>
