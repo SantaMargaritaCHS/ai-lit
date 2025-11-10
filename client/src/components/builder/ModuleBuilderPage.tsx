@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { ArrowLeft, Wrench, Info, FileVideo, Blocks, Eye, Download } from 'lucide-react';
 import VideoSegmentEditor from './VideoSegmentEditor';
+import ActivityCatalog from './ActivityCatalog';
 
 /**
  * ModuleBuilderPage - Main container for the module builder interface
@@ -45,7 +46,7 @@ export default function ModuleBuilderPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Phase 1.2 - Video Editor</span>
+              <span className="text-xs text-gray-500">Phase 1.3 - Activity Catalog</span>
             </div>
           </div>
 
@@ -65,13 +66,14 @@ export default function ModuleBuilderPage() {
               </button>
               <button
                 onClick={() => setActiveTab('activity-catalog')}
-                disabled
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
-                title="Coming in Phase 1.3"
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'activity-catalog'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
               >
                 <Blocks className="w-4 h-4" />
                 Activity Catalog
-                <span className="text-xs">(Soon)</span>
               </button>
               <button
                 onClick={() => setActiveTab('module-assembly')}
@@ -243,17 +245,8 @@ export default function ModuleBuilderPage() {
         )}
 
         {activeTab === 'activity-catalog' && (
-          <div className="max-w-6xl mx-auto">
-            {/* Placeholder for Phase 1.3 */}
-            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-              <Blocks className="w-16 h-16 text-purple-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Activity Catalog Coming Soon
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Browse reusable activities from MODULE_ACTIVITY_INVENTORY.md
-              </p>
-            </div>
+          <div className="max-w-7xl mx-auto">
+            <ActivityCatalog />
           </div>
         )}
       </main>

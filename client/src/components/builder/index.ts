@@ -9,3 +9,4 @@
 
 export { default as ModuleBuilderPage } from './ModuleBuilderPage';
 export { default as VideoSegmentEditor } from './VideoSegmentEditor';
+export { default as ActivityCatalog } from './ActivityCatalog';
