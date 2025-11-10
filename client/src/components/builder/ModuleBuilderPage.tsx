@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, Wrench, Info, FileVideo, Blocks, Eye, Download } from 'lucide-react';
+import { ArrowLeft, Wrench, Info, FileVideo, Blocks, Eye, Download, Sparkles, MessageSquare, Scale } from 'lucide-react';
 import VideoSegmentEditor from './VideoSegmentEditor';
 import ActivityCatalog from './ActivityCatalog';
 import ModuleAssembly from './ModuleAssembly';
 import ModulePreview from './ModulePreview';
+import QuizGenerator from './QuizGenerator';
+import ReflectionGenerator from './ReflectionGenerator';
+import ScenarioGenerator from './ScenarioGenerator';
 
 /**
  * ModuleBuilderPage - Main container for the module builder interface
@@ -21,7 +24,7 @@ import ModulePreview from './ModulePreview';
  * Phase 4: Validation and polish
  */
 
-type Tab = 'welcome' | 'video-editor' | 'activity-catalog' | 'module-assembly' | 'preview';
+type Tab = 'welcome' | 'video-editor' | 'activity-catalog' | 'module-assembly' | 'preview' | 'quiz-generator' | 'reflection-generator' | 'scenario-generator';
 
 export default function ModuleBuilderPage() {
   const [activeTab, setActiveTab] = useState<Tab>('welcome');
@@ -48,7 +51,7 @@ export default function ModuleBuilderPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Phase 1.5 - Module Preview</span>
+              <span className="text-xs text-gray-500">Phase 2.4 - AI Scenario Generator</span>
             </div>
           </div>
 
@@ -98,6 +101,39 @@ export default function ModuleBuilderPage() {
               >
                 <Eye className="w-4 h-4" />
                 Preview
+              </button>
+              <button
+                onClick={() => setActiveTab('quiz-generator')}
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'quiz-generator'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                AI Quiz Generator
+              </button>
+              <button
+                onClick={() => setActiveTab('reflection-generator')}
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'reflection-generator'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                AI Reflection Generator
+              </button>
+              <button
+                onClick={() => setActiveTab('scenario-generator')}
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'scenario-generator'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
+              >
+                <Scale className="w-4 h-4" />
+                AI Scenario Generator
               </button>
             </div>
           )}
@@ -267,6 +303,24 @@ export default function ModuleBuilderPage() {
               moduleDescription="This is a preview of how your module will look to students"
               activities={[]}
             />
+          </div>
+        )}
+
+        {activeTab === 'quiz-generator' && (
+          <div className="max-w-7xl mx-auto">
+            <QuizGenerator />
+          </div>
+        )}
+
+        {activeTab === 'reflection-generator' && (
+          <div className="max-w-7xl mx-auto">
+            <ReflectionGenerator />
+          </div>
+        )}
+
+        {activeTab === 'scenario-generator' && (
+          <div className="max-w-7xl mx-auto">
+            <ScenarioGenerator />
           </div>
         )}
       </main>

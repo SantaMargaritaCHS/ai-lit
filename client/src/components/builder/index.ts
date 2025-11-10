@@ -12,3 +12,6 @@ export { default as VideoSegmentEditor } from './VideoSegmentEditor';
 export { default as ActivityCatalog } from './ActivityCatalog';
 export { default as ModuleAssembly } from './ModuleAssembly';
 export { default as ModulePreview } from './ModulePreview';
+export { default as QuizGenerator } from './QuizGenerator';
+export { default as ReflectionGenerator } from './ReflectionGenerator';
+export { default as ScenarioGenerator } from './ScenarioGenerator';
