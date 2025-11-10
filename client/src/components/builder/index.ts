@@ -15,3 +15,4 @@ export { default as ModulePreview } from './ModulePreview';
 export { default as QuizGenerator } from './QuizGenerator';
 export { default as ReflectionGenerator } from './ReflectionGenerator';
 export { default as ScenarioGenerator } from './ScenarioGenerator';
+export { default as CodeExporter } from './CodeExporter';

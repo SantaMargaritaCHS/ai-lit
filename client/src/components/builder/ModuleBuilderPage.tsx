@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, Wrench, Info, FileVideo, Blocks, Eye, Download, Sparkles, MessageSquare, Scale } from 'lucide-react';
+import { ArrowLeft, Wrench, Info, FileVideo, Blocks, Eye, Download, Sparkles, MessageSquare, Scale, FileCode } from 'lucide-react';
 import VideoSegmentEditor from './VideoSegmentEditor';
 import ActivityCatalog from './ActivityCatalog';
 import ModuleAssembly from './ModuleAssembly';
@@ -8,6 +8,7 @@ import ModulePreview from './ModulePreview';
 import QuizGenerator from './QuizGenerator';
 import ReflectionGenerator from './ReflectionGenerator';
 import ScenarioGenerator from './ScenarioGenerator';
+import CodeExporter from './CodeExporter';
 
 /**
  * ModuleBuilderPage - Main container for the module builder interface
@@ -24,7 +25,7 @@ import ScenarioGenerator from './ScenarioGenerator';
  * Phase 4: Validation and polish
  */
 
-type Tab = 'welcome' | 'video-editor' | 'activity-catalog' | 'module-assembly' | 'preview' | 'quiz-generator' | 'reflection-generator' | 'scenario-generator';
+type Tab = 'welcome' | 'video-editor' | 'activity-catalog' | 'module-assembly' | 'preview' | 'quiz-generator' | 'reflection-generator' | 'scenario-generator' | 'code-exporter';
 
 export default function ModuleBuilderPage() {
   const [activeTab, setActiveTab] = useState<Tab>('welcome');
@@ -51,7 +52,7 @@ export default function ModuleBuilderPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Phase 2.4 - AI Scenario Generator</span>
+              <span className="text-xs text-gray-500">Phase 3.3 - Code Exporter</span>
             </div>
           </div>
 
@@ -134,6 +135,17 @@ export default function ModuleBuilderPage() {
               >
                 <Scale className="w-4 h-4" />
                 AI Scenario Generator
+              </button>
+              <button
+                onClick={() => setActiveTab('code-exporter')}
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'code-exporter'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
+              >
+                <FileCode className="w-4 h-4" />
+                Code Exporter
               </button>
             </div>
           )}
@@ -321,6 +333,12 @@ export default function ModuleBuilderPage() {
         {activeTab === 'scenario-generator' && (
           <div className="max-w-7xl mx-auto">
             <ScenarioGenerator />
+          </div>
+        )}
+
+        {activeTab === 'code-exporter' && (
+          <div className="max-w-7xl mx-auto">
+            <CodeExporter />
           </div>
         )}
       </main>
