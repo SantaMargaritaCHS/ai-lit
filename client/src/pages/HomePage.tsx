@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText, ChevronUp, ChevronDown, Compass } from 'lucide-react';
+import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText, ChevronUp, ChevronDown, Compass, BookOpen } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { ModuleOutline } from '../components/ModuleOutline';
+import { ModuleInventory } from '../components/ModuleInventory';
 import { saveModuleOrder, loadModuleOrder, clearModuleOrder, hasCustomModuleOrder } from '../lib/moduleOrderPersistence';
 
 const modules = [
@@ -94,6 +95,7 @@ export default function HomePage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [sortOrder, setSortOrder] = useState<'default' | 'alphabetical' | 'level'>('default');
   const [outlineModuleId, setOutlineModuleId] = useState<string | null>(null);
+  const [showInventory, setShowInventory] = useState(false);
   const [reorderMode, setReorderMode] = useState(false);
   const [customModuleOrder, setCustomModuleOrder] = useState<string[]>([]);
   const { userName, clearUserName, clearModuleName } = useUser();
@@ -228,15 +230,15 @@ export default function HomePage() {
         </div>
 
         {/* Simple Sort Controls */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center items-center gap-4 mb-8">
           <div className="inline-flex items-center gap-2 bg-white rounded-lg shadow-sm p-2">
             <ArrowUpDown className="w-4 h-4 text-gray-600" />
             <span className="text-sm text-gray-700">Sort by:</span>
             <button
               onClick={() => setSortOrder('default')}
               className={`px-3 py-1 text-xs rounded transition-colors ${
-                sortOrder === 'default' 
-                  ? 'bg-blue-100 text-blue-800 font-medium' 
+                sortOrder === 'default'
+                  ? 'bg-blue-100 text-blue-800 font-medium'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -245,8 +247,8 @@ export default function HomePage() {
             <button
               onClick={() => setSortOrder('alphabetical')}
               className={`px-3 py-1 text-xs rounded transition-colors ${
-                sortOrder === 'alphabetical' 
-                  ? 'bg-blue-100 text-blue-800 font-medium' 
+                sortOrder === 'alphabetical'
+                  ? 'bg-blue-100 text-blue-800 font-medium'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -255,14 +257,24 @@ export default function HomePage() {
             <button
               onClick={() => setSortOrder('level')}
               className={`px-3 py-1 text-xs rounded transition-colors ${
-                sortOrder === 'level' 
-                  ? 'bg-blue-100 text-blue-800 font-medium' 
+                sortOrder === 'level'
+                  ? 'bg-blue-100 text-blue-800 font-medium'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
               Level
             </button>
           </div>
+
+          {/* Activity Inventory Link */}
+          <button
+            onClick={() => setShowInventory(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-blue-50 rounded-lg shadow-sm transition-colors border border-gray-200 hover:border-blue-300"
+            title="Browse reusable activity components"
+          >
+            <BookOpen className="w-4 h-4 text-blue-600" />
+            <span className="text-sm text-gray-700 hover:text-blue-700">Activity Inventory</span>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -469,6 +481,12 @@ export default function HomePage() {
             onClose={() => setOutlineModuleId(null)}
           />
         )}
+
+        {/* Module Activity Inventory Modal */}
+        <ModuleInventory
+          isOpen={showInventory}
+          onClose={() => setShowInventory(false)}
+        />
       </div>
     </div>
   );
