@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { ArrowLeft, Wrench, Info, FileVideo, Blocks, Eye, Download } from 'lucide-react';
 import VideoSegmentEditor from './VideoSegmentEditor';
 import ActivityCatalog from './ActivityCatalog';
+import ModuleAssembly from './ModuleAssembly';
 
 /**
  * ModuleBuilderPage - Main container for the module builder interface
@@ -46,7 +47,7 @@ export default function ModuleBuilderPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Phase 1.3 - Activity Catalog</span>
+              <span className="text-xs text-gray-500">Phase 1.4 - Module Assembly</span>
             </div>
           </div>
 
@@ -77,13 +78,14 @@ export default function ModuleBuilderPage() {
               </button>
               <button
                 onClick={() => setActiveTab('module-assembly')}
-                disabled
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
-                title="Coming in Phase 1.4"
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'module-assembly'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
               >
                 <Wrench className="w-4 h-4" />
                 Module Assembly
-                <span className="text-xs">(Soon)</span>
               </button>
               <button
                 onClick={() => setActiveTab('preview')}
@@ -247,6 +249,12 @@ export default function ModuleBuilderPage() {
         {activeTab === 'activity-catalog' && (
           <div className="max-w-7xl mx-auto">
             <ActivityCatalog />
+          </div>
+        )}
+
+        {activeTab === 'module-assembly' && (
+          <div className="max-w-7xl mx-auto">
+            <ModuleAssembly />
           </div>
         )}
       </main>
