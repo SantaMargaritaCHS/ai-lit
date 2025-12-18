@@ -30,6 +30,7 @@ const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
   const [messages2, setMessages2] = useState<Array<{role: string, content: string}>>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [highlightedData, setHighlightedData] = useState<string[]>([]);
+  const [showBreachNotification, setShowBreachNotification] = useState(false);
 
   const chat1Ref = useRef<HTMLDivElement>(null);
   const chat2Ref = useRef<HTMLDivElement>(null);
@@ -77,8 +78,15 @@ const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       if (chatNumber === 2 && i === 1) {
+        // First, let the user read the conversation (2 seconds)
         await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Then, highlight the private data (2 seconds to notice)
         setHighlightedData(['Jordan Chen', 'Lincoln High', 'anxiety', 'parents\' divorce', 'divorced', '3.7 GPA', 'debate team', 'part-time job']);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Finally, show the breach notification
+        setShowBreachNotification(true);
       }
     }
   };
@@ -233,7 +241,7 @@ const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
                     </div>
                   ))}
                 </div>
-                {messages2.length >= 2 && (
+                {showBreachNotification && (
                   <div className="mt-4 space-y-3">
                     <div className="bg-red-600 p-4 rounded-lg animate-shake">
                       <p className="text-white font-bold text-center text-lg">
@@ -266,7 +274,7 @@ const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
                   The Reality Check
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 text-white">
                 <div className="bg-red-900/40 p-6 rounded-lg border-2 border-red-400">
                   <p className="text-white text-lg mb-4">
                     Jordan's most personal details—name, school, mental health struggles,
