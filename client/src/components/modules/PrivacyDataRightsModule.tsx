@@ -287,21 +287,21 @@ const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
                   </p>
                 </div>
 
-                <div className="bg-blue-500/20 p-6 rounded-lg border border-blue-400/30">
-                  <p className="text-white text-lg">
+                <div className="bg-blue-900/50 p-6 rounded-lg border border-blue-400">
+                  <p className="text-white text-lg font-medium">
                     This isn't a made-up scare story. AI companies openly admit in their terms
                     of service that this is how their systems work.{' '}
                     <a
                       href={getCitation(1)?.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 underline"
+                      className="text-blue-300 hover:text-blue-200 underline font-semibold"
                       title={getCitation(1)?.title}
                     >
                       <sup>[1]</sup>
                     </a>
                   </p>
-                  <p className="text-white text-lg mt-3">
+                  <p className="text-white text-lg font-medium mt-3">
                     Let's look at how this actually happens...
                   </p>
                 </div>

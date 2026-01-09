@@ -18,6 +18,9 @@ import AIEnvironmentalImpactModule from './components/modules/AIEnvironmentalImp
 import IntroductionToPromptingModule from './components/modules/IntroductionToPromptingModule';
 import AncientCompassModule from './components/modules/AncientCompassModule';
 
+// Import Resource Pages
+import OpenAIPrivacyExplained from './components/resources/OpenAIPrivacyExplained';
+
 // Import Module Builder (isolated - does not affect existing modules)
 import { ModuleBuilderPage, BuilderErrorBoundary } from './components/builder';
 
@@ -42,6 +45,8 @@ function App() {
             <Router>
               <Switch>
                 <Route path="/" component={HomePage} />
+                {/* Resource Pages */}
+                <Route path="/resources/openai-privacy-explained" component={OpenAIPrivacyExplained} />
                 {/* Module Builder - Isolated route (does not affect existing modules) */}
                 <Route path="/builder">
                   <BuilderErrorBoundary fallbackMessage="The module builder encountered an issue">

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Brain, Sparkles, Video, MessageSquare, Award, ChevronRight, Shuffle, CheckCircle2, X, Lightbulb, Target, Copy, Check, Loader2, BookOpen, AlertTriangle, Scale, Zap, RotateCcw } from 'lucide-react';
+import { Brain, Sparkles, Video, MessageSquare, Award, ChevronRight, ChevronLeft, Shuffle, CheckCircle2, X, Lightbulb, Target, Copy, Check, Loader2, BookOpen, AlertTriangle, Scale, Zap, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumVideoPlayer } from '../PremiumVideoPlayer';
 import { Certificate } from '../Certificate';
@@ -77,6 +77,27 @@ const VIDEO_CONFIG = {
       pausePoint: 345
     }
   ]
+};
+
+// Mapping for "Back to Video" navigation - which activities can go back to which video
+const BACK_TO_VIDEO_MAP: Partial<Record<Phase, Phase>> = {
+  'comprehension-check-1': 'video-1-what-is-ai',
+  'school-policy': 'video-2-responsible-use',
+  'scenario-activity': 'video-2-responsible-use',
+  'ingredients-activity': 'video-3-how-it-works',
+  'sorting-activity': 'video-4-opportunities-risks',
+  'fact-check-challenge': 'video-4-opportunities-risks',
+  'integrity-reflection': 'video-4-opportunities-risks',
+  'interactive-playground': 'video-5-your-role',
+  'exit-ticket': 'video-5-your-role',
+};
+
+const VIDEO_TITLES: Record<string, string> = {
+  'video-1-what-is-ai': 'What is Generative AI?',
+  'video-2-responsible-use': 'Using AI Responsibly at School',
+  'video-3-how-it-works': 'What Makes Gen AI Possible?',
+  'video-4-opportunities-risks': 'Opportunities & Risks',
+  'video-5-your-role': 'You Are the Driver',
 };
 
 const COMPREHENSION_QUESTION_1 = {
@@ -285,6 +306,26 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       onComplete();
     }
   }, [phase, markPhaseComplete, onComplete]);
+
+  // Handler for "Back to Video" navigation - allows students to review preceding video
+  const handleBackToVideo = useCallback((targetPhase: Phase) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setPhase(targetPhase);
+  }, []);
+
+  // Reusable "Back to Video" button component
+  const BackToVideoButton = ({ videoPhase }: { videoPhase: Phase }) => {
+    const videoTitle = VIDEO_TITLES[videoPhase] || 'Previous Video';
+    return (
+      <button
+        onClick={() => handleBackToVideo(videoPhase)}
+        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors mb-4"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        <span>Review Video: {videoTitle}</span>
+      </button>
+    );
+  };
 
   // Progress persistence handlers
   const handleResumeProgress = () => {
@@ -539,6 +580,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
+        <BackToVideoButton videoPhase="video-1-what-is-ai" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -681,6 +723,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
       moduleId="intro-to-gen-ai"
       onComplete={() => handlePhaseComplete()}
     >
+      <BackToVideoButton videoPhase="video-2-responsible-use" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -894,6 +937,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
+        <BackToVideoButton videoPhase="video-2-responsible-use" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1110,6 +1154,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
+        <BackToVideoButton videoPhase="video-3-how-it-works" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1216,6 +1261,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
+        <BackToVideoButton videoPhase="video-4-opportunities-risks" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1325,6 +1371,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
+        <BackToVideoButton videoPhase="video-4-opportunities-risks" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1437,6 +1484,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
+        <BackToVideoButton videoPhase="video-4-opportunities-risks" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1513,6 +1561,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
+        <BackToVideoButton videoPhase="video-5-your-role" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1707,6 +1756,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         moduleId="intro-to-gen-ai"
         onComplete={() => handlePhaseComplete()}
       >
+        <BackToVideoButton videoPhase="video-5-your-role" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

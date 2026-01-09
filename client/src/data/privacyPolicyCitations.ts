@@ -19,11 +19,11 @@ export interface Citation {
 export const citations: Citation[] = [
   {
     id: 1,
-    title: "Snapchat Terms of Service",
-    url: "https://help.snapchat.com/hc/en-us/articles/7012305621652-Terms-of-Service",
-    accessed: "October 27, 2025",
-    organization: "Snap Inc.",
-    notes: "~15,000 words, estimated 60 minute read time"
+    title: "What ChatGPT Really Knows About You: OpenAI Privacy Policy Explained",
+    url: "/resources/openai-privacy-explained",
+    accessed: "December 18, 2024",
+    organization: "AI Literacy Student Platform",
+    notes: "Hosted explanation with actual OpenAI policy language; credited to Ayan Rayne and OpenAI official sources"
   },
   {
     id: 2,
@@ -175,6 +175,14 @@ export const citations: Citation[] = [
     accessed: "October 27, 2025",
     organization: "Character Technologies Inc.",
     notes: "Conversations may be reviewed by employees; data used for model training; mandatory arbitration clause"
+  },
+  {
+    id: 23,
+    title: "Snapchat Terms of Service",
+    url: "https://www.snap.com/terms",
+    accessed: "December 18, 2024",
+    organization: "Snap Inc.",
+    notes: "~15,000 words, estimated 60 minute read time; updated April 2025"
   }
 ];
 
@@ -218,7 +226,7 @@ export const tcReadingTimes = {
     words: 15000,
     minutes: 60,
     platform: "Snapchat",
-    citationId: 1
+    citationId: 23
   },
   chatgpt: {
     words: 4000,
