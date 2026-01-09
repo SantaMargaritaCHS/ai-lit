@@ -21,7 +21,7 @@ const modules = [
     title: 'Introduction to Generative AI',
     description: 'Learn about introduction to generative ai through interactive activities.',
     level: 'Beginner',
-    duration: '20 min',
+    duration: '15 min',
     icon: Zap,
     color: 'bg-purple-500',
   },
