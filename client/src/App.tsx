@@ -21,6 +21,9 @@ import AncientCompassModule from './components/modules/AncientCompassModule';
 // Import Resource Pages
 import OpenAIPrivacyExplained from './components/resources/OpenAIPrivacyExplained';
 
+// Import Admin Pages
+import ExportHTMLPage from './pages/ExportHTMLPage';
+
 // Import Module Builder (isolated - does not affect existing modules)
 import { ModuleBuilderPage, BuilderErrorBoundary } from './components/builder';
 
@@ -47,6 +50,8 @@ function App() {
                 <Route path="/" component={HomePage} />
                 {/* Resource Pages */}
                 <Route path="/resources/openai-privacy-explained" component={OpenAIPrivacyExplained} />
+                {/* Admin Pages (Dev Mode Protected) */}
+                <Route path="/export-html" component={ExportHTMLPage} />
                 {/* Module Builder - Isolated route (does not affect existing modules) */}
                 <Route path="/builder">
                   <BuilderErrorBoundary fallbackMessage="The module builder encountered an issue">

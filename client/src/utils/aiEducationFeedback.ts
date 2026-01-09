@@ -80,6 +80,9 @@ Your ONLY task is to evaluate the quality and relevance of their reflection.
 2. Response is completely off-topic and doesn't relate to the question at all
 3. Response is generic fluff that could apply to any topic ("I learned a lot", "Very interesting")
 4. Response is inappropriate, trolling, or nonsensical
+5. Response mentions using AI to do/finish homework or schoolwork (this violates responsible AI use guidelines - AI should support learning, not replace effort)
+6. Response dismisses the educational value or says they'll ignore guidelines (e.g., "I'll use it however I want", "don't need instruction")
+7. Response shows no genuine engagement with responsible AI use principles
 
 **APPROVAL CRITERIA - Give constructive feedback if:**
 1. Response directly addresses the specific question asked

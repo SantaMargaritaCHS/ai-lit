@@ -73,8 +73,8 @@ const VIDEO_CONFIG = {
       id: 'segment-5',
       title: 'You Are the Driver',
       startTime: 296,
-      endTime: 345, // Movement 5: 4:56-5:45 - "AI is the car, you are the driver", your role
-      pausePoint: 345
+      endTime: 345.5, // Movement 5: 4:56-5:45.5 - "AI is the car, you are the driver", your role
+      pausePoint: 345.5
     }
   ]
 };
@@ -1581,12 +1581,16 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
               <CardContent className="p-6">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
                   <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400 mr-2" />
-                  Explore Microsoft Copilot!
+                  Explore Generative AI in Action!
                 </h3>
                 <p className="text-gray-700 dark:text-gray-300">
-                  This AI tool processes text and image requests based on your prompts.
-                  Try the suggested prompts below or experiment with your own ideas.
+                  This chatbot is an example of generative AI. Try the suggested prompts below or experiment with your own ideas.
                 </p>
+                <div className="mt-3 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg border border-blue-300 dark:border-blue-700">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>What does "multi-modal" mean?</strong> It means the AI can understand and respond to different types of input — not just text, but also images. You can type questions OR upload a picture and ask about it!
+                  </p>
+                </div>
               </CardContent>
             </Card>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText, ChevronUp, ChevronDown, Compass, BookOpen, Wrench } from 'lucide-react';
+import { Book, Clock, Brain, Shield, Globe, MessageSquare, Zap, AlertCircle, Copy, Check, User, ArrowUpDown, ExternalLink, FileText, ChevronUp, ChevronDown, Compass, BookOpen, Wrench, Code } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { ModuleOutline } from '../components/ModuleOutline';
 import { ModuleInventory } from '../components/ModuleInventory';
@@ -402,12 +402,18 @@ export default function HomePage() {
               {showAdvanced ? 'Hide' : 'Show'} Advanced Settings (Testing)
             </button>
 
-            {/* Module Builder Link - Discrete access for developers */}
-            <div className="mt-2">
+            {/* Developer Tools Links */}
+            <div className="mt-2 flex gap-4 justify-center">
               <Link href="/builder">
                 <a className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 underline">
                   <Wrench className="w-3 h-3" />
                   Module Builder (Beta)
+                </a>
+              </Link>
+              <Link href="/export-html">
+                <a className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 underline">
+                  <Code className="w-3 h-3" />
+                  Export HTML (LMS)
                 </a>
               </Link>
             </div>

@@ -780,6 +780,29 @@ npm run mcp:accessibility # Accessibility audit
 
 **See**: `.claude/agents/mcp-debugger.md` and `.claude/guides/mcp-testing.md` for comprehensive documentation
 
+## 📤 Export HTML for LMS
+
+**Route**: `/export-html` (Dev Mode Protected)
+
+**Purpose**: Generate copy-paste HTML snippets for embedding modules in LMS platforms (Canvas, Moodle, Google Classroom).
+
+**Base URL**: `https://AILitStudents.replit.app` (production)
+
+**Access**:
+1. Activate Dev Mode (`Ctrl+Alt+D` + password)
+2. Navigate to `/export-html` or click "Export HTML (LMS)" link on home page
+
+**Two HTML Blocks Per Module**:
+1. **Module Description** - Overview, "Why This Matters", completion instructions
+2. **Landing Page Card** - Clickable card with learning objectives, key terms, CTA button
+
+**Features**:
+- Copy buttons with visual feedback
+- Preview toggle to see rendered HTML
+- All 9 modules with comprehensive metadata
+
+**File**: `client/src/pages/ExportHTMLPage.tsx`
+
 ## 📚 Common Tasks
 
 **Add New Module:**
