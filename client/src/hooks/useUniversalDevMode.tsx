@@ -1,12 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useActivityRegistry } from '../context/ActivityRegistryContext';
 
-// Get secret key from environment variable or use fallback
-// Support multiple valid passwords for dev mode access
-const VALID_PASSWORDS = [
-  import.meta.env.VITE_DEV_MODE_SECRET_KEY || '752465Ledezma',
-  'X9mK#7pL2wQ8nR5t' // Additional generated password
+// SHA-256 hashes of valid passwords (passwords are NOT stored in code)
+// This prevents password discovery via browser DevTools source inspection
+const VALID_PASSWORD_HASHES = [
+  'f94ff05152e60c951e27da08b9fd90ceca7aa73346e3b9d131dc6acc7fab71ee',
+  '3fe554455849632567fe7d6ff6dddaa532c024956d4abaad0e5298a916587a17'
 ];
+
+// Hash a string using SHA-256 (Web Crypto API)
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 // Types for module activities
 export interface ModuleActivity {
@@ -25,31 +33,12 @@ interface UseUniversalDevModeOptions {
 }
 
 export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
-  console.log('🔧🔧🔧 useUniversalDevMode hook called!', { options });
-
   const [isDevModeActive, setIsDevModeActive] = useState(() => {
     return sessionStorage.getItem('universal-dev-mode-active') === 'true';
   });
   const [showSecretKeyPrompt, setShowSecretKeyPrompt] = useState(false);
   const [showDevPanel, setShowDevPanel] = useState(false);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(true);
-
-  // Log initialization
-  useEffect(() => {
-    console.log('🔧🔧🔧 Universal Dev Mode Hook Initialized!');
-    console.log('🔧 Valid Passwords:', VALID_PASSWORDS.length, 'configured');
-    console.log('🔧 Press Ctrl+Alt+D (or Cmd+Alt+D on Mac) to activate');
-
-    // Test if event listeners work at all
-    const testHandler = (e: KeyboardEvent) => {
-      console.log('🔧🔧🔧 TEST: Any key pressed:', e.key);
-    };
-    window.addEventListener('keydown', testHandler);
-
-    return () => {
-      window.removeEventListener('keydown', testHandler);
-    };
-  }, []);
 
   // Use activity registry for centralized state, but allow module overrides
   const registry = useActivityRegistry();
@@ -98,8 +87,6 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
   const autoCompleteCurrentActivity = useCallback(() => {
     const currentActivity = activities[currentActivityIndex];
     if (!currentActivity) return;
-
-    console.log(`🔧 Dev Mode: Auto-completing ${currentActivity.type} - ${currentActivity.name}`);
     
     // Mark current activity as completed
     markActivityCompleted(currentActivity.id);
@@ -160,8 +147,6 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
 
   // Skip to end (complete all and jump to certificate)
   const skipToEnd = useCallback(() => {
-    console.log('🔧 Dev Mode: Skipping to end');
-    
     // Mark all activities as completed
     activities.forEach(activity => {
       markActivityCompleted(activity.id);
@@ -178,33 +163,34 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
 
   // Reset all progress
   const resetProgress = useCallback(() => {
-    console.log('🔧 Dev Mode: Resetting progress');
     clearRegistry();
     window.dispatchEvent(new CustomEvent('dev-reset-module'));
   }, [clearRegistry]);
 
-  // Handle secret key submission
-  const handleSecretKeySubmit = useCallback((key: string) => {
-    console.log('🔧 Universal Dev Mode: Checking key...');
-    console.log('🔧 Universal Dev Mode: Match:', VALID_PASSWORDS.includes(key));
+  // Handle secret key submission (async for secure hash comparison)
+  const handleSecretKeySubmit = useCallback(async (key: string): Promise<boolean> => {
+    try {
+      const inputHash = await sha256(key);
+      const isValid = VALID_PASSWORD_HASHES.includes(inputHash);
 
-    if (VALID_PASSWORDS.includes(key)) {
-      console.log('🔧 Universal Dev Mode: ✅ Key correct! Activating dev mode...');
-      setIsDevModeActive(true);
-      sessionStorage.setItem('universal-dev-mode-active', 'true');
-      setShowDevPanel(true);
-      setShowSecretKeyPrompt(false);
-      setIsPanelCollapsed(true); // Start collapsed
-      return true;
-    } else {
-      console.error('🔧 Universal Dev Mode: ❌ Invalid key provided');
+      if (isValid) {
+        setIsDevModeActive(true);
+        sessionStorage.setItem('universal-dev-mode-active', 'true');
+        setShowDevPanel(true);
+        setShowSecretKeyPrompt(false);
+        setIsPanelCollapsed(true);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error('Dev mode validation error');
       return false;
     }
   }, []);
 
   // Deactivate dev mode
   const deactivateDevMode = useCallback(() => {
-    console.log('🔧 Dev Mode: Deactivated');
     setIsDevModeActive(false);
     sessionStorage.removeItem('universal-dev-mode-active');
     setShowDevPanel(false);
@@ -212,49 +198,18 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
 
   // Keyboard shortcuts
   useEffect(() => {
-    console.log('🔧🔧🔧 Universal Dev Mode: Setting up keyboard listener!', {
-      isDevModeActive,
-      showDevPanel,
-      showSecretKeyPrompt
-    });
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Log ALL key presses to debug
-      console.log('🔧🔧🔧 Key pressed:', {
-        key: e.key,
-        ctrl: e.ctrlKey,
-        alt: e.altKey,
-        meta: e.metaKey,
-        shift: e.shiftKey,
-        target: e.target,
-        currentTarget: e.currentTarget
-      });
-
-      // Only log when Ctrl or Cmd is pressed with other keys
-      if ((e.ctrlKey || e.metaKey) && e.altKey) {
-        console.log('🔧 Universal Dev Mode: Key combo detected:', {
-          key: e.key,
-          ctrl: e.ctrlKey,
-          alt: e.altKey,
-          meta: e.metaKey,
-          isActive: isDevModeActive
-        });
-      }
-
       // Activate dev mode: Ctrl+Alt+D or Cmd+Alt+D
       if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'd') {
-        console.log('🔧 Universal Dev Mode: Activation shortcut triggered!');
         e.preventDefault();
-        e.stopPropagation(); // Stop event from bubbling
+        e.stopPropagation();
 
         if (!isDevModeActive) {
-          console.log('🔧 Universal Dev Mode: Opening secret key prompt...');
           setShowSecretKeyPrompt(true);
         } else {
-          console.log('🔧 Universal Dev Mode: Toggling panel visibility');
           setShowDevPanel(prev => !prev);
         }
-        return false; // Prevent any other handlers
+        return false;
       }
 
       // Only process other shortcuts if dev mode is active
@@ -295,9 +250,7 @@ export function useUniversalDevMode(options: UseUniversalDevModeOptions = {}) {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    console.log('🔧🔧🔧 Keyboard listener attached!');
     return () => {
-      console.log('🔧🔧🔧 Keyboard listener removed!');
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [

@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode } from 'react';
 import { useUniversalDevMode } from '../hooks/useUniversalDevMode';
 import { UniversalDevPanel } from './UniversalDevPanel';
 import { SecretKeyPrompt } from './SecretKeyPrompt';
@@ -9,8 +9,6 @@ interface UniversalDevModeProviderProps {
 }
 
 export function UniversalDevModeProvider({ children }: UniversalDevModeProviderProps) {
-  console.log('🔧🔧🔧 UniversalDevModeProvider: Rendering!');
-
   const {
     isDevModeActive,
     showSecretKeyPrompt,
@@ -30,17 +28,6 @@ export function UniversalDevModeProvider({ children }: UniversalDevModeProviderP
     currentActivity
   } = useUniversalDevMode();
 
-  // Log provider state for debugging
-  useEffect(() => {
-    console.log('🔧🔧🔧 UniversalDevModeProvider State:', {
-      isDevModeActive,
-      showSecretKeyPrompt,
-      showDevPanel,
-      activities: activities.length,
-      currentActivityIndex
-    });
-  }, [isDevModeActive, showSecretKeyPrompt, showDevPanel, activities.length, currentActivityIndex]);
-
   // Create dev mode context value
   const devModeContext = {
     isDevModeActive,
@@ -58,34 +45,13 @@ export function UniversalDevModeProvider({ children }: UniversalDevModeProviderP
     <DevModeProvider value={devModeContext}>
       {children}
 
-      {/* Debug indicator - temporary for testing */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '10px',
-          right: '10px',
-          padding: '5px 10px',
-          background: 'rgba(0,0,0,0.7)',
-          color: 'white',
-          fontSize: '10px',
-          zIndex: 99999,
-          borderRadius: '3px',
-          fontFamily: 'monospace'
-        }}
-      >
-        Dev Mode Ready (Ctrl+Alt+D)
-      </div>
-
       {/* Secret Key Prompt */}
       {showSecretKeyPrompt && (
         <SecretKeyPrompt
           isOpen={showSecretKeyPrompt}
           onCancel={() => setShowSecretKeyPrompt(false)}
-          onSubmit={(key) => {
-            const success = handleSecretKeySubmit(key);
-            if (success) {
-              setShowSecretKeyPrompt(false);
-            }
+          onSubmit={async (key) => {
+            await handleSecretKeySubmit(key);
           }}
         />
       )}
