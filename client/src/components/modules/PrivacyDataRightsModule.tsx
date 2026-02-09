@@ -10,6 +10,7 @@ import {
 import { DeveloperPanel } from '@/components/DeveloperPanel';
 import { generateWithGemini } from '@/services/geminiClient';
 import { TCTimerChallenge } from '@/components/PrivacyModule/TCTimerChallenge';
+import { PolicyMythsQuiz } from '@/components/PrivacyModule/PolicyMythsQuiz';
 import { PolicyComparisonTable } from '@/components/PrivacyModule/PolicyComparisonTable';
 import { ToolsComparison } from '@/components/PrivacyModule/ToolsComparison';
 import { generateWorksCited, getCitation } from '@/data/privacyPolicyCitations';
@@ -21,7 +22,7 @@ interface PrivacyDataRightsModuleProps {
   showDevPanel?: boolean;
 }
 
-type Phase = 'intro' | 'jordan-simulation' | 'how-ai-remembers' | 'tc-challenge' | 'policy-comparison' | 'tools-comparison' | 'action-plan' | 'exit-ticket' | 'works-cited';
+type Phase = 'intro' | 'jordan-simulation' | 'how-ai-remembers' | 'tc-challenge' | 'policy-myths-quiz' | 'policy-comparison' | 'tools-comparison' | 'action-plan' | 'exit-ticket' | 'works-cited';
 
 // Jordan's College Essay Simulation Component
 const JordanSimulation: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
@@ -347,9 +348,10 @@ export default function PrivacyDataRightsModule({
     { id: 'jordan-simulation', title: 'Jordan\'s Story', completed: ['intro'].indexOf(phase) === -1 && phase !== 'jordan-simulation', type: 'simulation' as const },
     { id: 'how-ai-remembers', title: 'How AI Uses Your Data', completed: ['intro', 'jordan-simulation'].indexOf(phase) === -1 && phase !== 'how-ai-remembers', type: 'lesson' as const },
     { id: 'tc-challenge', title: 'T&C Reality Check', completed: ['intro', 'jordan-simulation', 'how-ai-remembers'].indexOf(phase) === -1 && phase !== 'tc-challenge', type: 'interactive' as const },
-    { id: 'policy-comparison', title: 'Policy Comparison', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge'].indexOf(phase) === -1 && phase !== 'policy-comparison', type: 'lesson' as const },
-    { id: 'tools-comparison', title: 'AI Tools Guide', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge', 'policy-comparison'].indexOf(phase) === -1 && phase !== 'tools-comparison', type: 'lesson' as const },
-    { id: 'action-plan', title: 'Your Action Plan', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge', 'policy-comparison', 'tools-comparison'].indexOf(phase) === -1 && phase !== 'action-plan', type: 'lesson' as const },
+    { id: 'policy-myths-quiz', title: 'Policy Myths Quiz', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge'].indexOf(phase) === -1 && phase !== 'policy-myths-quiz', type: 'interactive' as const },
+    { id: 'policy-comparison', title: 'Policy Comparison', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge', 'policy-myths-quiz'].indexOf(phase) === -1 && phase !== 'policy-comparison', type: 'lesson' as const },
+    { id: 'tools-comparison', title: 'AI Tools Guide', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge', 'policy-myths-quiz', 'policy-comparison'].indexOf(phase) === -1 && phase !== 'tools-comparison', type: 'lesson' as const },
+    { id: 'action-plan', title: 'Your Action Plan', completed: ['intro', 'jordan-simulation', 'how-ai-remembers', 'tc-challenge', 'policy-myths-quiz', 'policy-comparison', 'tools-comparison'].indexOf(phase) === -1 && phase !== 'action-plan', type: 'lesson' as const },
     { id: 'exit-ticket', title: 'Final Reflection', completed: false, type: 'exit-ticket' as const }
   ];
 
@@ -646,7 +648,27 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
   if (phase === 'tc-challenge') {
     return (
       <>
-        <TCTimerChallenge onComplete={() => setPhase('policy-comparison')} />
+        <TCTimerChallenge onComplete={() => setPhase('policy-myths-quiz')} />
+        <AnimatePresence>
+          {showDevPanel && (
+            <DeveloperPanel
+              currentActivity={currentActivityIndex}
+              totalActivities={activities.length}
+              activities={activities}
+              onJumpToActivity={devJumpToActivity}
+              onCompleteAll={devCompleteAll}
+              onReset={devReset}
+            />
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
+  if (phase === 'policy-myths-quiz') {
+    return (
+      <>
+        <PolicyMythsQuiz onComplete={() => setPhase('policy-comparison')} />
         <AnimatePresence>
           {showDevPanel && (
             <DeveloperPanel
