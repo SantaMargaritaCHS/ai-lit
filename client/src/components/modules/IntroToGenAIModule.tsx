@@ -52,8 +52,8 @@ const VIDEO_CONFIG = {
       id: 'segment-2',
       title: 'Using AI Responsibly at School',
       startTime: 55,
-      endTime: 188, // Movement 2: 0:55-3:08 - Partnership, research/art/coding examples, "spark and fire"
-      pausePoint: 188
+      endTime: 141, // Movement 2: 0:55-2:21 - Partnership, research/art/coding examples
+      pausePoint: 141
     },
     {
       id: 'segment-3',
@@ -199,6 +199,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
   const [scenarioSelectedAnswer, setScenarioSelectedAnswer] = useState<number | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [ingredientsSelections, setIngredientsSelections] = useState<Record<number, boolean>>({});
+  const [scenarioShuffledIndices, setScenarioShuffledIndices] = useState<Record<number, number[]>>({});
 
   const isMountedRef = useRef(true);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
@@ -801,9 +802,9 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
         question: "Your history teacher allows AI for research help on your Industrial Revolution essay, but says 'the analysis and arguments must be your own thinking.' What's the responsible approach?",
         options: [
           {
-            text: "📚 Ask AI to explain causes of the Industrial Revolution, then develop your own thesis by analyzing primary sources and citing AI as one research source",
+            text: "📚 Use AI to identify primary sources about the Industrial Revolution, then verify those sources yourself, analyze the causes, and develop your own thesis",
             isCorrect: true,
-            explanation: "Excellent! You're using AI to understand concepts, but YOU read sources, form arguments, and properly cite AI's contribution. This follows your teacher's guidelines and school policy."
+            explanation: "Excellent! You're using AI as a research starting point, but YOU verify the sources, do the analysis, and form your own arguments. This follows your teacher's guidelines and school policy."
           },
           {
             text: "📝 Ask AI to generate three main arguments about the Industrial Revolution, then write body paragraphs expanding on those points in your own words",
@@ -867,6 +868,28 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
 
     const currentScenarioData = SCENARIOS[currentScenario];
     const attempts = scenarioAttempts[currentScenario] || 0;
+
+    // Shuffle function using Fisher-Yates algorithm
+    const shuffleArray = (length: number): number[] => {
+      const indices = Array.from({ length }, (_, i) => i);
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      return indices;
+    };
+
+    // Get or create shuffled indices for current scenario
+    const getShuffledIndices = (): number[] => {
+      if (!scenarioShuffledIndices[currentScenario]) {
+        const shuffled = shuffleArray(currentScenarioData.options.length);
+        setScenarioShuffledIndices(prev => ({ ...prev, [currentScenario]: shuffled }));
+        return shuffled;
+      }
+      return scenarioShuffledIndices[currentScenario];
+    };
+
+    const shuffledIndices = getShuffledIndices();
     const isCorrectAnswer = scenarioSelectedAnswer !== null && currentScenarioData.options[scenarioSelectedAnswer].isCorrect;
 
     const handleAnswerSelect = (index: number) => {
@@ -997,22 +1020,24 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
               </div>
 
               <div className="space-y-3">
-                {currentScenarioData.options.map((option, index) => (
-                  <div key={index} className="space-y-2">
+                {shuffledIndices.map((originalIndex) => {
+                  const option = currentScenarioData.options[originalIndex];
+                  return (
+                  <div key={originalIndex} className="space-y-2">
                     <button
-                      onClick={() => handleAnswerSelect(index)}
+                      onClick={() => handleAnswerSelect(originalIndex)}
                       disabled={scenarioSelectedAnswer !== null}
                       className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-300 ${
-                        scenarioSelectedAnswer === index
+                        scenarioSelectedAnswer === originalIndex
                           ? option.isCorrect
                             ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                             : 'border-red-500 bg-red-50 dark:bg-red-900/20'
                           : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      } ${scenarioSelectedAnswer !== null && scenarioSelectedAnswer !== index ? 'opacity-60' : ''}`}
+                      } ${scenarioSelectedAnswer !== null && scenarioSelectedAnswer !== originalIndex ? 'opacity-60' : ''}`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-gray-800 dark:text-gray-200">{option.text}</span>
-                        {scenarioSelectedAnswer === index && (
+                        {scenarioSelectedAnswer === originalIndex && (
                           <span className="ml-2 flex-shrink-0">
                             {option.isCorrect ? (
                               <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -1025,7 +1050,7 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                     </button>
 
                     {/* Show feedback */}
-                    {scenarioSelectedAnswer === index && (
+                    {scenarioSelectedAnswer === originalIndex && (
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1052,7 +1077,8 @@ export default function IntroToGenAIModule({ onComplete, userName = "AI Explorer
                       </motion.div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-400 p-4 rounded-lg mt-4">
