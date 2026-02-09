@@ -1027,7 +1027,7 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
                 Works Cited
               </CardTitle>
               <p className="text-blue-100">
-                All sources used in this module (accurate as of October 2025)
+                All sources used in this module (accurate as of February 2026)
               </p>
             </CardHeader>
             <CardContent className="space-y-4">

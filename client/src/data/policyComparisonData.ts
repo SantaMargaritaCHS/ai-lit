@@ -4,7 +4,7 @@
  * Detailed comparison of privacy policies for major AI tools
  * with actual quoted language from their Terms of Service
  *
- * Based on October 2025 policy versions
+ * Based on February 2026 policy versions
  */
 
 export interface PolicyComparison {

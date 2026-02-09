@@ -4,7 +4,7 @@
  * Comprehensive comparison of school-safe and consumer AI tools
  * with privacy ratings, risks, and recommendations
  *
- * October 2025
+ * February 2026
  */
 
 export interface AITool {

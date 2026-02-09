@@ -127,7 +127,7 @@ export const TCTimerChallenge: React.FC<TCTimerChallengeProps> = ({ onComplete }
                   <div className="bg-slate-900 border-2 border-slate-600 rounded-lg p-4 h-64 overflow-y-auto text-left">
                     <p className="text-gray-300 text-xs leading-relaxed font-mono">
                       <strong className="text-white block mb-2">SNAPCHAT TERMS OF SERVICE</strong>
-                      <strong className="text-white block mb-2">Last Updated: October 2025</strong>
+                      <strong className="text-white block mb-2">Last Updated: February 2026</strong>
 
                       <span className="block mt-3">
                         These Terms of Service ("Terms") govern your access to and use of Snapchat and other products and services we may offer (collectively, the "Services"). Please read these Terms carefully, and contact us if you have any questions. By clicking "I Agree" or by accessing or using our Services, you agree to be bound by these Terms and by our Privacy Policy.
