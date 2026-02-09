@@ -83,6 +83,16 @@
 
 ---
 
+### Phase 6: Interactive Quiz Added
+- [x] **Policy Myths True/False Quiz** - Added as new activity
+  - 8 questions with primary source citations
+  - Covers ChatGPT, Snapchat, Character.AI, Grok, Meta AI, Claude, Copilot
+  - Shows actual policy language quotes
+  - Results screen with "Most Surprising Facts" and "Good News" summaries
+  - Flow: T&C Challenge → Policy Myths Quiz → Policy Comparison
+
+---
+
 ## Future Considerations (Not Implemented)
 
 - [ ] Add voice/image privacy considerations (AI voice cloning, image generation)
