@@ -183,6 +183,107 @@ export const citations: Citation[] = [
     accessed: "February 9, 2026",
     organization: "Snap Inc.",
     notes: "~15,000 words, estimated 60 minute read time; updated April 2025"
+  },
+  // Google Gemini Citations
+  {
+    id: 24,
+    title: "Gemini Apps Privacy Hub",
+    url: "https://support.google.com/gemini/answer/13594961",
+    accessed: "February 9, 2026",
+    organization: "Google",
+    notes: "Human reviewers may read and process API input/output for free tier; 18-month auto-delete by default"
+  },
+  {
+    id: 25,
+    title: "Gemini API Additional Terms of Service",
+    url: "https://ai.google.dev/gemini-api/terms",
+    accessed: "February 9, 2026",
+    organization: "Google AI for Developers",
+    notes: "Prohibits use in services directed towards individuals under 18; content used for model improvement in free tier"
+  },
+  // Claude.ai / Anthropic Citations
+  {
+    id: 26,
+    title: "How long do you store my data?",
+    url: "https://privacy.claude.com/en/articles/10023548-how-long-do-you-store-my-data",
+    accessed: "February 9, 2026",
+    organization: "Anthropic Privacy Center",
+    notes: "30-day retention by default; 5-year retention if user opts into training; deleted conversations not used for training"
+  },
+  {
+    id: 27,
+    title: "Updates to Consumer Terms and Privacy Policy",
+    url: "https://www.anthropic.com/news/updates-to-our-consumer-terms",
+    accessed: "February 9, 2026",
+    organization: "Anthropic",
+    notes: "January 2026 update introduced opt-in training option; does not apply to Enterprise/API users"
+  },
+  {
+    id: 28,
+    title: "How does Anthropic protect the personal data of Claude users?",
+    url: "https://privacy.claude.com/en/articles/10458704-how-does-anthropic-protect-the-personal-data-of-claude-users",
+    accessed: "February 9, 2026",
+    organization: "Anthropic Privacy Center",
+    notes: "Employees cannot access conversations unless user consents or policy violation; does not sell user data"
+  },
+  // Perplexity AI Citations
+  {
+    id: 29,
+    title: "Perplexity Privacy Policy",
+    url: "https://www.perplexity.ai/hub/legal/privacy-policy",
+    accessed: "February 9, 2026",
+    organization: "Perplexity AI",
+    notes: "Effective February 5, 2026; AI training opt-out available in settings; collects search queries and browsing behavior"
+  },
+  {
+    id: 30,
+    title: "What data does Perplexity collect about me?",
+    url: "https://www.perplexity.ai/help-center/en/articles/10354855-what-data-does-perplexity-collect-about-me",
+    accessed: "February 9, 2026",
+    organization: "Perplexity Help Center",
+    notes: "Collects prompts, inputs, AI responses, device info, location, browsing behavior; 30-day deletion after account removal"
+  },
+  // Grok / xAI Citations
+  {
+    id: 31,
+    title: "Privacy Policy",
+    url: "https://x.ai/legal/privacy-policy",
+    accessed: "February 9, 2026",
+    organization: "xAI",
+    notes: "xAI is separate from X Corp; use of Grok on X platform governed by X Privacy Policy"
+  },
+  {
+    id: 32,
+    title: "Updates to our Terms of Service and Privacy Policy",
+    url: "https://privacy.x.com/en/blog/2025/updates-tos-privacy-policy",
+    accessed: "February 9, 2026",
+    organization: "X Corp",
+    notes: "January 15, 2026 update grants perpetual license to AI content; no opt-out after effective date"
+  },
+  {
+    id: 33,
+    title: "Terms of Service - Consumer",
+    url: "https://x.ai/legal/terms-of-service",
+    accessed: "February 9, 2026",
+    organization: "xAI",
+    notes: "Class action waiver; $100 liability cap; mandatory arbitration in Tarrant County, Texas"
+  },
+  // Meta AI Citations
+  {
+    id: 34,
+    title: "Meta's 2026 AI Policy Sparks Privacy Fury Over Chat Data Use",
+    url: "https://www.webpronews.com/metas-2026-ai-policy-sparks-privacy-fury-over-chat-data-use/",
+    accessed: "February 9, 2026",
+    organization: "WebProNews",
+    notes: "December 2025 policy update allows Meta to use AI chat interactions for personalization and targeted ads"
+  },
+  {
+    id: 35,
+    title: "Meta AI in WhatsApp: Assistant Behavior, Model Updates, and Data Privacy Controls",
+    url: "https://www.datastudios.org/post/meta-ai-in-whatsapp-assistant-behavior-model-updates-and-data-privacy-controls",
+    accessed: "February 9, 2026",
+    organization: "Data Studios",
+    notes: "AI interactions treated separately from encrypted messages; cannot fully opt out in US"
   }
 ];
 

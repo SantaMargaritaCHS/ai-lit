@@ -188,20 +188,21 @@ export const aiTools: AITool[] = [
     category: "consumer",
     privacyRating: "low",
     description: "Google's AI chatbot with deep integration into your Google account and services.",
-    whatItMeans: "If you use Gmail, YouTube, Google Search, etc., Gemini connects all that data together to build a profile of you. Gemini may use your conversations to improve its models unless you disable this in settings, but it will always use your data for personalized advertising.",
+    whatItMeans: "If you use Gmail, YouTube, Google Search, etc., Gemini connects all that data together to build a profile of you. In the free tier, human reviewers may read your conversations and your data is used to improve AI models.",
     privacyRisks: [
       "Links to your entire Google account",
       "Cross-service data sharing (Gmail, YouTube, Search, Maps)",
-      "Location and search history integration",
-      "Advertising profile building",
+      "Human reviewers may read and process your conversations (free tier)",
+      "Data used to train AI models in free tier",
+      "18-month retention by default (adjustable)",
       "Data used to personalize ads across all Google services"
     ],
-    recommendations: "Use a separate Google account (not your school or personal one) if you must use it. Never discuss anything you wouldn't want in your Google ad profile.",
-    citationIds: [], // Add Gemini-specific citations
-    ageRestriction: "18+",
+    recommendations: "Use a separate Google account (not your school or personal one) if you must use it. Never discuss anything you wouldn't want in your Google ad profile. API prohibits use by services directed at under-18 users.",
+    citationIds: [24, 25],
+    ageRestriction: "18+ (API/Workspace); younger users have stricter protections",
     dataTraining: true,
     personalizedAds: true,
-    dataRetention: "Linked to Google account (indefinite)"
+    dataRetention: "18 months by default (adjustable)"
   },
   {
     name: "Claude.ai",
@@ -209,46 +210,98 @@ export const aiTools: AITool[] = [
     logo: "https://www.anthropic.com/images/icons/apple-touch-icon.png",
     category: "consumer",
     privacyRating: "medium",
-    description: "AI chatbot that does NOT train on conversations by default - best consumer option for privacy.",
-    whatItMeans: "Unlike ChatGPT or Character.AI, Claude's company (Anthropic) doesn't use your chats to train their AI by default. Best privacy among major consumer chatbots.",
+    description: "AI chatbot that does NOT train on conversations by default - best consumer option for privacy. Now offers opt-in training with longer retention.",
+    whatItMeans: "Unlike ChatGPT or Character.AI, Claude's company (Anthropic) doesn't use your chats to train their AI by default. You can now OPT-IN to share data for training, but it's your choice.",
     privacyFeatures: [
       "Does NOT use conversations for training by default",
       "Privacy-by-default design",
+      "You control whether to share data for training",
+      "Deleted conversations are never used for training",
+      "Anthropic does NOT sell user data",
       "Better privacy than ChatGPT/Character.AI/Snapchat"
     ],
     privacyRisks: [
-      "90-day conversation retention",
-      "Trust & Safety team can review flagged content",
+      "30-day retention by default (or 5 years if you opt into training)",
+      "Trust & Safety team can review flagged content (up to 2 years)",
       "No COPPA compliance (not designed for under-13)",
       "No school controls or FERPA protections"
     ],
-    recommendations: "Best consumer chatbot for privacy, but school tools are still better for schoolwork. Good option for casual use if you're not comfortable sharing with other platforms.",
-    citationIds: [], // Add Claude-specific citations
+    recommendations: "Best consumer chatbot for privacy if you DON'T opt into training. Keep the default settings for maximum privacy. Still use school tools for schoolwork.",
+    citationIds: [26, 27, 28],
     ageRestriction: "13+",
     dataTraining: false,
     personalizedAds: false,
-    dataRetention: "90 days"
+    dataRetention: "30 days (default) or 5 years (if opt-in to training)"
   },
   {
     name: "Perplexity AI",
     icon: "🔍",
     category: "consumer",
     privacyRating: "medium",
-    description: "AI-powered search engine that answers questions by searching the web and summarizing results. Logs all your queries permanently.",
-    whatItMeans: "Unlike Google Search, Perplexity uses AI to read web pages and give you direct answers. But like Google, it tracks everything you search for. Your question history builds a detailed profile of your interests, concerns, and information needs.",
+    description: "AI-powered search engine that answers questions by searching the web and summarizing results. Training enabled by default but opt-out available.",
+    whatItMeans: "Unlike Google Search, Perplexity uses AI to read web pages and give you direct answers. It tracks your searches and uses them for AI training by default, but you CAN opt out in settings.",
     privacyRisks: [
-      "Search queries permanently logged",
+      "AI training enabled by default (must opt-out in settings)",
+      "Collects prompts, inputs, AI responses, device info, location",
       "Third-party data sharing with partners",
-      "Limited deletion options",
       "Profile building over time based on searches",
       "No COPPA or FERPA compliance"
     ],
-    recommendations: "Avoid personal identifiers in search queries. Don't search for information about yourself, friends, or your school by name.",
-    citationIds: [], // Add Perplexity citations
+    recommendations: "Go to Settings and opt out of AI training immediately. Avoid personal identifiers in search queries. Don't search for information about yourself, friends, or your school by name.",
+    citationIds: [29, 30],
     ageRestriction: "13+",
     dataTraining: true,
     personalizedAds: false,
-    dataRetention: "Permanent search logs"
+    dataRetention: "30 days after account deletion"
+  },
+  // NEW HIGH-RISK TOOLS (January 2026)
+  {
+    name: "Grok (X/xAI)",
+    icon: "⚡",
+    category: "consumer",
+    privacyRating: "low",
+    description: "AI chatbot from xAI (Elon Musk's company) integrated into X (formerly Twitter). January 2026 update grants perpetual license to all your content with NO opt-out.",
+    whatItMeans: "This is one of the RISKIEST options available. The January 15, 2026 terms update grants X/xAI a perpetual, royalty-free license to use ALL your AI conversations and prompts forever. There is NO way to opt out except deleting your account BEFORE the effective date.",
+    privacyRisks: [
+      "PERPETUAL LICENSE to all AI content - yours forever becomes theirs",
+      "NO opt-out option after January 15, 2026",
+      "All conversations used for AI training",
+      "Class action waiver - cannot sue or join lawsuits",
+      "Liability capped at $100 per dispute",
+      "Mandatory arbitration in Texas",
+      "Jailbreaking and prompt injection now prohibited"
+    ],
+    recommendations: "EXTREMELY HIGH RISK. If you value your privacy, do NOT use Grok. Your only option to avoid the new terms was to delete your X account before January 15, 2026. Everything you say to Grok belongs to xAI forever.",
+    citationIds: [31, 32, 33],
+    ageRestriction: "13+ (X account required)",
+    dataTraining: true,
+    personalizedAds: true,
+    dataRetention: "Permanent (perpetual license)"
+  },
+  {
+    name: "Meta AI",
+    icon: "📱",
+    category: "consumer",
+    privacyRating: "low",
+    description: "AI assistant built into WhatsApp, Instagram, Messenger, and Facebook. December 2025 update uses your AI chats for personalization and targeted ads.",
+    whatItMeans: "Meta AI is embedded in apps you probably already use. Starting December 2025, everything you say to Meta AI is used to personalize your experience AND show you targeted ads. You cannot fully opt out in the US.",
+    privacyRisks: [
+      "AI chat interactions used for personalization and targeted ads",
+      "Cannot fully opt out in US (only EU/UK/Brazil have formal opt-out)",
+      "Data processed even if you don't want it",
+      "Cross-platform tracking (Facebook, Instagram, WhatsApp, Messenger)",
+      "Conversations about health, politics, religion still stored (just not used for ads)"
+    ],
+    privacyFeatures: [
+      "Does NOT read your private DMs with friends (only AI chat interactions)",
+      "Private messages remain encrypted"
+    ],
+    recommendations: "AVOID sharing personal information with Meta AI. Remember: your conversations with Meta AI are NOT like your encrypted messages with friends. They are used for ads. EU/UK users have formal opt-out rights.",
+    citationIds: [34, 35],
+    ageRestriction: "13+",
+    dataTraining: true,
+    personalizedAds: true,
+    dataRetention: "Used for personalization indefinitely"
   }
 ];
 

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Shield, CheckCircle, AlertTriangle, ArrowRight,
-  User, Clock, Loader2, Send, Sparkles, Book
+  User, Clock, Loader2, Send, Sparkles, Book, Scale
 } from 'lucide-react';
 import { DeveloperPanel } from '@/components/DeveloperPanel';
 import { generateWithGemini } from '@/services/geminiClient';
@@ -848,6 +848,39 @@ Provide brief (2-3 sentences) encouraging feedback that acknowledges their speci
                 <li>✓ You have the choice to anonymize your information on consumer platforms.</li>
                 <li>✓ You have the choice to read beyond the "I Agree" button and understand what you're signing up for.</li>
               </ul>
+            </div>
+
+            {/* Know Your Rights Section */}
+            <div className="bg-purple-900/40 p-6 rounded-lg border-2 border-purple-400">
+              <h3 className="text-purple-300 text-xl font-bold mb-4 flex items-center gap-2">
+                <Scale className="w-6 h-6" />
+                Know Your Rights: Laws That Protect You
+              </h3>
+              <div className="space-y-4 text-gray-200">
+                <div>
+                  <h4 className="text-white font-semibold mb-1">COPPA (Children's Online Privacy Protection Act)</h4>
+                  <p className="text-sm">
+                    If you're under 13, companies need parental consent to collect your data. That's why most AI tools require you to be 13+. If a company violates COPPA, the FTC can fine them millions of dollars.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold mb-1">State Privacy Laws (California, Virginia, and more)</h4>
+                  <p className="text-sm">
+                    States like California (CCPA) give you the right to know what data companies collect, request deletion, and opt out of data sales. More states are passing similar laws every year.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold mb-1">EU AI Act & GDPR (If You're in Europe)</h4>
+                  <p className="text-sm">
+                    European laws are even stronger. The GDPR gives EU residents formal opt-out rights from AI training, and the new AI Act (2026) requires transparency about how AI systems use your data.
+                  </p>
+                </div>
+                <div className="bg-purple-800/50 p-3 rounded-lg mt-4">
+                  <p className="text-purple-200 text-sm">
+                    <strong>Bottom line:</strong> You have legal rights, and they're getting stronger. Companies that violate these laws face serious consequences. But the best protection is still being careful about what you share in the first place.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <Button
