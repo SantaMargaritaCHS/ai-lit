@@ -387,6 +387,7 @@ export default function PrivacyDataRightsModule({
   const MAX_ATTEMPTS = 2;
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };
