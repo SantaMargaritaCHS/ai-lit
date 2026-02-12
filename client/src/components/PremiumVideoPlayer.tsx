@@ -57,6 +57,7 @@ export function PremiumVideoPlayer({
 }: PremiumVideoPlayerProps) {
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showLoadingUI, setShowLoadingUI] = useState(false);
   const [error, setError] = useState<string>('');
   const [errorDetails, setErrorDetails] = useState<any>(null);
   const [showFallbackOptions, setShowFallbackOptions] = useState(false);
@@ -220,6 +221,16 @@ export function PremiumVideoPlayer({
     }
   }, [currentTime, subtitles, subtitlesEnabled]);
 
+  // Only show loading UI after a delay to prevent flash on fast loads
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => setShowLoadingUI(true), 400);
+      return () => clearTimeout(timer);
+    } else {
+      setShowLoadingUI(false);
+    }
+  }, [loading]);
+
   // Load video on mount
   useEffect(() => {
     const loadVideo = async () => {
@@ -301,11 +312,22 @@ export function PremiumVideoPlayer({
     }
 
     const video = videoRef.current;
-    // Always set video time to segment start time
-    video.currentTime = currentSegment.start;
+
+    // Seek to segment start — must handle both "metadata already loaded" and "not yet loaded" cases
+    const seekToStart = () => {
+      video.currentTime = currentSegment.start;
+    };
+
+    // If metadata is already available (same video URL re-used across segments), seek immediately
+    if (video.readyState >= 1) {
+      seekToStart();
+    }
 
     const handleLoadedMetadata = () => {
       console.log(`🎬 Video loaded: "${currentSegment.id}" duration=${video.duration}s`);
+
+      // Seek again on metadata load to guarantee it sticks
+      seekToStart();
 
       // For full-length videos or segments that play to end (-1), use actual video duration
       if (currentSegment.end >= 100000 || currentSegment.end === -1) {
@@ -455,7 +477,6 @@ export function PremiumVideoPlayer({
         } catch (error) {
           console.warn('Auto-play blocked by browser, user interaction required:', error);
           setIsPaused(true);
-          // Force the video to show it's paused and needs user interaction
           video.currentTime = currentSegment.start;
         }
       }
@@ -678,7 +699,7 @@ export function PremiumVideoPlayer({
     }
   };
 
-  if (loading) {
+  if (showLoadingUI) {
     return (
       <div className="video-loading">
         <div className="loading-spinner"></div>

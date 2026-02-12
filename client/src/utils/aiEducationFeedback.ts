@@ -116,7 +116,7 @@ Evaluate now:`;
       // Retry once if this is the first attempt
       if (retryCount < 1) {
         console.log('🔄 Retrying Gemini request once...');
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        await new Promise(resolve => setTimeout(resolve, 500));
         return generateEducationFeedback(response, question, retryCount + 1);
       }
 

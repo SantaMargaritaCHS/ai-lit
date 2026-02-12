@@ -24,14 +24,14 @@ export const PolicyComparisonTable: React.FC<PolicyComparisonTableProps> = ({
         onMouseEnter={() => setHoveredCitation(citationId)}
         onMouseLeave={() => setHoveredCitation(null)}
       >
-        <sup className="text-blue-400 cursor-help hover:text-blue-300 ml-0.5">
+        <sup className="text-blue-600 cursor-help hover:text-blue-500 ml-0.5">
           {citationId}
         </sup>
         {hoveredCitation === citationId && (
-          <div className="absolute bottom-full left-0 mb-2 w-72 bg-slate-900 border border-blue-400 rounded-lg p-3 shadow-xl z-50 text-xs">
-            <p className="text-white font-semibold mb-1">{citation.title}</p>
-            <p className="text-gray-300">{citation.organization}</p>
-            <p className="text-blue-300 text-xs mt-1">{citation.accessed}</p>
+          <div className="absolute bottom-full left-0 mb-2 w-72 bg-white border-2 border-slate-300 rounded-lg p-3 shadow-xl z-50 text-xs">
+            <p className="text-slate-900 font-semibold mb-1">{citation.title}</p>
+            <p className="text-slate-600">{citation.organization}</p>
+            <p className="text-blue-600 text-xs mt-1">{citation.accessed}</p>
           </div>
         )}
       </span>
@@ -68,10 +68,10 @@ export const PolicyComparisonTable: React.FC<PolicyComparisonTableProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-white text-3xl font-bold mb-4">
+        <h2 className="text-slate-900 text-3xl font-bold mb-4">
           AI Privacy: A Head-to-Head Comparison
         </h2>
-        <p className="text-blue-100 text-lg max-w-3xl mx-auto">
+        <p className="text-slate-600 text-lg max-w-3xl mx-auto">
           Here's a breakdown of the privacy policies for three popular AI tools. We've pulled
           the <strong>actual language</strong> from their terms so you can see for yourself
           what they say about your data.
@@ -83,45 +83,45 @@ export const PolicyComparisonTable: React.FC<PolicyComparisonTableProps> = ({
         {policyComparisons.map((policy) => (
           <Card
             key={policy.tool}
-            className="bg-slate-800 border-slate-600 hover:border-blue-400 transition-colors"
+            className="bg-white border-slate-300 shadow-md hover:border-blue-500 transition-colors"
           >
             <CardContent className="p-6 space-y-4">
               {/* Header */}
               <div className="text-center">
                 <div className="text-4xl mb-3">{policy.icon}</div>
-                <h3 className="text-white font-bold text-lg mb-2">{policy.tool}</h3>
+                <h3 className="text-slate-900 font-bold text-lg mb-2">{policy.tool}</h3>
                 {getPrivacyBadge(policy.privacyRating)}
               </div>
 
               {/* What You Agreed To */}
-              <div className="bg-slate-700/50 p-4 rounded-lg min-h-[200px]">
-                <h4 className="text-blue-300 font-bold text-sm mb-3 flex items-center gap-2">
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 min-h-[200px]">
+                <h4 className="text-blue-700 font-bold text-sm mb-3 flex items-center gap-2">
                   <Info className="w-4 h-4" />
                   What You Agreed To
                 </h4>
                 <ul className="space-y-2 text-sm">
                   {policy.whatYouAgreedTo.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      {item.startsWith('✅') ? (
-                        <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                      {item.startsWith('\u2705') ? (
+                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                        <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                       )}
-                      <span className="text-white">{item.replace(/^[✅❌]\s*/, '')}</span>
+                      <span className="text-slate-700">{item.replace(/^[\u2705\u274C]\s*/, '')}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* The Fine Print */}
-              <div className="bg-slate-900/50 p-4 rounded-lg min-h-[250px]">
-                <h4 className="text-yellow-300 font-bold text-sm mb-3">
+              <div className="bg-slate-100 p-4 rounded-lg border border-slate-300 min-h-[250px]">
+                <h4 className="text-amber-800 font-bold text-sm mb-3">
                   The Fine Print (Real Language from their Policies)
                 </h4>
                 <div className="space-y-3 text-xs">
                   {policy.finePrint.map((item, idx) => (
-                    <div key={idx} className="bg-black/30 p-3 rounded border-l-2 border-yellow-400">
-                      <p className="text-gray-300 italic">
+                    <div key={idx} className="bg-amber-100/60 p-3 rounded-lg border-l-4 border-amber-500">
+                      <p className="text-slate-600 italic">
                         {item.text}
                         {showCitations && renderMultipleCitations(item.citationIds)}
                       </p>
@@ -133,13 +133,13 @@ export const PolicyComparisonTable: React.FC<PolicyComparisonTableProps> = ({
               {/* The Bottom Line */}
               <div className={`p-4 rounded-lg ${
                 policy.privacyRating === 'high'
-                  ? 'bg-green-900/30 border border-green-500/30'
+                  ? 'bg-green-100/70 border-2 border-green-400'
                   : policy.privacyRating === 'medium'
-                  ? 'bg-yellow-900/30 border border-yellow-500/30'
-                  : 'bg-red-900/30 border border-red-500/30'
+                  ? 'bg-amber-100/60 border-2 border-amber-400'
+                  : 'bg-red-100/60 border-2 border-red-400'
               }`}>
-                <h4 className="text-white font-bold text-sm mb-2">The Bottom Line</h4>
-                <p className="text-gray-200 text-xs leading-relaxed">
+                <h4 className="text-slate-900 font-bold text-sm mb-2">The Bottom Line</h4>
+                <p className="text-slate-700 text-xs leading-relaxed">
                   {policy.bottomLine}
                 </p>
               </div>
@@ -153,7 +153,7 @@ export const PolicyComparisonTable: React.FC<PolicyComparisonTableProps> = ({
         {policyComparisons.map((policy) => (
           <Card
             key={policy.tool}
-            className="bg-slate-800 border-slate-600"
+            className="bg-white border-slate-300 shadow-md"
           >
             <CardContent className="p-6 space-y-4">
               {/* Header */}
@@ -161,38 +161,38 @@ export const PolicyComparisonTable: React.FC<PolicyComparisonTableProps> = ({
                 <div className="flex items-center gap-3">
                   <div className="text-3xl">{policy.icon}</div>
                   <div>
-                    <h3 className="text-white font-bold text-lg">{policy.tool}</h3>
+                    <h3 className="text-slate-900 font-bold text-lg">{policy.tool}</h3>
                     {getPrivacyBadge(policy.privacyRating)}
                   </div>
                 </div>
               </div>
 
               {/* What You Agreed To */}
-              <div className="bg-slate-700/50 p-4 rounded-lg">
-                <h4 className="text-blue-300 font-bold text-sm mb-3">What You Agreed To</h4>
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h4 className="text-blue-700 font-bold text-sm mb-3">What You Agreed To</h4>
                 <ul className="space-y-2 text-sm">
                   {policy.whatYouAgreedTo.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      {item.startsWith('✅') ? (
-                        <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                      {item.startsWith('\u2705') ? (
+                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                        <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                       )}
-                      <span className="text-white">{item.replace(/^[✅❌]\s*/, '')}</span>
+                      <span className="text-slate-700">{item.replace(/^[\u2705\u274C]\s*/, '')}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* The Fine Print */}
-              <div className="bg-slate-900/50 p-4 rounded-lg">
-                <h4 className="text-yellow-300 font-bold text-sm mb-3">
+              <div className="bg-slate-100 p-4 rounded-lg border border-slate-300">
+                <h4 className="text-amber-800 font-bold text-sm mb-3">
                   The Fine Print
                 </h4>
                 <div className="space-y-3 text-xs">
                   {policy.finePrint.map((item, idx) => (
-                    <div key={idx} className="bg-black/30 p-3 rounded border-l-2 border-yellow-400">
-                      <p className="text-gray-300 italic">
+                    <div key={idx} className="bg-amber-100/60 p-3 rounded-lg border-l-4 border-amber-500">
+                      <p className="text-slate-600 italic">
                         {item.text}
                         {showCitations && renderMultipleCitations(item.citationIds)}
                       </p>
@@ -204,13 +204,13 @@ export const PolicyComparisonTable: React.FC<PolicyComparisonTableProps> = ({
               {/* The Bottom Line */}
               <div className={`p-4 rounded-lg ${
                 policy.privacyRating === 'high'
-                  ? 'bg-green-900/30 border border-green-500/30'
+                  ? 'bg-green-100/70 border-2 border-green-400'
                   : policy.privacyRating === 'medium'
-                  ? 'bg-yellow-900/30 border border-yellow-500/30'
-                  : 'bg-red-900/30 border border-red-500/30'
+                  ? 'bg-amber-100/60 border-2 border-amber-400'
+                  : 'bg-red-100/60 border-2 border-red-400'
               }`}>
-                <h4 className="text-white font-bold text-sm mb-2">The Bottom Line</h4>
-                <p className="text-gray-200 text-sm leading-relaxed">
+                <h4 className="text-slate-900 font-bold text-sm mb-2">The Bottom Line</h4>
+                <p className="text-slate-700 text-sm leading-relaxed">
                   {policy.bottomLine}
                 </p>
               </div>
@@ -220,14 +220,14 @@ export const PolicyComparisonTable: React.FC<PolicyComparisonTableProps> = ({
       </div>
 
       {/* Key Insight Box */}
-      <div className="bg-blue-500/20 p-6 rounded-lg border-2 border-blue-400/50 mt-8">
+      <div className="bg-blue-100/70 p-6 rounded-lg border-2 border-blue-400 mt-8">
         <div className="flex items-start gap-4">
-          <Info className="w-8 h-8 text-blue-400 flex-shrink-0 mt-1" />
+          <Info className="w-8 h-8 text-blue-600 flex-shrink-0 mt-1" />
           <div>
-            <h3 className="text-white text-xl font-bold mb-2">
+            <h3 className="text-slate-900 text-xl font-bold mb-2">
               The Key Difference: Business Model
             </h3>
-            <p className="text-blue-100 text-lg">
+            <p className="text-slate-700 text-lg">
               <strong>School tools</strong> are paid for by your school, so <em>you're the customer</em>.
               <strong> Consumer tools</strong> are "free," which means <em>you're the product</em> —
               your data is how they make money.

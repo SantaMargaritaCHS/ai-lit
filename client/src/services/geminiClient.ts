@@ -57,15 +57,12 @@ export const generateWithGemini = async (
       return null;
     }
 
-    // Use Gemini 2.5 Flash for fast, cost-effective responses
-    // Updated to use latest available model (gemini-2.5-flash)
-    // CRITICAL: Gemini 2.5 uses extensive "thinking tokens" internally (often 400-500+)
-    // Must set maxOutputTokens very high to allow room for both thinking + actual response
+    // Use Gemini 2.5 Flash (stable) for reliable, fast educational feedback
     const model = client.getGenerativeModel({
       model: 'gemini-2.5-flash',
       generationConfig: {
-        temperature: options.temperature ?? 0.7, // Balanced creativity
-        maxOutputTokens: options.maxOutputTokens ?? 1500, // High limit to account for thinking (500+) + response (200-300)
+        temperature: options.temperature ?? 0.7,
+        maxOutputTokens: options.maxOutputTokens ?? 1500,
       },
       // Safety settings for educational environment with high school students (ages 14-18)
       // These filters protect students from inappropriate content in AI responses
@@ -90,7 +87,11 @@ export const generateWithGemini = async (
       ],
     });
 
-    const result = await model.generateContent(prompt);
+    // Race the API call against a 15-second timeout to prevent infinite spinning
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Gemini API timed out after 15 seconds')), 15000)
+    );
+    const result = await Promise.race([model.generateContent(prompt), timeoutPromise]);
     const response = result.response;
 
     // Check if response was blocked by safety filters

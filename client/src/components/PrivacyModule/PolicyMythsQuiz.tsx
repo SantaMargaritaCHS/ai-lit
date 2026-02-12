@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, X, ExternalLink, AlertTriangle, Shield, Sparkles } from 'lucide-react';
+import { CheckCircle, X, ExternalLink, AlertTriangle, Shield, Sparkles, ArrowRight } from 'lucide-react';
 import { policyMythsQuestions, QuizQuestion, calculateResults } from '@/data/policyMythsQuizData';
 
 interface PolicyMythsQuizProps {
@@ -10,6 +10,7 @@ interface PolicyMythsQuizProps {
 }
 
 export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) => {
+  const [showIntro, setShowIntro] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -49,33 +50,79 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
     }
   };
 
+  // Intro screen
+  if (showIntro) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-6"
+      >
+        <Card className="max-w-2xl w-full mx-auto bg-white border-slate-300 shadow-lg">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 p-4 rounded-full">
+                <AlertTriangle className="w-12 h-12 text-white" />
+              </div>
+            </div>
+            <CardTitle className="text-3xl font-bold text-slate-900 mb-2">
+              Can You Debunk These Privacy Myths?
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <p className="text-slate-700 text-lg text-center leading-relaxed">
+              You just saw how your data travels from your keyboard to places you never expected.
+              Now let's see if you can separate <strong className="text-slate-900">fact from fiction</strong>.
+            </p>
+            <div className="bg-amber-100/60 border-2 border-amber-400 rounded-lg p-5">
+              <p className="text-slate-900 text-center text-lg font-medium">
+                We pulled <strong>real claims</strong> from actual privacy policies — Snapchat, ChatGPT,
+                Meta AI, Microsoft Copilot, and more. Some are true. Some are completely false.
+              </p>
+              <p className="text-amber-800 text-center mt-3 font-semibold">
+                Most people get over half of these wrong. Think you can do better?
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowIntro(false)}
+              className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white text-lg py-4"
+            >
+              Let's Find Out
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
+
   if (shuffledQuestions.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 p-6 flex items-center justify-center">
-        <div className="text-white">Loading quiz...</div>
+      <div className="p-6">
+        <div className="text-slate-900">Loading quiz...</div>
       </div>
     );
   }
 
   // Results screen
   if (quizComplete && results) {
-    const scoreColor = results.percentage >= 70 ? 'text-green-400' : results.percentage >= 50 ? 'text-yellow-400' : 'text-red-400';
+    const scoreColor = results.percentage >= 70 ? 'text-green-600' : results.percentage >= 50 ? 'text-yellow-600' : 'text-red-600';
 
     return (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 p-6 flex items-center justify-center"
+        className="p-6"
       >
-        <Card className="max-w-2xl w-full bg-slate-800 border-slate-600">
+        <Card className="max-w-2xl w-full mx-auto bg-white border-slate-300 shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-white mb-2">
+            <CardTitle className="text-3xl font-bold text-slate-900 mb-2">
               Quiz Complete!
             </CardTitle>
             <div className={`text-6xl font-bold ${scoreColor} mb-2`}>
               {results.correct}/{results.total}
             </div>
-            <p className="text-blue-100">
+            <p className="text-slate-600">
               {results.percentage >= 70
                 ? "Great job! You know your privacy policies."
                 : results.percentage >= 50
@@ -85,15 +132,15 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Most Surprising Facts */}
-            <div className="bg-red-900/30 p-4 rounded-lg border border-red-500/50">
-              <h3 className="text-red-300 font-bold mb-3 flex items-center gap-2">
+            <div className="bg-red-100/60 p-4 rounded-lg border-2 border-red-400">
+              <h3 className="text-red-700 font-bold mb-3 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Most Surprising Facts
               </h3>
-              <ul className="space-y-2 text-gray-200 text-sm">
+              <ul className="space-y-2 text-slate-700 text-sm">
                 {results.mostSurprising.slice(0, 3).map(q => (
                   <li key={q.id} className="flex items-start gap-2">
-                    <span className="text-red-400 mt-0.5">•</span>
+                    <span className="text-red-600 mt-0.5">&bull;</span>
                     <span>
                       {q.answer ? "TRUE" : "FALSE"}: {q.statement.replace(/^"|"$/g, '')}
                     </span>
@@ -103,15 +150,15 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
             </div>
 
             {/* Good News */}
-            <div className="bg-green-900/30 p-4 rounded-lg border border-green-500/50">
-              <h3 className="text-green-300 font-bold mb-3 flex items-center gap-2">
+            <div className="bg-green-100/70 p-4 rounded-lg border-2 border-green-400">
+              <h3 className="text-green-700 font-bold mb-3 flex items-center gap-2">
                 <Shield className="w-5 h-5" />
                 Good News You Learned
               </h3>
-              <ul className="space-y-2 text-gray-200 text-sm">
+              <ul className="space-y-2 text-slate-700 text-sm">
                 {results.goodNews.map(q => (
                   <li key={q.id} className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                     <span>{q.explanation.split('!')[1]?.trim() || q.explanation}</span>
                   </li>
                 ))}
@@ -119,12 +166,12 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
             </div>
 
             {/* Key Takeaway */}
-            <div className="bg-blue-900/30 p-4 rounded-lg border border-blue-500/50">
-              <h3 className="text-blue-300 font-bold mb-2 flex items-center gap-2">
+            <div className="bg-blue-100/70 p-4 rounded-lg border-2 border-blue-400">
+              <h3 className="text-blue-700 font-bold mb-2 flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
                 Key Takeaway
               </h3>
-              <p className="text-gray-200 text-sm">
+              <p className="text-slate-700 text-sm">
                 The privacy policies you "agree" to have real consequences. School-provided AI tools
                 like Microsoft Copilot Education protect your data by default, while consumer tools
                 often use your conversations for training and advertising.
@@ -149,12 +196,12 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 p-6 flex items-center justify-center"
+      className="p-6"
     >
-      <Card className="max-w-2xl w-full bg-slate-800 border-slate-600">
+      <Card className="max-w-2xl w-full mx-auto bg-white border-slate-300 shadow-lg">
         <CardHeader>
           <div className="flex justify-between items-center mb-4">
-            <span className="text-blue-300 text-sm font-medium">
+            <span className="text-blue-700 text-sm font-medium">
               Question {currentIndex + 1} of {shuffledQuestions.length}
             </span>
             <div className="flex gap-1">
@@ -166,21 +213,21 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
                       ? 'bg-blue-500'
                       : idx === currentIndex
                       ? 'bg-blue-400'
-                      : 'bg-slate-600'
+                      : 'bg-slate-300'
                   }`}
                 />
               ))}
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-white text-center">
+          <CardTitle className="text-2xl font-bold text-slate-900 text-center">
             True or False?
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {/* Question */}
-          <div className="bg-slate-700 p-6 rounded-lg">
-            <p className="text-white text-xl text-center leading-relaxed">
+          <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
+            <p className="text-slate-900 text-xl text-center leading-relaxed">
               "{currentQuestion.statement}"
             </p>
           </div>
@@ -218,34 +265,34 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
                 <div
                   className={`p-4 rounded-lg border-2 ${
                     isCorrect
-                      ? 'bg-green-900/50 border-green-500'
-                      : 'bg-red-900/50 border-red-500'
+                      ? 'bg-green-100/70 border-green-400'
+                      : 'bg-red-100/60 border-red-400'
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     {isCorrect ? (
-                      <CheckCircle className="w-8 h-8 text-green-400" />
+                      <CheckCircle className="w-8 h-8 text-green-600" />
                     ) : (
-                      <X className="w-8 h-8 text-red-400" />
+                      <X className="w-8 h-8 text-red-600" />
                     )}
-                    <span className={`text-2xl font-bold ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className={`text-2xl font-bold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                       {isCorrect ? 'Correct!' : 'Wrong!'}
                     </span>
                   </div>
-                  <p className="text-white text-lg">
+                  <p className="text-slate-900 text-lg">
                     The answer is <strong>{currentQuestion.answer ? 'TRUE' : 'FALSE'}</strong>
                   </p>
                 </div>
 
                 {/* Explanation */}
-                <div className="bg-slate-700 p-4 rounded-lg">
-                  <p className="text-gray-200 mb-4">
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <p className="text-slate-700 mb-4">
                     {currentQuestion.explanation}
                   </p>
 
                   {/* Actual Policy Language */}
-                  <div className="bg-slate-800 p-3 rounded border-l-4 border-blue-500 mb-4">
-                    <p className="text-sm text-blue-200 italic">
+                  <div className="bg-white p-3 rounded border-l-4 border-blue-500 mb-4">
+                    <p className="text-sm text-blue-700 italic">
                       "{currentQuestion.actualLanguage}"
                     </p>
                   </div>
@@ -255,7 +302,7 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
                     href={currentQuestion.source.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                    className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-500 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Source: {currentQuestion.source.title} ({currentQuestion.source.organization})

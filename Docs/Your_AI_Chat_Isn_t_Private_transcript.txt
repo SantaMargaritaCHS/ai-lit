@@ -1,0 +1,145 @@
+TRANSCRIPT: Your AI Chat Isn't Private
+============================================================
+
+[0:00.00] Alright, let's talk about something pretty much all of us are doing now, using AI.
+[0:04.24] You know, for homework, for drafting a text, maybe even just to vent about your day.
+[0:09.24] But that chat you're having?
+[0:10.84] Yeah, it's probably not as private as you think.
+[0:13.36] We're going to pull back the curtain and look at what you're really agreeing to.
+[0:17.48] So let's just start with this one big question.
+[0:19.92] When you type something into ChatGPT or Cloud or even Snapchat's MyAI, where does it actually
+[0:25.56] go?
+[0:26.56] Does it just poof, disappear after you get your answer?
+[0:29.00] Well, the truth is, your words have a much longer and frankly more interesting life than
+[0:33.56] you probably imagine.
+[0:34.56] You know, it's easy to think of these chats like a private diary or a note to self.
+[0:39.04] You type, you get help, and that's the end of it, right?
+[0:41.56] But for so many of the tools we use every single day, the reality is that your messages
+[0:45.28] can be stored, they can be reviewed, and they can be reused.
+[0:48.84] Now this isn't about being scared, it's about being smart.
+[0:52.24] So how in the world does this even happen?
+[0:54.36] Well, it all comes down to this one kind of hidden idea that runs almost every consumer
+[0:58.60] AI tool out there.
+[1:00.40] The default setting for sharing your data is almost always yes.
+[1:05.58] This right here is a super important concept.
+[1:07.70] It's called the opt-out paradigm.
+[1:09.64] And what it means, basically, is that these companies don't really ask for your permission
+[1:13.00] to use your data to train their AI.
+[1:14.96] They just assume they already have it.
+[1:16.72] It's like they've already checked the yes box for you, and now your job to go digging
+[1:20.06] through settings to find that tiny little no button.
+[1:22.96] And this isn't just one or two bad apples.
+[1:25.16] Just look at this list.
+[1:26.32] From the big names that help with schoolwork, to the AI that's baked right into your favorite
+[1:30.20] social media apps, they're all doing it.
+[1:32.52] And why?
+[1:33.52] Well, because your data is super valuable.
+[1:35.60] Your conversations, your questions, your awesome creative ideas, all of that is the raw material.
+[1:40.74] It's the fuel that makes these AIs smarter.
+[1:42.92] And a smarter AI makes for a better, more profitable product.
+[1:46.50] So you might be thinking, okay, using my data, what does that actually mean?
+[1:50.76] It sounds pretty vague, right?
+[1:52.12] Well, let's get specific and see exactly what's happening to your words after you hit that
+[1:56.56] enter key.
+[1:57.84] It's really just a simple three-step journey.
+[2:00.00] First, there's your input.
+[2:01.62] That could be anything.
+[2:02.62] A draft of an essay, a personal question, maybe even your name or your school.
+[2:06.48] Second, that input gets stored, sometimes for 30 days, sometimes for years.
+[2:11.36] And third, it gets used.
+[2:13.20] Mostly, it's used to train and improve the AI model.
+[2:16.40] But – and this is a big but – it can also be used to build a profile on you for advertising.
+[2:20.96] So if you ask an AI for advice on what to wear to prom, don't be shocked when you
+[2:24.24] suddenly start seeing ads for dresses and tuxedos.
+[2:26.76] Let's look at a perfect, real-world example – Snapchat.
+[2:30.48] We all use Snapchat because our chats with friends disappear, right?
+[2:33.32] That's kind of the whole point of the app.
+[2:35.56] But for myAI, the rules are completely different.
+[2:38.88] This is a direct quote from Snapchat's own support page, and it couldn't be clearer.
+[2:43.32] Your messages with myAI are kept, unless you go in and manually delete them.
+[2:48.88] And what are they used for?
+[2:50.06] They're used to improve their products and – here it is – to personalize your experience,
+[2:54.30] including ads.
+[2:55.54] So that casual chat you had about your favorite band, that could be why you're suddenly
+[2:59.42] seeing ads for their concert tickets popping up.
+[3:02.32] And listen, this goes way beyond just the chatbots.
+[3:05.72] Take Meta, you know, the company that runs Instagram and Facebook.
+[3:09.06] They're now using your public posts, your photos, even the captions you write to train
+[3:13.82] their AI models.
+[3:15.30] Basically, anything you've shared publicly on their platforms is considered fair game.
+[3:19.86] Okay, so, that's the situation.
+[3:22.74] And I get it, seeing how this is happening everywhere, from your private chats to your
+[3:26.22] public posts can feel kind of big.
+[3:28.82] But don't worry.
+[3:29.82] This isn't about giving up on AI.
+[3:31.26] It's about learning how to use it smarter.
+[3:33.82] So let's get into the solution with this really simple three-step action plan.
+[3:37.82] Look, the goal here is to be aware, not paranoid.
+[3:41.98] We want you to be able to use these incredible tools to brainstorm, to study, to create,
+[3:47.34] all without feeling like someone's looking over your shoulder.
+[3:50.42] You just need a game plan to protect yourself.
+[3:53.62] Step one is super simple.
+[3:55.30] Choose the right tool for the job.
+[3:56.74] If your school gives you an AI tool, use that for your schoolwork.
+[4:00.02] Those versions are usually covered by special agreements that are designed to protect student
+[4:03.46] data.
+[4:04.46] For everything else, treat those consumer AI tools like you're in a crowded coffee shop.
+[4:08.54] I mean, you wouldn't shout your personal info out loud in a coffee shop, would you?
+[4:12.18] Alright, step two is an absolute game-changer.
+[4:15.94] De-identify your inputs.
+[4:17.94] Just check out this comparison.
+[4:19.44] On the left, you've given a name, a school, a specific class, all stuff that can be tied
+[4:24.32] directly to you.
+[4:25.66] Now look at the right.
+[4:26.78] The prompt is general.
+[4:27.78] A student.
+[4:28.78] An English class.
+[4:29.78] You get the exact same quality of help from the AI, but you're not just handing over your
+[4:32.92] personal details for free.
+[4:34.88] And finally, step three.
+[4:37.12] Actually use the privacy controls if they're there.
+[4:40.24] Don't be afraid to click around in the settings menu.
+[4:42.72] Look for anything that says data controls or privacy.
+[4:46.36] And keep an eye out for those friendly-sounding toggles, like OpenAI's improve the model for
+[4:51.28] everyone.
+[4:52.28] Yeah, turn it off.
+[4:54.28] And if you can, get in the habit of clearing your chat history.
+[4:57.62] If you have the power to control it, use it.
+[4:59.92] Now you'd think that after all that, you'd be in the clear.
+[5:04.32] But, of course, there's a catch.
+[5:06.32] And it's a pretty big one, especially when you're dealing with some of the biggest platforms
+[5:09.92] in the world.
+[5:11.36] This quote from a Reddit user just nails the frustration perfectly.
+[5:15.24] To try and opt out of Meta's AI training in the US, you can't just click a button that
+[5:19.48] says no.
+[5:20.48] You have to fill out this formal objection, and the form actually asks you to provide
+[5:24.72] proof that your personal info has already been used by their AI.
+[5:29.40] It's this bizarre and honestly infuriating catch-22.
+[5:33.24] So here's the bottom line.
+[5:34.60] Meta's system for users in the US is basically reactive, not proactive.
+[5:39.56] It put the entire burden of proof on you, and it's a nearly impossible burden to meet.
+[5:44.36] You'd have to, like, get lucky and trick the AI into leaking your own data back to you,
+[5:48.84] screenshot it, and only then can you submit a request.
+[5:52.28] It's kind of a mess, which is why being careful from the very beginning is just so, so important.
+[5:57.96] I know, I know.
+[5:59.04] This is a lot of information.
+[6:00.64] Opt-outs, settings, weird company policies.
+[6:03.92] It can feel like a lot to remember.
+[6:05.52] But don't worry, because it really all boils down to one simple, powerful rule.
+[6:10.52] This right here.
+[6:11.72] This is the golden rule.
+[6:13.28] If you only remember one thing from all of this, make it this.
+[6:16.96] If you wouldn't want it saved somewhere, read by a human reviewer, or maybe even repeated
+[6:21.28] in a future AI answer, then just don't type it into a consumer AI tool.
+[6:26.16] Seriously.
+[6:27.16] That's not paranoia.
+[6:28.16] That's just being smart.
+[6:29.72] At the end of the day, with a lot of these free AI tools, your data, your input, is part
+[6:34.84] of the product they're building to make money.
+[6:37.28] So the final question is pretty simple.
+[6:39.36] Knowing what you know now, are you in control of what you're giving away?
+
+
+--- FULL TEXT ---
+
+Alright, let's talk about something pretty much all of us are doing now, using AI. You know, for homework, for drafting a text, maybe even just to vent about your day. But that chat you're having? Yeah, it's probably not as private as you think. We're going to pull back the curtain and look at what you're really agreeing to. So let's just start with this one big question. When you type something into ChatGPT or Cloud or even Snapchat's MyAI, where does it actually go? Does it just poof, disappear after you get your answer? Well, the truth is, your words have a much longer and frankly more interesting life than you probably imagine. You know, it's easy to think of these chats like a private diary or a note to self. You type, you get help, and that's the end of it, right? But for so many of the tools we use every single day, the reality is that your messages can be stored, they can be reviewed, and they can be reused. Now this isn't about being scared, it's about being smart. So how in the world does this even happen? Well, it all comes down to this one kind of hidden idea that runs almost every consumer AI tool out there. The default setting for sharing your data is almost always yes. This right here is a super important concept. It's called the opt-out paradigm. And what it means, basically, is that these companies don't really ask for your permission to use your data to train their AI. They just assume they already have it. It's like they've already checked the yes box for you, and now your job to go digging through settings to find that tiny little no button. And this isn't just one or two bad apples. Just look at this list. From the big names that help with schoolwork, to the AI that's baked right into your favorite social media apps, they're all doing it. And why? Well, because your data is super valuable. Your conversations, your questions, your awesome creative ideas, all of that is the raw material. It's the fuel that makes these AIs smarter. And a smarter AI makes for a better, more profitable product. So you might be thinking, okay, using my data, what does that actually mean? It sounds pretty vague, right? Well, let's get specific and see exactly what's happening to your words after you hit that enter key. It's really just a simple three-step journey. First, there's your input. That could be anything. A draft of an essay, a personal question, maybe even your name or your school. Second, that input gets stored, sometimes for 30 days, sometimes for years. And third, it gets used. Mostly, it's used to train and improve the AI model. But – and this is a big but – it can also be used to build a profile on you for advertising. So if you ask an AI for advice on what to wear to prom, don't be shocked when you suddenly start seeing ads for dresses and tuxedos. Let's look at a perfect, real-world example – Snapchat. We all use Snapchat because our chats with friends disappear, right? That's kind of the whole point of the app. But for myAI, the rules are completely different. This is a direct quote from Snapchat's own support page, and it couldn't be clearer. Your messages with myAI are kept, unless you go in and manually delete them. And what are they used for? They're used to improve their products and – here it is – to personalize your experience, including ads. So that casual chat you had about your favorite band, that could be why you're suddenly seeing ads for their concert tickets popping up. And listen, this goes way beyond just the chatbots. Take Meta, you know, the company that runs Instagram and Facebook. They're now using your public posts, your photos, even the captions you write to train their AI models. Basically, anything you've shared publicly on their platforms is considered fair game. Okay, so, that's the situation. And I get it, seeing how this is happening everywhere, from your private chats to your public posts can feel kind of big. But don't worry. This isn't about giving up on AI. It's about learning how to use it smarter. So let's get into the solution with this really simple three-step action plan. Look, the goal here is to be aware, not paranoid. We want you to be able to use these incredible tools to brainstorm, to study, to create, all without feeling like someone's looking over your shoulder. You just need a game plan to protect yourself. Step one is super simple. Choose the right tool for the job. If your school gives you an AI tool, use that for your schoolwork. Those versions are usually covered by special agreements that are designed to protect student data. For everything else, treat those consumer AI tools like you're in a crowded coffee shop. I mean, you wouldn't shout your personal info out loud in a coffee shop, would you? Alright, step two is an absolute game-changer. De-identify your inputs. Just check out this comparison. On the left, you've given a name, a school, a specific class, all stuff that can be tied directly to you. Now look at the right. The prompt is general. A student. An English class. You get the exact same quality of help from the AI, but you're not just handing over your personal details for free. And finally, step three. Actually use the privacy controls if they're there. Don't be afraid to click around in the settings menu. Look for anything that says data controls or privacy. And keep an eye out for those friendly-sounding toggles, like OpenAI's improve the model for everyone. Yeah, turn it off. And if you can, get in the habit of clearing your chat history. If you have the power to control it, use it. Now you'd think that after all that, you'd be in the clear. But, of course, there's a catch. And it's a pretty big one, especially when you're dealing with some of the biggest platforms in the world. This quote from a Reddit user just nails the frustration perfectly. To try and opt out of Meta's AI training in the US, you can't just click a button that says no. You have to fill out this formal objection, and the form actually asks you to provide proof that your personal info has already been used by their AI. It's this bizarre and honestly infuriating catch-22. So here's the bottom line. Meta's system for users in the US is basically reactive, not proactive. It put the entire burden of proof on you, and it's a nearly impossible burden to meet. You'd have to, like, get lucky and trick the AI into leaking your own data back to you, screenshot it, and only then can you submit a request. It's kind of a mess, which is why being careful from the very beginning is just so, so important. I know, I know. This is a lot of information. Opt-outs, settings, weird company policies. It can feel like a lot to remember. But don't worry, because it really all boils down to one simple, powerful rule. This right here. This is the golden rule. If you only remember one thing from all of this, make it this. If you wouldn't want it saved somewhere, read by a human reviewer, or maybe even repeated in a future AI answer, then just don't type it into a consumer AI tool. Seriously. That's not paranoia. That's just being smart. At the end of the day, with a lot of these free AI tools, your data, your input, is part of the product they're building to make money. So the final question is pretty simple. Knowing what you know now, are you in control of what you're giving away?
