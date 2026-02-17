@@ -1,0 +1,70 @@
+{
+  "description": "Required npm packages for the Privacy Data Rights Activity",
+  "requiredDependencies": {
+    "core": {
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1",
+      "framer-motion": "^11.18.2",
+      "lucide-react": "^0.453.0"
+    },
+    "api": {
+      "@google/generative-ai": "^0.24.1"
+    },
+    "utilities": {
+      "html2canvas": "^1.4.1",
+      "class-variance-authority": "^0.7.1",
+      "clsx": "^2.1.1",
+      "tailwind-merge": "^2.6.0"
+    },
+    "routing": {
+      "wouter": "^3.3.5",
+      "comment": "Or use react-router-dom if your project uses that instead"
+    },
+    "ui_components": {
+      "@radix-ui/react-dialog": "^1.1.7",
+      "@radix-ui/react-toast": "^1.2.7",
+      "@radix-ui/react-tooltip": "^1.2.0",
+      "@radix-ui/react-slot": "^1.2.0",
+      "@radix-ui/react-label": "^2.1.3"
+    },
+    "styling": {
+      "tailwindcss": "^3.4.17",
+      "tailwindcss-animate": "^1.0.7",
+      "autoprefixer": "^10.4.20",
+      "postcss": "^8.4.47"
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@types/node": "^20.16.11",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.19",
+    "@vitejs/plugin-react": "^4.6.0"
+  },
+  "installCommands": {
+    "all_at_once": "npm install react react-dom framer-motion lucide-react @google/generative-ai html2canvas class-variance-authority clsx tailwind-merge wouter @radix-ui/react-dialog @radix-ui/react-toast @radix-ui/react-tooltip @radix-ui/react-slot @radix-ui/react-label tailwindcss tailwindcss-animate",
+    "by_category": {
+      "step_1_core": "npm install react react-dom framer-motion lucide-react",
+      "step_2_api": "npm install @google/generative-ai",
+      "step_3_utilities": "npm install html2canvas class-variance-authority clsx tailwind-merge",
+      "step_4_routing": "npm install wouter",
+      "step_5_ui": "npm install @radix-ui/react-dialog @radix-ui/react-toast @radix-ui/react-tooltip @radix-ui/react-slot @radix-ui/react-label",
+      "step_6_styling": "npm install -D tailwindcss tailwindcss-animate autoprefixer postcss"
+    }
+  },
+  "peerDependencies": {
+    "note": "These are likely already in your project",
+    "packages": {
+      "express": "^4.x",
+      "@tanstack/react-query": "^5.x (optional, for data fetching)"
+    }
+  },
+  "notes": [
+    "Ensure your package.json includes 'type': 'module' if using ES modules",
+    "All @radix-ui packages should use compatible versions",
+    "If you already have some of these packages, you can skip installing them",
+    "Check that versions are compatible with your existing project",
+    "The activity uses TypeScript, so ensure typescript is installed as a dev dependency"
+  ]
+}

@@ -46,4 +46,4 @@ test-reports/
 .cache
 
 # Temporary review files - Can be deleted after incorporating feedback
-temp-reviews/
+temp-reviews/github-token.txt
