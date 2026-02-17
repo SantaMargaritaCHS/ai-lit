@@ -1,0 +1,233 @@
+
+Search through the text contents of your App
+Enter a search query above to see results.
+/export-html
+
+Secrets
+SESSION_SECRET
+••••••••
+BROWSERLESS_API_KEY
+••••••••
+GEMINI_API_KEY
+••••••••
+AI_LITERACY_BOT_API_KEY
+••••••••
+VITE_GOOGLE_API_KEY
+••••••••
+Configurations
+Configurations are similar to secrets, but should only be used for non-sensitive information. They're useful for having a variable that's different between your published app and when testing on Replit.
+Production
+Status
+J published 11 minutes ago
+Visibility
+Public
+Domain
+https://AILitStudents.replit.app
+Type
+Autoscale
+(4 vCPU / 8 GiB RAM / 3 Max)
+See all usage
+e76c808a
+JL
+ledezmaj
+J
+published 5 days ago
+fe73970b
+JL
+ledezmaj
+J
+published 5 days ago
+817d250b
+JL
+ledezmaj
+J
+published 8 days ago
+881e2f0f
+JL
+ledezmaj
+J
+published 22 days ago
+1e65b6ab
+JL
+ledezmaj
+J
+published 22 days ago
+03ef7d4b
+JL
+ledezmaj
+J
+published 22 days ago
+7c0b359e
+JL
+ledezmaj
+J
+published 22 days ago
+52a3fe66
+JL
+ledezmaj
+J
+published 26 days ago
+6adc4093
+JL
+ledezmaj
+J
+published about 1 month ago
+bc528963
+JL
+ledezmaj
+J
+published about 1 month ago
+47004d4b
+JL
+ledezmaj
+J
+published about 1 month ago
+98a0623d
+JL
+ledezmaj
+J
+published about 1 month ago
+94c7a3b9
+JL
+ledezmaj
+J
+published 3 months ago
+d82ecb28
+JL
+ledezmaj
+J
+published 3 months ago
+b8d3bf62
+JL
+ledezmaj
+J
+published 4 months ago
+2a8b08cb
+JL
+ledezmaj
+J
+published 4 months ago
+38c9b346
+JL
+ledezmaj
+J
+published 4 months ago
+e3fcb139
+JL
+ledezmaj
+J
+published 4 months ago
+9811af92
+JL
+ledezmaj
+J
+published 4 months ago
+e5990004
+JL
+ledezmaj
+J
+published 4 months ago
+cffc8d3a
+JL
+ledezmaj
+J
+published 4 months ago
+f50db281
+JL
+ledezmaj
+J
+published 4 months ago
+b5477f28
+JL
+ledezmaj
+J
+published 4 months ago
+9d1906a2
+JL
+ledezmaj
+J
+published 4 months ago
+b9343616
+JL
+ledezmaj
+J
+published 4 months ago
+beddca42
+JL
+ledezmaj
+J
+published 4 months ago
+0331a2bd
+JL
+ledezmaj
+J
+published 4 months ago
+21d08b68
+JL
+ledezmaj
+J
+published 4 months ago
+ee9cddd0
+JL
+ledezmaj
+J
+published 4 months ago
+ceab9793
+JL
+ledezmaj
+J
+published 4 months ago
+52187cc4
+JL
+ledezmaj
+J
+published 4 months ago
+9a6af706
+JL
+ledezmaj
+J
+published 4 months ago
+cdff4983
+JL
+ledezmaj
+J
+published 4 months ago
+095ce24a
+JL
+ledezmaj
+J
+published 4 months ago
+75847f19
+JL
+ledezmaj
+J
+published 4 months ago
+6c761927
+JL
+ledezmaj
+J
+published 4 months ago
+9fc5105b
+JL
+ledezmaj
+J
+failed to publish 4 months ago
+1b235ddf
+JL
+ledezmaj
+J
+published 4 months ago
+cdcaf732
+JL
+ledezmaj
+J
+published 5 months ago
+a5532371
+JL
+ledezmaj
+J
+published 6 months ago
+Preview
+Git Error
+UNAUTHENTICATED
+Failed to authenticate with the remote. Please ensure you have a valid connection to authenticate with the current remote.
