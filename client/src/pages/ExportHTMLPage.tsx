@@ -101,18 +101,19 @@ const moduleData = [
     id: 'privacy-data-rights',
     title: 'Privacy and Data Rights',
     icon: '🔒',
-    description: "Understand how AI systems collect, use, and store your data. Learn about your privacy rights, data protection strategies, and how to make informed decisions about sharing information with AI tools.",
-    whyMatters: "Every interaction with AI involves your data. Understanding privacy helps you protect personal information, make informed choices about AI tools, and maintain control over your digital footprint.",
+    description: "See what happens when a student shares personal info with an AI chatbot in a realistic simulation, then learn how AI tools collect, store, and sometimes share your data. Compare privacy policies of real AI tools, race the clock reading Terms & Conditions, and build your own data protection action plan.",
+    whyMatters: "Not all AI tools are created equal when it comes to your privacy. Some train their models on your conversations, meaning what you type today could show up in someone else's chat tomorrow. Your school provides safer AI tools with built-in protections, but most students don't use them. This module teaches you to tell the difference.",
     learningObjectives: [
-      "Understand how AI systems collect and use data",
-      "Learn your privacy rights regarding AI",
-      "Develop strategies to protect your personal information"
+      "See how personal data shared with AI can be exposed through a realistic simulation",
+      "Compare privacy policies across popular AI tools like ChatGPT, Gemini, and school-approved alternatives",
+      "Distinguish between school-approved and consumer AI tools and their privacy protections",
+      "Create a personal action plan for protecting your data when using AI"
     ],
     keyTerms: [
-      { term: "Data Collection", definition: "Information AI systems gather from your interactions" },
-      { term: "Privacy Policy", definition: "Legal document explaining how your data is used" },
-      { term: "Data Rights", definition: "Your legal rights over personal information" },
-      { term: "Opt-out", definition: "Choosing not to have your data collected or used" }
+      { term: "Terms of Service", definition: "The legal agreement you accept when using an AI tool" },
+      { term: "Data Training", definition: "When AI companies use your conversations to improve their models" },
+      { term: "Opt-out", definition: "Choosing to prevent your data from being used for AI training" },
+      { term: "School-approved AI", definition: "AI tools vetted by your school with stronger privacy protections (e.g., FERPA compliance)" }
     ]
   },
   {
