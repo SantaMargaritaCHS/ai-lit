@@ -224,7 +224,7 @@ export const PolicyMythsQuiz: React.FC<PolicyMythsQuizProps> = ({ onComplete }) 
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent key={currentIndex} className="space-y-6">
           {/* Question */}
           <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
             <p className="text-slate-900 text-xl text-center leading-relaxed">

@@ -26,48 +26,6 @@ export const citations: Citation[] = [
     notes: "Hosted explanation with actual OpenAI policy language; credited to Ayan Rayne and OpenAI official sources"
   },
   {
-    id: 2,
-    title: "Does ChatGPT Have a Character Limit? Yes, But It Depends",
-    url: "https://www.wikihow.com/Chatgpt-Character-Limit",
-    accessed: "February 9, 2026",
-    organization: "wikiHow"
-  },
-  {
-    id: 3,
-    title: "ChatGPT usage limits explained: free vs plus vs enterprise",
-    url: "https://northflank.com/blog/chatgpt-usage-limits-free-plus-enterprise",
-    accessed: "February 9, 2026",
-    organization: "Northflank Blog"
-  },
-  {
-    id: 4,
-    title: "GPT-5 in ChatGPT",
-    url: "https://help.openai.com/en/articles/11909943-gpt-5-in-chatgpt",
-    accessed: "February 9, 2026",
-    organization: "OpenAI Help Center"
-  },
-  {
-    id: 5,
-    title: "ChatGPT-4o from 100k to 30k word limits now",
-    url: "https://community.openai.com/t/chatgpt-4o-from-100k-to-30k-word-limits-now/1247160",
-    accessed: "February 9, 2026",
-    organization: "OpenAI Developer Community"
-  },
-  {
-    id: 6,
-    title: "How to extend ChatGPT 4's word count limits?",
-    url: "https://forum.aiprm.com/t/how-to-extend-chatgpt-4s-word-count-limits/26854",
-    accessed: "February 9, 2026",
-    organization: "AIPRM Community Forum"
-  },
-  {
-    id: 7,
-    title: "ChatGPT cannot count words or produce word-count-limited text",
-    url: "https://community.openai.com/t/chatgpt-cannot-count-words-or-produce-word-count-limited-text/47380",
-    accessed: "February 9, 2026",
-    organization: "OpenAI Community"
-  },
-  {
     id: 8,
     title: "Microsoft Services Agreement",
     url: "https://www.microsoft.com/en-us/servicesagreement",

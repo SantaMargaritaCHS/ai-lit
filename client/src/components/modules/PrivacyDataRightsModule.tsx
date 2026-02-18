@@ -1091,7 +1091,7 @@ export default function PrivacyDataRightsModule({
                     <div>
                       <h4 className="text-slate-900 font-semibold mb-1">EU AI Act & GDPR (If You're in Europe)</h4>
                       <p className="text-sm">
-                        European laws are even stronger. The GDPR gives EU residents formal opt-out rights from AI training, and the new AI Act (2026) requires transparency about how AI systems use your data.
+                        European laws are even stronger. The GDPR gives EU residents formal opt-out rights from AI training, and the EU AI Act (enacted 2024, with provisions phasing in through 2026) requires transparency about how AI systems use your data.
                       </p>
                     </div>
                     <div className="bg-purple-100 p-3 rounded-lg mt-4">
