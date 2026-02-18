@@ -1167,7 +1167,7 @@ export default function PrivacyDataRightsModule({
           }
         ];
 
-        const allAnswered = exitQuestions.every(q => exitTicketAnswers[q.id]?.trim().length >= 150);
+        const allAnswered = exitQuestions.every(q => exitTicketAnswers[q.id]?.trim().length >= 100);
 
         return (
           <motion.div
@@ -1227,7 +1227,7 @@ export default function PrivacyDataRightsModule({
                         required
                       />
                       <div className="text-right">
-                        {(exitTicketAnswers[question.id]?.length || 0) >= 150 && (
+                        {(exitTicketAnswers[question.id]?.length || 0) >= 100 && (
                           <span className="text-green-600 text-sm font-semibold">
                             ✓ Ready for feedback
                           </span>
@@ -1327,7 +1327,7 @@ export default function PrivacyDataRightsModule({
 
                   {!allAnswered && !showExitFeedback && (
                     <p className="text-amber-800 text-sm text-center">
-                      Please complete all reflection questions with at least 150 characters each (2-3 sentences) to continue.
+                      Please complete all reflection questions with at least 100 characters each (1-2 sentences) to continue.
                     </p>
                   )}
                 </CardContent>
