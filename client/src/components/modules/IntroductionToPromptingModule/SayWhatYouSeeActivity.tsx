@@ -1,26 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  ArrowRight,
-  CheckCircle,
-  Clock,
-  Sparkles,
-  Info,
-  Upload,
-  ExternalLink,
-  Image as ImageIcon,
-  HelpCircle
+  ArrowRight, CheckCircle, Clock, Sparkles, Info,
+  Upload, ExternalLink, Image as ImageIcon, HelpCircle
 } from 'lucide-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogDescription,
+  DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 
 interface SayWhatYouSeeActivityProps {
@@ -28,7 +17,7 @@ interface SayWhatYouSeeActivityProps {
   isDevMode?: boolean;
 }
 
-const ACTIVITY_DURATION = 180; // 3 minutes in seconds
+const ACTIVITY_DURATION = 180;
 
 const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   onComplete,
@@ -41,27 +30,23 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // In dev mode, skip to upload with pre-filled data
     if (isDevMode) {
       setHasPlayedGame(true);
       setCurrentStep('upload');
       setUploadedImage('/api/placeholder/800/600');
       setIsVerified(true);
-      setReflectionText('In this activity, I explored the "Say What You See" game and learned that effective AI prompts require clear, detailed descriptions. The game demonstrated how specific language helps AI understand our intentions better. I found it challenging to describe complex scenes but realized that breaking them down into components (objects, colors, positions, actions) makes the task more manageable.');
+      setReflectionText('Playing Say What You See showed me that the words I use to describe something to AI really matter. When I was vague, the AI had no idea what I meant. But when I described specific details like colors, positions, and shapes, it matched the artwork way better. This connects to prompting because being specific and descriptive is the key to getting good results from AI.');
       return;
     }
 
-    // Start timer for normal mode
     if (currentStep === 'play' && hasPlayedGame) {
       timerRef.current = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-            }
+            if (timerRef.current) clearInterval(timerRef.current);
             setCurrentStep('upload');
             return 0;
           }
@@ -71,9 +56,7 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
     }
 
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [isDevMode, currentStep, hasPlayedGame]);
 
@@ -91,25 +74,16 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
-      // Just simulate the upload without actually storing the image
-      // Create a fake preview that immediately gets "verified"
       setUploadedImage('/api/placeholder/800/600');
-
-      // Simulate processing/verification delay for realism
       setTimeout(() => {
         setIsVerified(true);
-        // After another brief delay, move to reflection
-        setTimeout(() => {
-          setCurrentStep('reflect');
-        }, 500);
+        setTimeout(() => setCurrentStep('reflect'), 500);
       }, 1500);
     }
   };
 
   const handleSkipToUpload = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
+    if (timerRef.current) clearInterval(timerRef.current);
     setTimeRemaining(0);
     setCurrentStep('upload');
   };
@@ -121,33 +95,24 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   };
 
   const renderPlayStep = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
-      {/* Instructions */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+          <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div className="space-y-2">
-            <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
-              How to play:
-            </p>
-            <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
+            <p className="text-sm text-blue-900 font-medium">How to play:</p>
+            <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
               <li>Click the button below to open the game in a new tab</li>
               <li>Look at the artwork displayed</li>
               <li>Type a description of what you see</li>
               <li>The AI will try to match your description to the artwork</li>
-              <li>Play for at least 3 minutes, then return here</li>
-              <li>Take a screenshot of your best result to share!</li>
+              <li>Play for at least 3 minutes, then come back here</li>
+              <li>Take a screenshot of your best result!</li>
             </ol>
           </div>
         </div>
       </div>
 
-      {/* Game Link Button */}
       <div className="text-center space-y-4">
         <Button
           onClick={handleGameLinkClick}
@@ -159,33 +124,23 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
         </Button>
 
         {hasPlayedGame && (
-          <div className="space-y-4">
-            <div className="text-center bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-lg">
-              <div className="flex items-center justify-center text-purple-800 dark:text-purple-300 mb-2">
-                <Clock className="mr-2 h-6 w-6" />
-                <p className="text-2xl font-bold">
-                  {formatTime(timeRemaining)}
-                </p>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Keep playing! Upload your screenshot when the timer ends.
-              </p>
-              {timeRemaining > 120 && (
-                <Button
-                  onClick={handleSkipToUpload}
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                >
-                  I'm ready to upload my screenshot
-                </Button>
-              )}
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg">
+            <div className="flex items-center justify-center text-purple-800 mb-2">
+              <Clock className="mr-2 h-6 w-6" />
+              <p className="text-2xl font-bold">{formatTime(timeRemaining)}</p>
             </div>
+            <p className="text-sm text-gray-600">
+              Keep playing! Upload your screenshot when the timer ends.
+            </p>
+            {timeRemaining > 120 && (
+              <Button onClick={handleSkipToUpload} variant="outline" size="sm" className="mt-3">
+                I'm ready to upload my screenshot
+              </Button>
+            )}
           </div>
         )}
       </div>
 
-      {/* Example Screenshot Dialog */}
       <div className="text-center">
         <Dialog>
           <DialogTrigger asChild>
@@ -196,19 +151,17 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
           </DialogTrigger>
           <DialogContent className="max-w-3xl">
             <DialogHeader>
-              <DialogTitle>Example Screenshot</DialogTitle>
+              <DialogTitle className="text-gray-900">Example Screenshot</DialogTitle>
               <DialogDescription>
-                This is what a successful game result looks like. Try to achieve a similar match!
+                This is what a successful game result looks like. Try to get a good match!
               </DialogDescription>
             </DialogHeader>
             <div className="mt-4">
-              <img
-                src="/api/placeholder/800/600"
-                alt="Example of Say What You See game with a successful match"
-                className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-700"
-              />
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
-                The AI successfully matched the description to the artwork!
+              <div className="w-full h-48 bg-gray-100 rounded-lg border-2 border-gray-200 flex items-center justify-center">
+                <p className="text-gray-500 text-sm">Example game screenshot placeholder</p>
+              </div>
+              <p className="text-sm text-gray-600 mt-2 text-center">
+                The AI matched the description to the artwork!
               </p>
             </div>
           </DialogContent>
@@ -218,27 +171,16 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   );
 
   const renderUploadStep = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="text-center space-y-2">
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Upload Your Screenshot
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400">
-          Share a screenshot of your best match from the game!
-        </p>
+        <h3 className="text-2xl font-bold text-gray-900">Upload Your Screenshot</h3>
+        <p className="text-gray-600">Share a screenshot of your best match from the game!</p>
       </div>
 
       {!uploadedImage ? (
-        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-12 text-center">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
           <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Click to upload or drag and drop your screenshot
-          </p>
+          <p className="text-gray-600 mb-4">Click to upload your screenshot</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -246,41 +188,32 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
             onChange={handleFileUpload}
             className="hidden"
           />
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            variant="outline"
-            className="mx-auto"
-          >
+          <Button onClick={() => fileInputRef.current?.click()} variant="outline">
             <Upload className="mr-2 h-4 w-4" />
             Choose File
           </Button>
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
-            <img
-              src={uploadedImage}
-              alt="Uploaded screenshot"
-              className="w-full h-auto"
-            />
+          <div className="relative rounded-lg overflow-hidden border-2 border-gray-200">
+            <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+              <p className="text-gray-500">Screenshot uploaded</p>
+            </div>
             {isVerified && (
               <div className="absolute top-4 right-4 bg-green-500 text-white p-2 rounded-full">
                 <CheckCircle className="h-6 w-6" />
               </div>
             )}
           </div>
-
           {isVerified && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-center bg-green-50 dark:bg-green-900/20 p-4 rounded-lg"
+              className="text-center bg-green-50 p-4 rounded-lg"
             >
-              <div className="flex items-center justify-center text-green-800 dark:text-green-300">
+              <div className="flex items-center justify-center text-green-800">
                 <CheckCircle className="mr-2 h-6 w-6" />
-                <p className="text-lg font-semibold">
-                  Great work! Your screenshot has been verified.
-                </p>
+                <p className="text-lg font-semibold">Great work! Screenshot verified.</p>
               </div>
             </motion.div>
           )}
@@ -290,57 +223,46 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   );
 
   const renderReflectStep = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
-      {/* Success Message */}
-      <div className="text-center bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-        <div className="flex items-center justify-center text-green-800 dark:text-green-300">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+      <div className="text-center bg-green-50 p-4 rounded-lg">
+        <div className="flex items-center justify-center text-green-800">
           <CheckCircle className="mr-2 h-6 w-6" />
-          <p className="text-lg font-semibold">
-            Excellent exploration! Time to reflect on what you learned.
-          </p>
+          <p className="text-lg font-semibold">Nice work exploring! Time to reflect.</p>
         </div>
       </div>
 
-      {/* Reflection Prompt */}
       <div className="space-y-3">
-        <label htmlFor="reflection" className="block text-lg font-medium text-gray-800 dark:text-gray-200">
-          Reflection Question
+        <label htmlFor="reflection" className="block text-lg font-medium text-gray-800">
+          Quick Reflection
         </label>
-        <p className="text-gray-600 dark:text-gray-400">
-          What did you learn about describing images for AI? Consider:
+        <p className="text-gray-600">
+          What did you learn about describing things for AI? Think about:
         </p>
-        <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1 ml-2">
+        <ul className="text-sm text-gray-600 list-disc list-inside space-y-1 ml-2">
           <li>What made some descriptions more successful than others?</li>
           <li>What details were most important to include?</li>
-          <li>How did the AI interpret your descriptions?</li>
-          <li>What strategies helped you improve your score?</li>
+          <li>How does this connect to writing good prompts?</li>
         </ul>
 
         <Textarea
           id="reflection"
           value={reflectionText}
           onChange={(e) => setReflectionText(e.target.value)}
-          placeholder="Share your insights about describing visual content for AI... (minimum 10 characters)"
-          className="min-h-[120px] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
+          placeholder="Share what you learned about describing things for AI... (minimum 10 characters)"
+          className="min-h-[120px] text-gray-900"
         />
 
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500">
             {reflectionText.length} characters
             {reflectionText.length < 10 && " (minimum: 10)"}
           </p>
           {reflectionText.length >= 10 && (
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <CheckCircle className="h-5 w-5 text-green-600" />
           )}
         </div>
       </div>
 
-      {/* Continue Button */}
       <Button
         onClick={handleComplete}
         disabled={reflectionText.trim().length < 10}
@@ -354,78 +276,58 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <Card className="overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="p-6 md:p-8 space-y-6"
-        >
-          {/* Header */}
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
-              <Sparkles className="h-8 w-8 text-purple-500" />
-              Say What You See
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              Practice describing images for AI - The more precise your description, the better AI understands!
+    <Card className="overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-6 md:p-8 space-y-6"
+      >
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-2">
+            <Sparkles className="h-8 w-8 text-purple-500" />
+            Say What You See
+          </h2>
+          <p className="text-lg text-gray-600">
+            Practice describing images for AI — the more precise you are, the better it understands!
+          </p>
+        </div>
+
+        {/* Progress Indicator */}
+        <div className="flex items-center justify-center space-x-4">
+          {[
+            { step: 'play', label: 'Play Game', done: hasPlayedGame && currentStep !== 'play' },
+            { step: 'upload', label: 'Upload', done: isVerified && currentStep !== 'upload' },
+            { step: 'reflect', label: 'Reflect', done: false },
+          ].map(({ step, label, done }, idx) => (
+            <React.Fragment key={step}>
+              {idx > 0 && <div className="w-12 h-0.5 bg-gray-300" />}
+              <div className={`flex items-center space-x-2 ${currentStep === step ? 'text-purple-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  currentStep === step ? 'bg-purple-600 text-white' :
+                  done ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
+                }`}>
+                  {done ? <CheckCircle className="h-5 w-5" /> : idx + 1}
+                </div>
+                <span className="font-medium text-sm">{label}</span>
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
+
+        {currentStep === 'play' && renderPlayStep()}
+        {currentStep === 'upload' && renderUploadStep()}
+        {currentStep === 'reflect' && renderReflectStep()}
+
+        {isDevMode && (
+          <div className="mt-4 p-3 bg-yellow-100 border border-yellow-500 rounded-lg">
+            <p className="text-sm text-yellow-800 font-medium flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Dev Mode: Auto-progressed through steps
             </p>
           </div>
-
-          {/* Progress Indicator */}
-          <div className="flex items-center justify-center space-x-4">
-            <div className={`flex items-center space-x-2 ${currentStep === 'play' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'play' ? 'bg-purple-600 text-white' :
-                hasPlayedGame ? 'bg-green-500 text-white' : 'bg-gray-300'
-              }`}>
-                {hasPlayedGame && currentStep !== 'play' ? <CheckCircle className="h-5 w-5" /> : '1'}
-              </div>
-              <span className="font-medium">Play Game</span>
-            </div>
-
-            <div className="w-12 h-0.5 bg-gray-300 dark:bg-gray-600" />
-
-            <div className={`flex items-center space-x-2 ${currentStep === 'upload' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'upload' ? 'bg-purple-600 text-white' :
-                isVerified ? 'bg-green-500 text-white' : 'bg-gray-300'
-              }`}>
-                {isVerified && currentStep !== 'upload' ? <CheckCircle className="h-5 w-5" /> : '2'}
-              </div>
-              <span className="font-medium">Upload Screenshot</span>
-            </div>
-
-            <div className="w-12 h-0.5 bg-gray-300 dark:bg-gray-600" />
-
-            <div className={`flex items-center space-x-2 ${currentStep === 'reflect' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'reflect' ? 'bg-purple-600 text-white' : 'bg-gray-300'
-              }`}>
-                3
-              </div>
-              <span className="font-medium">Reflect</span>
-            </div>
-          </div>
-
-          {/* Step Content */}
-          {currentStep === 'play' && renderPlayStep()}
-          {currentStep === 'upload' && renderUploadStep()}
-          {currentStep === 'reflect' && renderReflectStep()}
-
-          {/* Dev Mode Indicator */}
-          {isDevMode && (
-            <div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-500 rounded-lg">
-              <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Dev Mode: Auto-progressed through steps
-              </p>
-            </div>
-          )}
-        </motion.div>
-      </Card>
-    </div>
+        )}
+      </motion.div>
+    </Card>
   );
 };
 

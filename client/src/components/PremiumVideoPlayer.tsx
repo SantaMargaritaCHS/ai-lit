@@ -321,6 +321,7 @@ export function PremiumVideoPlayer({
     // If metadata is already available (same video URL re-used across segments), seek immediately
     if (video.readyState >= 1) {
       seekToStart();
+      setVideoFadedIn(true); // metadata already loaded — safe to show immediately
     }
 
     const handleLoadedMetadata = () => {
@@ -801,7 +802,6 @@ export function PremiumVideoPlayer({
           playsInline
           muted={muted}
         >
-          <source src={videoUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
             

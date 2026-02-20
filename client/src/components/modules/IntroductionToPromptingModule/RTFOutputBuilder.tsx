@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Loader2, Sparkles, CheckCircle, Star, BookOpen, ClipboardList, GraduationCap, Mail } from 'lucide-react';
+import { Loader2, Sparkles, CheckCircle, Star, BookOpen, Code, Megaphone, PenTool } from 'lucide-react';
 
 interface RTFOutputBuilderProps {
   onComplete: () => void;
@@ -16,303 +16,264 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
   const [task, setTask] = useState('');
   const [format, setFormat] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [generatedOutput, setGeneratedOutput] = useState<any>(null);
+  const [generatedOutput, setGeneratedOutput] = useState<{
+    prompt: string;
+    output: string;
+    quality: { score: number; feedback: string[] };
+  } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const TEMPLATE_SUGGESTIONS = [
     {
-      id: 'lesson-plan',
-      title: '📚 Lesson Plan',
+      id: 'study-guide',
+      title: 'Study Guide Creator',
       icon: BookOpen,
-      description: 'Create a complete lesson plan',
+      description: 'Get help studying for your next test',
       example: {
-        role: 'experienced 5th grade teacher',
-        task: 'create a 45-minute lesson plan about the water cycle',
-        format: 'structured lesson plan with objectives, activities, and assessment'
+        role: 'biology tutor who specializes in AP-level content',
+        task: 'create a study guide for cell division covering mitosis and meiosis',
+        format: 'outline with key vocabulary definitions and 5 practice questions with answers'
       }
     },
     {
-      id: 'student-activity',
-      title: '🎯 Student Activity',
-      icon: GraduationCap,
-      description: 'Design an engaging student activity',
+      id: 'essay-outliner',
+      title: 'Essay Outliner',
+      icon: PenTool,
+      description: 'Structure a persuasive or analytical essay',
       example: {
-        role: 'creative elementary school teacher',
-        task: 'create a hands-on science activity about plant growth',
-        format: 'step-by-step activity guide with materials list and instructions'
+        role: 'AP English writing coach who helps students build strong arguments',
+        task: 'outline a persuasive essay arguing that school should start later in the morning',
+        format: '5-paragraph outline with thesis statement, topic sentences for each body paragraph, and key evidence to include'
       }
     },
     {
-      id: 'assessment',
-      title: '📝 Assessment',
-      icon: ClipboardList,
-      description: 'Create a quiz or assessment',
+      id: 'social-media',
+      title: 'Social Media Expert',
+      icon: Megaphone,
+      description: 'Create captions for a school club or event',
       example: {
-        role: 'middle school math teacher',
-        task: 'create a 10-question quiz about fractions',
-        format: 'multiple choice quiz with answer key'
+        role: 'social media content creator for a high school audience',
+        task: 'write 3 Instagram captions promoting our school science fair happening next Friday',
+        format: 'short captions (under 150 chars each) with relevant hashtags and a call-to-action'
       }
     },
     {
-      id: 'parent-comm',
-      title: '✉️ Parent Communication',
-      icon: Mail,
-      description: 'Write a parent newsletter or email',
+      id: 'code-tutor',
+      title: 'Code Tutor',
+      icon: Code,
+      description: 'Learn a programming concept step by step',
       example: {
-        role: 'professional elementary school teacher',
-        task: 'write a monthly classroom newsletter for parents',
-        format: 'friendly newsletter with sections for updates, upcoming events, and how to help at home'
+        role: 'patient Python instructor who explains things with real-world analogies',
+        task: 'explain how for loops work in Python, including when and why to use them',
+        format: 'step-by-step explanation with 3 code examples that get progressively harder, with comments in each'
       }
     }
   ];
 
   const generateFallbackOutput = (r: string, t: string, f: string): string => {
-    // Fallback outputs based on template selection
     const outputs: Record<string, string> = {
-      'lesson-plan': `# Water Cycle Lesson Plan - Grade 5
-## Duration: 45 minutes
+      'study-guide': `# Cell Division Study Guide
 
-### Learning Objectives:
-• Students will identify the main stages of the water cycle
-• Students will explain how water moves through Earth's systems
-• Students will create a diagram showing the water cycle process
+## Key Vocabulary:
+- **Mitosis** — Cell division that produces 2 identical daughter cells (used for growth and repair)
+- **Meiosis** — Cell division that produces 4 unique cells with half the chromosomes (used for reproduction)
+- **Chromosome** — Thread-like structure of DNA that carries genetic information
+- **Interphase** — The phase where the cell grows and copies its DNA before dividing
+- **Cytokinesis** — The final step where the cell's cytoplasm physically splits
 
-### Materials Needed:
-- Interactive water cycle diagram
-- Clear containers for demonstration
-- Ice cubes, hot water
-- Student worksheets
-- Colored pencils
+## Outline:
+### A. Mitosis (4 phases)
+1. **Prophase** — Chromosomes condense and become visible; spindle fibers form
+2. **Metaphase** — Chromosomes line up in the middle of the cell
+3. **Anaphase** — Sister chromatids are pulled to opposite sides
+4. **Telophase** — Nuclear envelopes reform; chromosomes decondense
 
-### Introduction (10 minutes):
-1. Begin with a question: "Where does rain come from?"
-2. Show students a glass of water and ask: "How old do you think this water is?"
-3. Introduce the concept that water on Earth is constantly recycling
+### B. Meiosis (Key Differences)
+- Two rounds of division (Meiosis I and II)
+- Produces 4 genetically unique cells
+- Includes crossing over (genetic recombination)
 
-### Main Activity (25 minutes):
-**Part 1: Demonstration (10 min)**
-- Use hot water in a container to show evaporation
-- Use ice to demonstrate condensation
-- Connect to real-world examples (puddles, clouds, rain)
+## Practice Questions:
+1. What is the main difference between mitosis and meiosis?
+2. During which phase of mitosis do chromosomes align at the cell's center?
+3. Why does meiosis produce genetically unique cells while mitosis doesn't?
+4. What happens during interphase that makes cell division possible?
+5. If a human cell has 46 chromosomes, how many will each daughter cell have after (a) mitosis and (b) meiosis?`,
 
-**Part 2: Student Exploration (15 min)**
-- Students work in pairs to label water cycle diagrams
-- Create movements to represent each stage
-- Share with the class
+      'essay-outliner': `# Persuasive Essay: Schools Should Start Later
 
-### Assessment (5 minutes):
-Quick exit ticket with 3 questions:
-1. Name the stages of the water cycle
-2. What causes water to evaporate?
-3. Draw one example of the water cycle you see in nature
+## Thesis Statement:
+High schools should delay start times to 9:00 AM because later starts improve student health, boost academic performance, and reduce safety risks.
 
-### Closing (5 minutes):
-- Review key vocabulary: evaporation, condensation, precipitation, collection
-- Preview tomorrow: How humans impact the water cycle
-- Homework: Observe and record one example of the water cycle at home`,
+## I. Introduction
+- Hook: "Imagine an entire generation of students running on empty — that's what 7 AM start times create."
+- Context: Most U.S. high schools start before 8:30 AM despite scientific evidence that teens need 8-10 hours of sleep
+- Thesis (above)
 
-      'student-activity': `# Plant Growth Hands-On Activity
-## Grade Level: Elementary (3-5)
+## II. Body Paragraph 1: Health Benefits
+- Topic sentence: Later school start times significantly improve adolescent physical and mental health.
+- Evidence: CDC reports teens who sleep <8 hours are more likely to experience depression and obesity
+- Evidence: The American Academy of Pediatrics recommends 8:30 AM or later
+- Connection to thesis
 
-### Activity: "Growing Our Garden Scientists"
+## III. Body Paragraph 2: Academic Performance
+- Topic sentence: Well-rested students perform measurably better in school.
+- Evidence: Studies show 20% improvement in test scores with later starts
+- Evidence: Reduced tardiness and absenteeism in districts that shifted times
+- Connection to thesis
 
-#### Materials List:
-• Bean seeds (3 per student)
-• Clear plastic cups
-• Cotton balls or paper towels
-• Water spray bottles
-• Observation journals
-• Rulers
-• Markers
+## IV. Body Paragraph 3: Safety
+- Topic sentence: Drowsy teen drivers are a preventable safety risk.
+- Evidence: Car accidents involving teen drivers decrease with later start times
+- Counter-argument: Some say it disrupts parent work schedules (address this)
+- Connection to thesis
 
-#### Step-by-Step Instructions:
+## V. Conclusion
+- Restate thesis in new words
+- Call to action: Students can petition their school boards
+- Closing thought: Investing in sleep is investing in our future`,
 
-**Setup (10 minutes):**
-1. Give each student 3 clear plastic cups
-2. Label cups: "Sunlight", "Darkness", "Half-sun"
-3. Place damp cotton balls in each cup
-4. Add 1 bean seed to each cup
+      'social-media': `📱 Instagram Captions for Science Fair:
 
-**Daily Routine (5 minutes/day):**
-1. Students spray water to keep cotton moist
-2. Measure and record growth in journal
-3. Draw observations
-4. Note any changes in color or direction
+**Caption 1:**
+🔬 Our annual Science Fair is THIS Friday! Come see what happens when curiosity meets creativity. You won't want to miss it. 🧪✨
+#ScienceFair #STEM #HighSchoolScience #InnovationDay
 
-**Variables to Test:**
-- Cup 1: Place in direct sunlight
-- Cup 2: Place in dark cabinet
-- Cup 3: Place in partial shade
+**Caption 2:**
+Explosions? Robots? Discoveries that'll blow your mind? 🤯 It's all going down at the Science Fair — Friday after school. Bring your friends!
+#ScienceFairFriday #StudentScientists #SchoolEvents
 
-**Discussion Questions:**
-• Which plant grew tallest? Why?
-• What differences do you notice?
-• What do plants need to grow?
+**Caption 3:**
+From biology to engineering, our students have been working ALL semester on these projects. Come support them this Friday! 🏆💡
+See you there → [Location in bio]
+#ProudStudents #ScienceRocks #SchoolCommunity`,
 
-**Extension Activities:**
-- Graph the growth over 2 weeks
-- Write a story from the seed's perspective
-- Research different types of seeds`,
+      'code-tutor': `# Understanding For Loops in Python 🐍
 
-      'assessment': `# Fractions Quiz - Middle School Mathematics
+## What is a For Loop?
+Think of a for loop like a teacher taking attendance. The teacher goes through the class list ONE student at a time, says their name, and moves to the next. A for loop does the same thing — it goes through a collection one item at a time and does something with each one.
 
-## Instructions: Choose the best answer for each question.
+## Example 1: The Basics
+\`\`\`python
+# Print each fruit in a list
+fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:        # "fruit" is like a pointer that moves through the list
+    print(f"I like {fruit}")  # This runs once for each item
 
-**1. What is 1/2 + 1/4?**
-   a) 2/6
-   b) 3/4 ✓
-   c) 1/6
-   d) 2/4
+# Output:
+# I like apple
+# I like banana
+# I like cherry
+\`\`\`
 
-**2. Simplify: 6/8**
-   a) 3/4 ✓
-   b) 2/3
-   c) 1/2
-   d) 5/7
+## Example 2: Using range() for counting
+\`\`\`python
+# Count from 1 to 5
+for number in range(1, 6):   # range(1, 6) generates: 1, 2, 3, 4, 5
+    print(f"Count: {number}")  # This runs 5 times total
 
-**3. Which fraction is equivalent to 2/3?**
-   a) 4/5
-   b) 3/2
-   c) 4/6 ✓
-   d) 5/8
+# Output:
+# Count: 1
+# Count: 2
+# Count: 3
+# Count: 4
+# Count: 5
+\`\`\`
 
-**4. Convert 3/5 to a decimal:**
-   a) 0.35
-   b) 0.6 ✓
-   c) 0.53
-   d) 0.3
+## Example 3: Building something useful
+\`\`\`python
+# Calculate the total cost of items in a shopping cart
+prices = [4.99, 12.50, 3.25, 8.00, 15.75]
+total = 0                      # Start with $0
 
-**5. What is 2/3 × 3/4?**
-   a) 6/12
-   b) 1/2 ✓
-   c) 5/7
-   d) 6/7
+for price in prices:           # Go through each price
+    total = total + price      # Add it to our running total
+    print(f"Added \${price:.2f} → Running total: \${total:.2f}")
 
-**6. In a class of 20 students, 3/4 passed the test. How many students passed?**
-   a) 12
-   b) 14
-   c) 15 ✓
-   d) 16
+print(f"\\nFinal total: \${total:.2f}")  # Print the grand total
 
-**7. Which fraction is greater: 3/5 or 2/3?**
-   a) 3/5
-   b) 2/3 ✓
-   c) They are equal
-   d) Cannot determine
+# Output:
+# Added $4.99 → Running total: $4.99
+# Added $12.50 → Running total: $17.49
+# ...
+# Final total: $44.49
+\`\`\`
 
-**8. What is 3 1/2 as an improper fraction?**
-   a) 6/2
-   b) 7/2 ✓
-   c) 5/2
-   d) 8/2
-
-**9. Divide: 1/2 ÷ 1/4**
-   a) 1/8
-   b) 2 ✓
-   c) 1/2
-   d) 4
-
-**10. A pizza is cut into 8 slices. If you eat 3 slices, what fraction remains?**
-   a) 3/8
-   b) 5/8 ✓
-   c) 3/5
-   d) 1/2
-
-### Answer Key:
-1. b  2. a  3. c  4. b  5. b  6. c  7. b  8. b  9. b  10. b`,
-
-      'parent-comm': `# Monthly Classroom Newsletter - March 2024
-
-Dear Families,
-
-Welcome to our March newsletter! Spring is in the air, and our classroom is buzzing with exciting learning opportunities.
-
-## 📚 What We're Learning:
-
-**Reading & Writing:**
-This month, we're diving into poetry! Students are exploring different forms including haiku, acrostic, and free verse. Each student will create their own poetry book by month's end.
-
-**Mathematics:**
-We're mastering multiplication facts and beginning our unit on fractions. Games and hands-on activities are making math fun and meaningful.
-
-**Science:**
-Our plant unit is growing! Students have planted their own beans and are observing the life cycle. Ask your child about their plant journal!
-
-## 🎉 Upcoming Events:
-
-• **March 15:** Poetry Café - 2:00 PM (families welcome!)
-• **March 22:** Field trip to Science Museum (permission slips due March 18)
-• **March 28:** Parent-Teacher Conferences (sign-up link coming soon)
-
-## 🏠 How to Help at Home:
-
-**Reading:** 20 minutes nightly - let your child read to you!
-**Math:** Practice multiplication facts during car rides or while cooking
-**Science:** Look for signs of spring on family walks
-
-## ⭐ Classroom Stars:
-
-Congratulations to this month's kindness award winners: Emma, Carlos, and Aisha! They showed exceptional empathy and helpfulness to classmates.
-
-## 📝 Reminders:
-
-• Library books due every Tuesday
-• Please label all clothing and supplies
-• Healthy snacks only, please (nut-free classroom)
-
-Thank you for your continued support! Feel free to email me with any questions or concerns.
-
-Warm regards,
-Mrs. Johnson
-3rd Grade Teacher`
+## When to use for loops:
+- When you need to do something with each item in a list
+- When you need to repeat an action a specific number of times
+- When you're building up a result (like a total) from multiple values`
     };
 
-    // Check if the input matches any of our template examples
     for (const template of TEMPLATE_SUGGESTIONS) {
-      if (r.includes(template.example.role.substring(0, 20)) ||
-          t.includes(template.example.task.substring(0, 20))) {
-        const templateId = template.id;
-        if (outputs[templateId]) {
-          return outputs[templateId];
+      if (r.includes(template.example.role.substring(0, 15)) ||
+          t.includes(template.example.task.substring(0, 15))) {
+        if (outputs[template.id]) {
+          return outputs[template.id];
         }
       }
     }
 
-    // Generic output for custom prompts
-    return `Generated Output for Your Prompt:
+    return `# Generated Output
 
-Role: ${r}
-Task: ${t}
-Format: ${f}
+**Your Prompt:** Act as ${r} and ${t}. Format as ${f}.
 
-[AI Generated Content]
-Based on your specifications, here's the customized output that matches your requirements. This demonstrates how the RTF framework helps create targeted, useful content for educational purposes.
+---
 
-The combination of a specific role, clear task, and defined format ensures the AI understands exactly what you need and delivers it in the most useful way possible.`;
+This is a preview of what your RTF prompt would produce. The combination of a specific Role, clear Task, and defined Format ensures the AI understands exactly what you need.
+
+*In a live AI tool, this would generate a complete, tailored response matching your specifications.*`;
+  };
+
+  const evaluatePromptQuality = (r: string, t: string, f: string): { score: number; feedback: string[] } => {
+    let score = 0;
+    const feedback: string[] = [];
+
+    if (r.split(' ').length > 2) {
+      score += 2;
+      feedback.push('Role is specific and detailed');
+    } else if (r.length > 0) {
+      score += 1;
+      feedback.push('Role could be more specific — try adding expertise or style');
+    }
+
+    if (t.includes('create') || t.includes('write') || t.includes('design') || t.includes('explain') || t.includes('outline') || t.includes('summarize')) {
+      score += 1;
+      feedback.push('Good use of a clear action verb');
+    }
+    if (t.split(' ').length > 5) {
+      score += 1;
+      feedback.push('Task is detailed with clear scope');
+    } else if (t.length > 0) {
+      feedback.push('Task could use more detail — what specifically do you want?');
+    }
+
+    if (f.split(' ').length > 3) {
+      score += 2;
+      feedback.push('Format is well specified');
+    } else if (f.length > 0) {
+      score += 1;
+      feedback.push('Format could be more specific — mention structure, length, or style');
+    }
+
+    return {
+      score: Math.min(5, Math.round((score / 6) * 5)),
+      feedback
+    };
   };
 
   const generateOutput = async () => {
-    if (!role || !task || !format) {
-      alert('Please fill in all RTF components!');
-      return;
-    }
-
+    if (!role || !task || !format) return;
     setIsGenerating(true);
-    
+
     try {
       const prompt = `Act as ${role} and ${task}. Format as ${format}.`;
-      
-      // Try to call the AI API
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt,
-          maxTokens: 800,
-          temperature: 0.7
-        })
+        body: JSON.stringify({ prompt, maxTokens: 800, temperature: 0.7 })
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setGeneratedOutput({
@@ -323,9 +284,7 @@ The combination of a specific role, clear task, and defined format ensures the A
       } else {
         throw new Error('API call failed');
       }
-    } catch (error) {
-      console.log('Using fallback output');
-      // Use fallback output
+    } catch {
       setGeneratedOutput({
         prompt: `Act as ${role} and ${task}. Format as ${format}.`,
         output: generateFallbackOutput(role, task, format),
@@ -336,82 +295,36 @@ The combination of a specific role, clear task, and defined format ensures the A
     }
   };
 
-  const evaluatePromptQuality = (r: string, t: string, f: string) => {
-    let score = 0;
-    let feedback = [];
-    
-    // Check role specificity
-    if (r.split(' ').length > 2) {
-      score += 2;
-      feedback.push('✓ Specific role defined');
-    } else if (r.length > 0) {
-      score += 1;
-      feedback.push('→ Could be more specific about the role');
-    } else {
-      feedback.push('✗ Missing role specification');
-    }
-    
-    // Check task clarity
-    if (t.includes('create') || t.includes('write') || t.includes('design') || t.includes('explain')) {
-      score += 1;
-      feedback.push('✓ Clear action verb used');
-    }
-    if (t.split(' ').length > 5) {
-      score += 1;
-      feedback.push('✓ Detailed task description');
-    } else if (t.length > 0) {
-      feedback.push('→ Add more task details');
-    } else {
-      feedback.push('✗ Missing task description');
-    }
-    
-    // Check format specification
-    if (f.split(' ').length > 3) {
-      score += 2;
-      feedback.push('✓ Format well specified');
-    } else if (f.length > 0) {
-      score += 1;
-      feedback.push('→ Could be more specific about format');
-    } else {
-      feedback.push('✗ Missing format specification');
-    }
-    
-    return { 
-      score: Math.min(5, (score / 7) * 5), 
-      feedback 
-    };
-  };
-
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
+        className="text-center mb-4"
       >
-        <h2 className="text-3xl font-bold text-white mb-2">
-          🚀 Build Your RTF Prompt & See It In Action!
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          Build Your RTF Prompt
         </h2>
-        <p className="text-gray-300">
-          Now it's your turn! Create a prompt and watch AI generate real output.
+        <p className="text-gray-600">
+          Put everything together! Create a prompt using Role, Task, and Format — then see it in action.
         </p>
       </motion.div>
 
       {/* Suggestion Toggle */}
-      <div className="mb-6 text-center">
+      <div className="text-center">
         <button
           onClick={() => setShowSuggestions(!showSuggestions)}
-          className="text-blue-400 hover:text-blue-300 underline text-sm"
+          className="text-blue-600 hover:text-blue-700 underline text-sm font-medium"
         >
-          {showSuggestions ? 'Hide' : 'Show'} Suggestions for Inspiration 💡
+          {showSuggestions ? 'Hide' : 'Show'} Ideas for Inspiration
         </button>
       </div>
 
-      {/* Template Suggestions - NO AUTO-FILL */}
+      {/* Template Suggestions */}
       {showSuggestions && (
-        <Card className="mb-8 p-6 bg-gray-800/30">
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Need Ideas? Here are some examples:
+        <Card className="p-6 bg-blue-50 border-blue-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Need ideas? Here are some student scenarios:
           </h3>
           <div className="grid md:grid-cols-2 gap-4">
             {TEMPLATE_SUGGESTIONS.map(template => {
@@ -419,24 +332,24 @@ The combination of a specific role, clear task, and defined format ensures the A
               return (
                 <div
                   key={template.id}
-                  className="p-4 rounded-lg bg-white/5 border border-white/10"
+                  className="p-4 rounded-lg bg-white border border-blue-100"
                 >
                   <div className="flex items-start gap-3">
-                    <Icon className="w-6 h-6 text-blue-400 mt-1" />
+                    <Icon className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />
                     <div className="flex-1">
-                      <div className="text-lg font-semibold text-white mb-1">
+                      <div className="text-base font-semibold text-gray-900 mb-1">
                         {template.title}
                       </div>
-                      <div className="text-sm text-gray-400 mb-3">
+                      <div className="text-sm text-gray-600 mb-3">
                         {template.description}
                       </div>
                       <div className="text-xs text-gray-500 space-y-1">
-                        <p><span className="text-blue-400">Role:</span> {template.example.role}</p>
-                        <p><span className="text-green-400">Task:</span> {template.example.task}</p>
-                        <p><span className="text-purple-400">Format:</span> {template.example.format}</p>
+                        <p><span className="text-blue-600 font-semibold">Role:</span> {template.example.role}</p>
+                        <p><span className="text-green-600 font-semibold">Task:</span> {template.example.task}</p>
+                        <p><span className="text-purple-600 font-semibold">Format:</span> {template.example.format}</p>
                       </div>
-                      <p className="text-xs text-gray-600 mt-2 italic">
-                        (These are just examples - create your own!)
+                      <p className="text-xs text-gray-400 mt-2 italic">
+                        (These are examples — create your own!)
                       </p>
                     </div>
                   </div>
@@ -447,18 +360,18 @@ The combination of a specific role, clear task, and defined format ensures the A
         </Card>
       )}
 
-      {/* RTF Builder - EMPTY FIELDS */}
-      <Card className="p-6 bg-gray-800/50">
+      {/* RTF Builder */}
+      <Card className="p-6">
         <div className="mb-4 text-center">
-          <p className="text-yellow-300 text-sm">
-            ✍️ Fill in each component below to build your prompt
+          <p className="text-gray-600 text-sm">
+            Fill in each component below to build your prompt
           </p>
         </div>
-        
+
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <span className="inline-block bg-blue-600 px-2 py-1 rounded text-white mr-2">R</span>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <span className="inline-block bg-blue-600 px-2 py-1 rounded text-white text-xs mr-2 font-bold">R</span>
               Role
               <span className="text-xs text-gray-500 ml-2">(Who should the AI act as?)</span>
             </label>
@@ -466,34 +379,34 @@ The combination of a specific role, clear task, and defined format ensures the A
               type="text"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              placeholder="e.g., experienced biology teacher, creative writing coach, patient math tutor..."
-              className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:bg-white/15 transition-all"
+              placeholder="e.g., patient biology tutor, creative writing coach, Python instructor..."
+              className="w-full text-gray-900"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Be specific! Include grade level, subject expertise, or teaching style.
+              Be specific! Include expertise area, teaching style, or audience level.
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <span className="inline-block bg-green-600 px-2 py-1 rounded text-white mr-2">T</span>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <span className="inline-block bg-green-600 px-2 py-1 rounded text-white text-xs mr-2 font-bold">T</span>
               Task
               <span className="text-xs text-gray-500 ml-2">(What should the AI do?)</span>
             </label>
             <Textarea
               value={task}
               onChange={(e) => setTask(e.target.value)}
-              placeholder="e.g., create a lesson plan about ecosystems, write a parent email about field trip, design a hands-on activity for teaching fractions..."
-              className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:border-green-500 focus:bg-white/15 transition-all min-h-[80px]"
+              placeholder="e.g., create a study guide on cell division, outline a persuasive essay about school start times..."
+              className="w-full min-h-[80px] text-gray-900"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Use action verbs: create, write, design, develop, explain, generate...
+              Use action verbs: create, explain, compare, summarize, design, outline...
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <span className="inline-block bg-purple-600 px-2 py-1 rounded text-white mr-2">F</span>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <span className="inline-block bg-purple-600 px-2 py-1 rounded text-white text-xs mr-2 font-bold">F</span>
               Format
               <span className="text-xs text-gray-500 ml-2">(How should it be structured?)</span>
             </label>
@@ -501,29 +414,24 @@ The combination of a specific role, clear task, and defined format ensures the A
               type="text"
               value={format}
               onChange={(e) => setFormat(e.target.value)}
-              placeholder="e.g., bullet points with examples, step-by-step instructions, friendly email with 3 paragraphs..."
-              className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:bg-white/15 transition-all"
+              placeholder="e.g., outline with vocabulary, 5-paragraph structure, step-by-step with code examples..."
+              className="w-full text-gray-900"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Specify structure, length, tone, or special requirements.
+              Specify structure, length, sections, or special requirements.
             </p>
           </div>
-          
-          {/* Character count */}
-          <div className="text-xs text-gray-500 text-right">
-            Total characters: {(role + task + format).length}
-          </div>
 
-          {/* Full Prompt Preview - Only shows when fields have content */}
+          {/* Prompt Preview */}
           {(role || task || format) && (
-            <div className="mt-4 p-4 bg-blue-600/20 rounded-lg border border-blue-500/50">
-              <p className="text-sm text-blue-300 mb-1">Your prompt preview:</p>
-              <p className="text-white font-mono text-sm">
-                {role && <span>Act as <span className="text-blue-300">{role}</span></span>}
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-xs text-blue-600 mb-1 font-semibold">Your prompt preview:</p>
+              <p className="text-gray-900 font-mono text-sm">
+                {role && <span>Act as <span className="text-blue-700 font-semibold">{role}</span></span>}
                 {role && task && ' and '}
-                {task && <span className="text-green-300">{task}</span>}
+                {task && <span className="text-green-700 font-semibold">{task}</span>}
                 {(role || task) && format && '. '}
-                {format && <span>Format as <span className="text-purple-300">{format}</span>.</span>}
+                {format && <span>Format as <span className="text-purple-700 font-semibold">{format}</span>.</span>}
               </p>
             </div>
           )}
@@ -531,7 +439,8 @@ The combination of a specific role, clear task, and defined format ensures the A
           <Button
             onClick={generateOutput}
             disabled={isGenerating || !role || !task || !format}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-lg transition-all disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300 disabled:text-gray-500"
+            size="lg"
           >
             {isGenerating ? (
               <span className="flex items-center justify-center gap-2">
@@ -539,7 +448,7 @@ The combination of a specific role, clear task, and defined format ensures the A
                 Generating Output...
               </span>
             ) : !role || !task || !format ? (
-              '✍️ Fill in all fields to generate'
+              'Fill in all fields to generate'
             ) : (
               <span className="flex items-center justify-center gap-2">
                 <Sparkles className="w-5 h-5" />
@@ -550,58 +459,51 @@ The combination of a specific role, clear task, and defined format ensures the A
         </div>
       </Card>
 
-      {/* Helper tips */}
-      {!role && !task && !format && (
-        <div className="mt-6 text-center">
-          <p className="text-gray-400 text-sm">
-            💡 Tip: The more specific your RTF components, the better your output!
-          </p>
-        </div>
-      )}
-
       {/* Generated Output Display */}
       {generatedOutput && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
           {/* Output */}
-          <div className="bg-white rounded-lg shadow-xl p-6" 
-               style={{ color: '#000', backgroundColor: '#fff' }}>
-            <h3 className="text-lg font-bold mb-4" style={{ color: '#000' }}>
+          <Card className="p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
               Generated Output:
             </h3>
-            <div className="prose max-w-none" style={{ color: '#333', whiteSpace: 'pre-wrap' }}>
+            <div className="prose max-w-none text-gray-800 whitespace-pre-wrap bg-gray-50 rounded-lg p-4 border border-gray-200 max-h-96 overflow-y-auto">
               {generatedOutput.output}
             </div>
-          </div>
+          </Card>
 
           {/* Prompt Evaluation */}
-          <Card className="p-6 bg-green-500/10 border border-green-500/30">
-            <h3 className="text-lg font-bold text-white mb-4">
+          <Card className="p-6 bg-green-50 border-green-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
               Prompt Quality Analysis
             </h3>
             <div className="flex items-center gap-4 mb-4">
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(star => (
-                  <Star 
-                    key={star} 
+                  <Star
+                    key={star}
                     className={`w-5 h-5 ${
-                      star <= generatedOutput.quality.score 
-                        ? 'text-yellow-400 fill-yellow-400' 
-                        : 'text-gray-600'
+                      star <= generatedOutput.quality.score
+                        ? 'text-yellow-400 fill-yellow-400'
+                        : 'text-gray-300'
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-gray-300">
-                {generatedOutput.quality.score.toFixed(1)}/5.0
+              <span className="text-gray-700 font-medium">
+                {generatedOutput.quality.score}/5
               </span>
             </div>
-            <ul className="space-y-1 text-gray-300">
-              {generatedOutput.quality.feedback.map((item: string, i: number) => (
-                <li key={i}>{item}</li>
+            <ul className="space-y-1 text-gray-700">
+              {generatedOutput.quality.feedback.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                  {item}
+                </li>
               ))}
             </ul>
           </Card>
@@ -610,10 +512,11 @@ The combination of a specific role, clear task, and defined format ensures the A
           <div className="flex justify-center">
             <Button
               onClick={onComplete}
-              className="px-8 py-3 bg-green-600 hover:bg-green-700 rounded-lg flex items-center gap-2"
+              size="lg"
+              className="bg-green-600 hover:bg-green-700 text-white px-8"
             >
               Complete Activity
-              <CheckCircle className="w-5 h-5" />
+              <CheckCircle className="w-5 h-5 ml-2" />
             </Button>
           </div>
         </motion.div>

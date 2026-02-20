@@ -66,7 +66,8 @@ node scripts/gemini-vision-inspector.js
 │   └── services/geminiClient.ts    # Gemini API config
 ├── .claude/
 │   ├── agents/                  # 7 specialized Claude Code agents (NEW: mcp-debugger)
-│   └── guides/                  # Detailed implementation guides
+│   ├── guides/                  # Detailed implementation guides
+│   └── bugs-backlog.md          # Known bugs: root cause, fix, verification plan
 ├── scripts/
 │   ├── mcp/                     # MCP automated testing scripts (NEW)
 │   ├── gemini-vision-inspector.js  # AI-powered UI testing
@@ -618,6 +619,14 @@ onDownload={() => clearProgress(MODULE_ID)}
 2. LLMLimitationsModule (2078 lines)
 3. IntroToGenAIModule (1730 lines)
 
+**Recent Fixes (Feb 2026):**
+- ✅ **Privacy & Data Rights** - QA bug fixes:
+  - Removed 6 wrong Works Cited sources (#2-7 were ChatGPT word-limit articles) from `privacyPolicyCitations.ts`
+  - Fixed quiz explanation bleedthrough (`key={currentIndex}` on `CardContent` in `PolicyMythsQuiz.tsx`)
+  - Fixed EU AI Act wording: "new AI Act (2026)" → "EU AI Act (enacted 2024, phasing in through 2026)"
+  - Lowered exit ticket minimum from 150 → 100 chars (matches pre-filter threshold)
+  - Known issue: video black screen on `dataAndYou` segments — documented in `.claude/bugs-backlog.md`, deferred
+
 **Recent Module Completions:**
 - ✅ **AI Environmental Impact Module** - Complete rebuild (Dec 2024)
   - Old: 945-line educator-focused → New: 1,152-line student-focused
@@ -633,6 +642,7 @@ onDownload={() => clearProgress(MODULE_ID)}
 - ✅ Intro to Gen AI - Full validation + escape hatch
 - ✅ AI Environmental Impact - Full validation + escape hatch (Reflection + Exit Ticket)
 - ✅ Ancient Compass - AI validation + escape hatch (3 activities: RevolutionComparisonChart, StakeholderPerspectives, EthicalDilemmaScenarios)
+- ✅ Privacy & Data Rights - 100 char minimum on exit ticket (lowered from 150, Feb 2026)
 - ⏳ 3 modules need validation implementation (Intro to LLMs, LLM Limitations, Introduction to Prompting)
 
 ## 🚦 Quick Status Checks
@@ -817,7 +827,7 @@ npm run mcp:accessibility # Accessibility audit
 
 **Add Reflection Activity:**
 1. Import validation: `isNonsensical`, `generateEducationFeedback`
-2. Set `minResponseLength = 100` (or 150 for deeper reflections)
+2. Set `minResponseLength = 100` (matches pre-filter threshold in `isNonsensical`)
 3. Implement two-layer validation (pre-filter + AI feedback)
 4. Add 2-attempt escape hatch (see escape hatch section)
 5. Test with gibberish, inappropriate content, prompt injection
