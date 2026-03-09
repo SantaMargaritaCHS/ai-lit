@@ -1,0 +1,121 @@
+[00:00 - 00:05] All right, let's talk about prompting. If you've ever used an AI tool for school or just for fun,
+[00:05 - 00:09] you know exactly what I'm talking about. Sometimes, the results are amazing,
+[00:09 - 00:13] like mind-blowingly good. And other times, they're just completely useless.
+[00:14 - 00:17] Well, today, we're gonna pull back the curtain and show you the mechanics behind it all,
+[00:18 - 00:20] so you can get the results you want, every single time.
+[00:21 - 00:25] Seriously, we've all been there, right? You give the tool a prompt, you're hoping for some
+[00:25 - 00:30] incredible insight for your paper, and what you get back is, well, it's just generic garbage.
+[00:30 - 00:34] But then you tweak a few words, try again, and suddenly, it spits out something brilliant.
+[00:34 - 00:37] What's going on there? Why is it so inconsistent?
+[00:37 - 00:43] Here's the good news. It has nothing to do with magic or the AI's mood. The system doesn't
+[00:43 - 00:47] understand you one minute and then not the next. The huge difference in the quality of
+[00:47 - 00:52] the output is purely mechanical. It all comes down to how you structure your input.
+[00:52 - 00:56] And once you get a handle on these mechanics, you're the one in the driver's seat.
+[00:56 - 01:01] So here's our game plan. First, we'll look at the AI as a prediction machine. This is huge.
+[01:02 - 01:04] Then we'll get into something I call the funnel of control,
+[01:04 - 01:07] and the four essential building blocks of any good prompt.
+[01:08 - 01:12] After that, we'll level up your skills, talk about why you always have to verify the output,
+[01:12 - 01:15] and wrap up with how to think of this as a powerful tool, not just a shortcut.
+[01:16 - 01:20] Okay, first things first. To really use any tool well,
+[01:20 - 01:24] you have to know what it actually is. And this next idea is the foundation for everything.
+[01:25 - 01:29] Getting this one concept right will totally change how you use these AI systems.
+[01:29 - 01:35] So, at its heart, what we call an AI is usually a large language model, or an LLM.
+[01:35 - 01:40] And what it is, is a prediction system. That's it. It's been trained on a truly
+[01:40 - 01:43] mind-boggling amount of text from the internet, and all that training has made
+[01:43 - 01:47] it incredibly good at one specific thing – predicting the most statistically
+[01:47 - 01:50] probable next word to follow whatever you type in.
+[01:50 - 01:54] And this is the single most important thing to get into your head.
+[01:54 - 01:58] The model is not thinking. It doesn't have ideas. It doesn't know the answer to your question.
+[01:59 - 02:02] It's a pattern-matching machine, kind of like the world's most powerful autocomplete.
+[02:03 - 02:06] It's just generating the text that is statistically most likely to come next.
+[02:06 - 02:08] It's a pure mechanical process.
+[02:09 - 02:12] So, why does the language we use to talk about this stuff even matter?
+[02:12 - 02:16] Well, it's a huge deal. You'll hear people say things like,
+[02:16 - 02:20] the AI understands, or it knows. But to be truly AI literate,
+[02:20 - 02:22] you need to use precise, functional language.
+[02:23 - 02:26] This isn't just being picky. When you describe the system for what it is,
+[02:26 - 02:29] a machine that processes input, you avoid placing too much trust in it,
+[02:29 - 02:33] and you write much better prompts because you know you're just giving instructions to a tool.
+[02:34 - 02:36] Okay, so if it's just a prediction machine,
+[02:37 - 02:40] how do we get it to predict the right thing? The useful thing?
+[02:40 - 02:45] Well, this brings us to a really helpful way to think about it, the funnel of control.
+[02:45 - 02:50] Okay, picture this. When you give a vague prompt, it's like the top of a giant funnel.
+[02:50 - 02:55] It's super wide. The system has a nearly infinite universe of possible text it could generate.
+[02:55 - 02:59] But every single specific detail you add to your prompt, every instruction,
+[03:00 - 03:05] every constraint narrows that funnel, closing off millions of wrong paths and
+[03:05 - 03:09] guiding the system down toward that one single useful output you were looking for.
+[03:10 - 03:15] So how do we actually build this funnel? How do we narrow things down effectively?
+[03:15 - 03:18] We can do this by using four key building blocks.
+[03:19 - 03:21] Think of these as the levers you can pull to control the machine's output.
+[03:22 - 03:24] And here they are. The four blocks are
+[03:24 - 03:28] Role, which assigns a persona for the system to generate text from,
+[03:29 - 03:31] Task, which is the specific action you want it to perform,
+[03:32 - 03:34] Format, which defines the structure of the output,
+[03:34 - 03:38] and finally Context, which is any background info it needs to do the job right.
+[03:39 - 03:42] Let's see this in action, cause this is where it all clicks.
+[03:42 - 03:46] You start with something vague, like, help me study for my history test.
+[03:46 - 03:48] That's useless, right? The funnel is wide open.
+[03:48 - 03:52] But watch this. We add a role. You are an AP History teacher.
+[03:52 - 03:55] Okay, now we've narrowed the output to a specific style.
+[03:55 - 03:59] Then we add the task and format. Create 10 review questions with answers.
+[03:59 - 04:02] Bam! Now it has a clear structure. And finally, the context.
+[04:03 - 04:05] About the causes of WWI. See what happened?
+[04:05 - 04:10] We've built a tight funnel that guides the system directly to a super useful output.
+[04:10 - 04:13] Okay, once you get the hang of those four blocks,
+[04:13 - 04:15] you can start using some next-level techniques.
+[04:15 - 04:18] These will give you even more precise control over the output you get.
+[04:18 - 04:23] First up, and this is a big one, your first prompt is almost never your last prompt.
+[04:24 - 04:27] Using these tools effectively is an iterative process. It's a back and forth.
+[04:27 - 04:30] You give it an instruction, you look at what it generates,
+[04:30 - 04:33] and then you refine your instructions to get closer to what you want.
+[04:33 - 04:36] Think of it less like giving a single command and more like steering a ship.
+[04:36 - 04:39] You make lots of small adjustments to get to your final destination.
+[04:40 - 04:43] Here's another really powerful technique. Giving the system examples.
+[04:44 - 04:48] A zero-shot prompt is what most people do. You just fire off a command cold.
+[04:48 - 04:50] But a few-shot prompt is where you show the system
+[04:51 - 04:54] exactly what you want by giving it a few examples first.
+[04:54 - 04:57] You're literally showing it the pattern you want it to replicate,
+[04:57 - 05:00] which is way more effective than just trying to describe it with words.
+[05:01 - 05:06] Alright, here is a game-changer. This little trick sounds almost too simple to work,
+[05:06 - 05:10] but trust me, for any prompt that involves logic or solving a complex problem,
+[05:10 - 05:12] just add this one little phrase at the end.
+[05:13 - 05:15] So what's the magic behind this little phrase?
+[05:15 - 05:17] Well, it's called chain-of-thought prompting.
+[05:17 - 05:23] And what it does is it forces the model to generate its output as a sequence of logical steps,
+[05:23 - 05:24] before giving the final answer.
+[05:25 - 05:28] Each step it writes down becomes context for the next step,
+[05:28 - 05:32] which makes the whole process more structured and way less likely to make a mistake.
+[05:33 - 05:37] It's not actually thinking, it's just generating text in a logical sequence,
+[05:37 - 05:39] which leads to much more accurate results.
+[05:40 - 05:44] Okay, we've talked a lot about how to craft great prompts to control the input.
+[05:44 - 05:48] But what you do after you get the output is, honestly, the most important skill of all.
+[05:49 - 05:53] So, remember how we said the model is just generating the most likely next word?
+[05:53 - 05:59] Well, sometimes, the most probable sequence of words sounds completely authoritative and correct,
+[05:59 - 06:00] but is totally made up.
+[06:01 - 06:03] In the field, this is called a hallucination.
+[06:04 - 06:06] The model isn't lying. It doesn't have a concept of truth.
+[06:06 - 06:11] It's just completing a text pattern, and sometimes that pattern doesn't match reality.
+[06:11 - 06:12] And this is the bottom line.
+[06:13 - 06:16] You can never trust an AI's output for facts. Ever.
+[06:17 - 06:18] Especially for things like schoolwork.
+[06:18 - 06:23] Every single important fact or claim it generates has to be checked against a real,
+[06:24 - 06:24] reliable source.
+[06:25 - 06:28] The confident tone of the writing means absolutely nothing about its accuracy.
+[06:29 - 06:31] You are always responsible for the work you turn in.
+[06:31 - 06:34] So that brings us to the big picture.
+[06:34 - 06:39] How we should really be thinking about these systems and their role in our work and our learning.
+[06:39 - 06:42] Let's just run through the big five takeaways from all this.
+[06:42 - 06:44] 1. Be specific to build your funnel.
+[06:45 - 06:47] 2. Iterate. Keep refining your prompts.
+[06:47 - 06:49] 3. Give examples to show the pattern you want.
+[06:50 - 06:53] 4. For complex problems, tell it to work step by step.
+[06:53 - 06:54] And 5. The golden rule.
+[06:55 - 06:56] Always, always verify the output.
+[06:57 - 06:59] These are amazing tools for helping you think and work better,
+[06:59 - 07:01] but they are not a replacement for your own brain.
+[07:02 - 07:06] Look, when you understand how this tool actually works, everything changes.
+[07:06 - 07:09] You're no longer just rolling the dice and hoping for a good result.
+[07:09 - 07:10] You are the one in control.
+[07:11 - 07:12] You are the director.
+[07:12 - 07:16] You have the framework to make these incredibly powerful systems work for you.
+[07:16 - 07:19] So the only real question left is, what will you create?

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, CheckCircle, AlertCircle, Zap, Target, Sparkles,
-  BookOpen, Lightbulb, MessageSquare, PenTool, Award, Brain,
-  ChevronRight, Loader, ExternalLink, Clock
+  BookOpen, Lightbulb, MessageSquare, PenTool, Brain,
+  Loader, PlayCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { useDevMode } from '@/context/DevModeContext';
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 import { saveProgress, loadProgress, clearProgress } from '@/lib/progressPersistence';
 import { generateEducationFeedback, isNonsensical, checkFeedbackRejection } from '@/utils/aiEducationFeedback';
+import { PremiumVideoPlayer } from '@/components/PremiumVideoPlayer';
 import ResumeProgressDialog from '@/components/WhatIsAIModule/ResumeProgressDialog';
 
 import SayWhatYouSeeActivity from './IntroductionToPromptingModule/SayWhatYouSeeActivity';
@@ -20,8 +21,16 @@ import PromptFunnelVisualization from './IntroductionToPromptingModule/PromptFun
 import FormatActivity from './IntroductionToPromptingModule/FormatActivity';
 import RTFOutputBuilder from './IntroductionToPromptingModule/RTFOutputBuilder';
 import PromptRaterActivity from './IntroductionToPromptingModule/PromptRaterActivity';
+import ThinkOutLoudActivity from './IntroductionToPromptingModule/ThinkOutLoudActivity';
+import TeachByExampleActivity from './IntroductionToPromptingModule/TeachByExampleActivity';
+import CanAIAdmitItActivity from './IntroductionToPromptingModule/CanAIAdmitItActivity';
+import PromptLayerCakeActivity from './IntroductionToPromptingModule/PromptLayerCakeActivity';
 
 const MODULE_ID = 'introduction-to-prompting';
+
+// Video: How Prompting Actually Works (~7:19)
+// Using relative Firebase Storage path for PremiumVideoPlayer compatibility
+const VIDEO_URL = 'Videos/Student Videos/Introduction to Prompting/How_Prompting_Actually_Works.mp4';
 
 interface IntroductionToPromptingModuleProps {
   userName?: string;
@@ -61,7 +70,6 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
   const [roleMatchChecked, setRoleMatchChecked] = useState(false);
   const [vagueTaskIndex, setVagueTaskIndex] = useState(0);
   const [vagueTaskRevealed, setVagueTaskRevealed] = useState<boolean[]>([false, false, false]);
-  const [proTipsRevealed, setProTipsRevealed] = useState<number[]>([]);
 
   const MAX_ATTEMPTS = 2;
   const MIN_EXIT_TICKET_LENGTH = 100;
@@ -69,17 +77,24 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
   const segments = [
     { id: 0, title: 'Welcome', type: 'intro' as const },
     { id: 1, title: 'Say What You See', type: 'interactive' as const },
-    { id: 2, title: 'What Is a Prompt?', type: 'transition' as const },
-    { id: 3, title: 'Rate the Prompts', type: 'interactive' as const },
-    { id: 4, title: 'Prompting Principles', type: 'interactive' as const },
-    { id: 5, title: 'Meet the RTF Framework', type: 'interactive' as const },
-    { id: 6, title: 'Role: Your AI Expert', type: 'interactive' as const },
-    { id: 7, title: 'Task: What You Want', type: 'interactive' as const },
-    { id: 8, title: 'Format: How You Want It', type: 'interactive' as const },
-    { id: 9, title: 'Build Your RTF Prompt', type: 'interactive' as const },
-    { id: 10, title: 'Prompt Pro Tips', type: 'transition' as const },
-    { id: 11, title: 'Exit Ticket', type: 'exit-ticket' as const },
-    { id: 12, title: 'Certificate', type: 'certificate' as const },
+    { id: 2, title: 'Video: The Prediction Machine', type: 'video' as const },
+    { id: 3, title: 'What Is a Prompt?', type: 'transition' as const },
+    { id: 4, title: 'Rate the Prompts', type: 'interactive' as const },
+    { id: 5, title: 'Prompting Principles', type: 'interactive' as const },
+    { id: 6, title: 'Video: The Funnel of Control', type: 'video' as const },
+    { id: 7, title: 'Meet the RTF Framework', type: 'interactive' as const },
+    { id: 8, title: 'Role: Your AI Expert', type: 'interactive' as const },
+    { id: 9, title: 'Task: What You Want', type: 'interactive' as const },
+    { id: 10, title: 'Format: How You Want It', type: 'interactive' as const },
+    { id: 11, title: 'Build Your RTF Prompt', type: 'interactive' as const },
+    { id: 12, title: 'Video: Level Up Your Prompts', type: 'video' as const },
+    { id: 13, title: 'Think Out Loud', type: 'interactive' as const },
+    { id: 14, title: 'Teach By Example', type: 'interactive' as const },
+    { id: 15, title: 'Can AI Admit It?', type: 'interactive' as const },
+    { id: 16, title: 'Prompt Layer Cake', type: 'interactive' as const },
+    { id: 17, title: 'Video: The Golden Rule', type: 'video' as const },
+    { id: 18, title: 'Exit Ticket', type: 'exit-ticket' as const },
+    { id: 19, title: 'Certificate', type: 'certificate' as const },
   ];
 
   // Register activities for Developer Mode
@@ -272,29 +287,6 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     },
   ];
 
-  const PRO_TIPS = [
-    {
-      title: "Iterate and Refine",
-      description: "Your first prompt doesn't have to be perfect. If the AI's response isn't quite right, tweak your prompt and try again. Each iteration gets you closer to what you need.",
-      icon: "🔄",
-    },
-    {
-      title: "Chain Your Prompts",
-      description: "Break big tasks into smaller steps. First ask AI to outline your essay, then ask it to expand each section. It's like building with blocks — one piece at a time.",
-      icon: "🔗",
-    },
-    {
-      title: "Know AI's Limits",
-      description: "AI can make mistakes, produce outdated info, or sound confident when wrong. Always fact-check important information and use AI as a starting point, not the final answer.",
-      icon: "⚠️",
-    },
-    {
-      title: "Be Yourself",
-      description: "Use AI to help you think and organize — not to replace your own voice. The best work combines AI assistance with your unique perspective and creativity.",
-      icon: "✨",
-    },
-  ];
-
   // ────────────── Render Helpers ──────────────
 
   const colorMap: Record<string, { bg: string; border: string; text: string; icon: string }> = {
@@ -303,6 +295,48 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', icon: 'text-purple-600' },
     orange: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', icon: 'text-orange-600' },
   };
+
+  // ────────────── Video Clip Renderer ──────────────
+  // Clips from How_Prompting_Actually_Works.mp4 (~7:19)
+  // Clip timestamps from transcript — may need ±2s fine-tuning
+  const renderVideoClip = (
+    clipNumber: number,
+    title: string,
+    description: string,
+    start: number,
+    end: number,
+    iconColor: string
+  ) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <PlayCircle className={`w-6 h-6 ${iconColor}`} />
+          {title}
+        </CardTitle>
+        <p className="text-gray-700 mt-1">{description}</p>
+      </CardHeader>
+      <CardContent>
+        <PremiumVideoPlayer
+          videoUrl={VIDEO_URL}
+          videoId={`introduction-to-prompting-clip${clipNumber}`}
+          segments={[{
+            id: `prompting-clip-${clipNumber}`,
+            title,
+            description,
+            start,
+            end,
+            source: VIDEO_URL,
+            mandatory: true,
+          }]}
+          onSegmentComplete={() => {}}
+          onModuleComplete={handleNextSegment}
+          enableSubtitles={false}
+          hideSegmentNavigator={true}
+          allowSeeking={false}
+        />
+      </CardContent>
+    </Card>
+  );
 
   const renderSegment = () => {
     switch (currentSegment) {
@@ -382,8 +416,19 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 2: What Is a Prompt? (Animated) ────
+      // ──── Segment 2: Video Clip 1 — The Prediction Machine (00:00–02:33) ────
       case 2:
+        return renderVideoClip(
+          1,
+          'The Prediction Machine',
+          'Before we dive into prompts, watch this short clip about how AI actually processes your words — it\'s not magic, it\'s prediction.',
+          0,
+          153,
+          'text-blue-600'
+        );
+
+      // ──── Segment 3: What Is a Prompt? (Animated) ────
+      case 3:
         return (
           <Card>
             <CardHeader>
@@ -463,14 +508,14 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 3: Rate the Prompts ────
-      case 3:
+      // ──── Segment 4: Rate the Prompts ────
+      case 4:
         return (
           <PromptRaterActivity onComplete={handleNextSegment} />
         );
 
-      // ──── Segment 4: Prompting Principles (Animated Cards) ────
-      case 4:
+      // ──── Segment 5: Prompting Principles (Animated Cards) ────
+      case 5:
         return (
           <Card>
             <CardHeader>
@@ -550,14 +595,25 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 5: Meet the RTF Framework + Prompt Funnel ────
-      case 5:
+      // ──── Segment 6: Video Clip 2 — The Funnel of Control (02:34–04:09) ────
+      case 6:
+        return renderVideoClip(
+          2,
+          'The Funnel of Control',
+          'Now that you know the basics, see how specific prompts funnel AI toward exactly the output you want.',
+          154,
+          249,
+          'text-green-600'
+        );
+
+      // ──── Segment 7: Meet the RTF Framework + Prompt Funnel ────
+      case 7:
         return (
           <PromptFunnelVisualization onComplete={handleNextSegment} />
         );
 
-      // ──── Segment 6: Role Deep Dive + Matching Game ────
-      case 6:
+      // ──── Segment 8: Role Deep Dive + Matching Game ────
+      case 8:
         return (
           <Card>
             <CardHeader>
@@ -660,8 +716,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 7: Task Deep Dive + Fix-the-Vague-Task ────
-      case 7:
+      // ──── Segment 9: Task Deep Dive + Fix-the-Vague-Task ────
+      case 9:
         return (
           <Card>
             <CardHeader>
@@ -764,8 +820,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 8: Format Deep Dive ────
-      case 8:
+      // ──── Segment 10: Format Deep Dive ────
+      case 10:
         return (
           <Card>
             <CardHeader>
@@ -783,8 +839,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 9: RTF Builder ────
-      case 9:
+      // ──── Segment 11: RTF Builder ────
+      case 11:
         return (
           <RTFOutputBuilder
             onComplete={handleNextSegment}
@@ -792,75 +848,66 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 10: Pro Tips (Animated) ────
-      case 10:
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Award className="w-6 h-6 text-yellow-500" />
-                Prompt Pro Tips
-              </CardTitle>
-              <p className="text-gray-600 mt-1">Click each tip to reveal expert advice</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {PRO_TIPS.map((tip, index) => {
-                const isRevealed = proTipsRevealed.includes(index);
-                return (
-                  <motion.button
-                    key={index}
-                    onClick={() => {
-                      if (!isRevealed) {
-                        setProTipsRevealed([...proTipsRevealed, index]);
-                      }
-                    }}
-                    whileHover={{ scale: isRevealed ? 1 : 1.01 }}
-                    className={`w-full text-left rounded-lg border-2 p-5 transition-all ${
-                      isRevealed
-                        ? 'bg-yellow-50 border-yellow-200'
-                        : 'bg-gray-50 border-gray-200 cursor-pointer hover:border-yellow-300'
-                    }`}
-                  >
-                    {isRevealed ? (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-2xl">{tip.icon}</span>
-                          <h4 className="font-bold text-gray-900">{tip.title}</h4>
-                        </div>
-                        <p className="text-gray-700 text-sm ml-11">{tip.description}</p>
-                      </motion.div>
-                    ) : (
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-lg font-bold text-gray-400">{index + 1}</span>
-                        </div>
-                        <span className="text-gray-400">Click to reveal tip #{index + 1}</span>
-                      </div>
-                    )}
-                  </motion.button>
-                );
-              })}
-
-              {proTipsRevealed.length === PRO_TIPS.length && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-center pt-4"
-                >
-                  <Button onClick={handleNextSegment} size="lg" className="bg-green-600 hover:bg-green-700 text-white">
-                    Almost Done — Exit Ticket <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </motion.div>
-              )}
-            </CardContent>
-          </Card>
+      // ──── Segment 12: Video Clip 3 — Level Up Your Prompts (04:10–05:39) ────
+      case 12:
+        return renderVideoClip(
+          3,
+          'Level Up Your Prompts',
+          'You\'ve mastered RTF — now learn three advanced techniques that take your prompts to the next level.',
+          250,
+          339,
+          'text-purple-600'
         );
 
-      // ──── Segment 11: Exit Ticket ────
-      case 11:
+      // ──── Segment 13: Think Out Loud ────
+      case 13:
+        return (
+          <ThinkOutLoudActivity
+            onComplete={handleNextSegment}
+            isDevMode={isDevModeActive}
+          />
+        );
+
+      // ──── Segment 14: Teach By Example ────
+      case 14:
+        return (
+          <TeachByExampleActivity
+            onComplete={handleNextSegment}
+            isDevMode={isDevModeActive}
+          />
+        );
+
+      // ──── Segment 15: Can AI Admit It? ────
+      case 15:
+        return (
+          <CanAIAdmitItActivity
+            onComplete={handleNextSegment}
+            isDevMode={isDevModeActive}
+          />
+        );
+
+      // ──── Segment 16: Prompt Layer Cake ────
+      case 16:
+        return (
+          <PromptLayerCakeActivity
+            onComplete={handleNextSegment}
+            isDevMode={isDevModeActive}
+          />
+        );
+
+      // ──── Segment 17: Video Clip 4 — The Golden Rule (05:40–07:19) ────
+      case 17:
+        return renderVideoClip(
+          4,
+          'The Golden Rule',
+          'Before your exit ticket, watch this final clip about AI hallucinations and the five key takeaways from everything you\'ve learned.',
+          340,
+          439,
+          'text-orange-600'
+        );
+
+      // ──── Segment 18: Exit Ticket ────
+      case 18:
         return (
           <Card>
             <CardHeader>
@@ -1066,8 +1113,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 12: Certificate ────
-      case 12:
+      // ──── Segment 19: Certificate ────
+      case 19:
         return null; // Handled by showCertificate early return
 
       default:

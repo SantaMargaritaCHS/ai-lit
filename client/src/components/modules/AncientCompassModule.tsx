@@ -16,7 +16,8 @@ import {
   BookOpen,
   AlertTriangle,
   Sparkles,
-  Zap
+  Zap,
+  Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumVideoPlayer } from '../PremiumVideoPlayer';
@@ -40,6 +41,7 @@ interface AncientCompassModuleProps {
 
 type Phase =
   | 'welcome'
+  | 'honor-code-pledge'
   | 'video-1-industrial-revolution'      // Segment 1: 0:00-1:54:30
   | 'quiz-1-understanding-parallel'
   | 'activity-1-revolution-comparison'
@@ -217,10 +219,12 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
   const { isDevModeActive, goToActivity: devGoToActivity } = useDevMode();
   const [showResumeDialog, setShowResumeDialog] = useState(false);
   const [savedProgress, setSavedProgress] = useState<ReturnType<typeof getProgressSummary>>(null);
+  const [pledgeAccepted, setPledgeAccepted] = useState(false);
 
   // Define all phases for navigation
   const phases: Phase[] = [
     'welcome',
+    'honor-code-pledge',
     'video-1-industrial-revolution',
     'quiz-1-understanding-parallel',
     'activity-1-revolution-comparison',
@@ -515,6 +519,86 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
               Begin Your Journey
               <ChevronRight className="ml-2 w-5 h-5" />
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  // Render honor code pledge
+  const renderHonorCodePledge = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto"
+    >
+      <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50">
+        <CardHeader>
+          <div className="flex items-center gap-3 mb-4">
+            <Shield className="w-12 h-12 text-blue-600" />
+            <CardTitle className="text-3xl font-bold text-gray-900">
+              Building a Culture of Integrity
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6 text-gray-900">
+          <p className="text-lg leading-relaxed">
+            Before we begin, please read and accept the Honor Code Pledge.
+          </p>
+
+          <div className="bg-white p-8 rounded-lg border border-blue-200 shadow-sm">
+            <h3 className="text-xl font-semibold mb-4 text-center text-gray-900 uppercase tracking-wide">
+              Honor Code Pledge
+            </h3>
+            <div className="text-gray-800 leading-relaxed space-y-4">
+              <p>By turning in this assignment, I confirm that:</p>
+              <ul className="space-y-3 ml-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5 flex-shrink-0">&bull;</span>
+                  <span>This assignment is the result of my own work and thinking</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5 flex-shrink-0">&bull;</span>
+                  <span>I have acknowledged the assistance of all sources used in the preparation of my work by properly citing all sources</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5 flex-shrink-0">&bull;</span>
+                  <span>I understand and uphold the SMCHS Honor Code</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="bg-blue-100 p-6 rounded-lg border border-blue-300">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={pledgeAccepted}
+                onChange={(e) => setPledgeAccepted(e.target.checked)}
+                className="mt-1 w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                aria-label="I accept the Honor Code Pledge"
+              />
+              <span className="text-gray-800 leading-relaxed">
+                I have read and I accept the Honor Code Pledge.
+              </span>
+            </label>
+          </div>
+
+          <div className="text-center pt-4">
+            <Button
+              onClick={advanceToNextPhase}
+              disabled={!pledgeAccepted}
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Continue
+              <ChevronRight className="ml-2 w-5 h-5" />
+            </Button>
+            {!pledgeAccepted && (
+              <p className="text-sm text-gray-500 mt-2">
+                Please accept the Honor Code Pledge to continue.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -1422,6 +1506,9 @@ export default function AncientCompassModule({ onComplete, userName = "AI Explor
     switch (phase) {
       case 'welcome':
         return renderWelcome();
+
+      case 'honor-code-pledge':
+        return renderHonorCodePledge();
 
       case 'video-1-industrial-revolution':
         return renderVideoSegment(0);
