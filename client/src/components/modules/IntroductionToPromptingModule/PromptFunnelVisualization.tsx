@@ -73,6 +73,19 @@ const PromptFunnelVisualization: React.FC<PromptFunnelVisualizationProps> = ({ o
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',
     },
+    {
+      label: 'Add CONTEXT',
+      rtfElement: 'C',
+      promptText: '"...about the causes of World War I, for a 10th grade student"',
+      description: 'Context gives the AI the background information it needs. Now it knows the exact topic AND who it\'s writing for — so the vocabulary, depth, and examples are perfectly targeted.',
+      exampleOutputs: [
+        'Study Guide: Causes of World War I\nPrepared for: 10th Grade History Students\n\nI. Key Terms:\n• Alliance System — agreements between nations to defend each other\n• Imperialism — when powerful countries compete to control weaker regions\n• Nationalism — extreme pride in one\'s country, often leading to rivalry\n• Militarism — the buildup of a country\'s military power\n• Assassination of Archduke Franz Ferdinand — the spark that set off the war\n\nII. The Four M.A.I.N. Causes:\nA. Militarism\n  1. European arms race in early 1900s\n  2. Countries built massive armies and navies\n\nB. Alliances\n  1. Triple Alliance: Germany, Austria-Hungary, Italy\n  2. Triple Entente: France, Russia, Britain\n\nC. Imperialism\n  1. Competition for colonies in Africa and Asia\n  2. Created tension between European powers\n\nD. Nationalism\n  1. Ethnic groups wanted independence\n  2. Balkans became a \"powder keg\" of conflict\n\nIII. Practice Questions:\n1. What does M.A.I.N. stand for in the context of WWI causes?\n2. Why were the Balkans called the \"powder keg of Europe\"?\n3. How did the alliance system turn a single assassination into a world war?\n4. Compare imperialism and nationalism as causes of WWI.\n5. Could WWI have been prevented? Explain your reasoning.',
+      ],
+      funnelWidth: 15,
+      color: 'from-orange-400 to-orange-600',
+      bgColor: 'bg-orange-50',
+      borderColor: 'border-orange-200',
+    },
   ];
 
   const activeStep = steps[currentStep];
@@ -88,18 +101,18 @@ const PromptFunnelVisualization: React.FC<PromptFunnelVisualizationProps> = ({ o
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <Target className="w-6 h-6 text-purple-600" />
-          Meet the RTF Framework
+          Meet the RTFC Framework
         </CardTitle>
         <p className="text-gray-600 mt-1">
-          Watch how each RTF element narrows the AI's output from chaos to exactly what you need
+          Watch how each RTFC element narrows the AI's output from chaos to exactly what you need
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* RTF Letters Display */}
         <div className="flex items-center justify-center gap-4 mb-2">
-          {['R', 'T', 'F'].map((letter, idx) => {
-            const colors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600'];
-            const labels = ['Role', 'Task', 'Format'];
+          {['R', 'T', 'F', 'C'].map((letter, idx) => {
+            const colors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-orange-600'];
+            const labels = ['Role', 'Task', 'Format', 'Context'];
             const isActive = currentStep >= idx + 1;
             return (
               <motion.div
@@ -152,7 +165,7 @@ const PromptFunnelVisualization: React.FC<PromptFunnelVisualizationProps> = ({ o
                 </span>
                 {step.rtfElement && (
                   <span className={`text-xs px-2 py-0.5 rounded font-bold text-white ${
-                    step.rtfElement === 'R' ? 'bg-blue-600' : step.rtfElement === 'T' ? 'bg-green-600' : 'bg-purple-600'
+                    step.rtfElement === 'R' ? 'bg-blue-600' : step.rtfElement === 'T' ? 'bg-green-600' : step.rtfElement === 'F' ? 'bg-purple-600' : 'bg-orange-600'
                   } ${idx <= currentStep ? 'opacity-100' : 'opacity-30'}`}>
                     +{step.rtfElement}
                   </span>
@@ -177,7 +190,8 @@ const PromptFunnelVisualization: React.FC<PromptFunnelVisualizationProps> = ({ o
                 {currentStep === 0 ? 'Infinite possibilities' :
                  currentStep === 1 ? 'Biology content' :
                  currentStep === 2 ? 'Study guide' :
-                 'Exact output'}
+                 currentStep === 3 ? 'Exact structure' :
+                 'Perfect output'}
               </motion.span>
             </motion.div>
           </div>
@@ -208,7 +222,7 @@ const PromptFunnelVisualization: React.FC<PromptFunnelVisualizationProps> = ({ o
             {/* Example outputs */}
             <div>
               <p className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Possible AI outputs:</p>
-              <div className={`space-y-2 ${currentStep < 3 ? 'grid grid-cols-1 md:grid-cols-2 gap-2' : ''}`}>
+              <div className={`space-y-2 ${currentStep < 4 ? 'grid grid-cols-1 md:grid-cols-2 gap-2' : ''}`}>
                 {activeStep.exampleOutputs.map((output, idx) => (
                   <motion.div
                     key={idx}
@@ -234,10 +248,11 @@ const PromptFunnelVisualization: React.FC<PromptFunnelVisualizationProps> = ({ o
               className={`text-white ${
                 currentStep === 0 ? 'bg-blue-600 hover:bg-blue-700' :
                 currentStep === 1 ? 'bg-green-600 hover:bg-green-700' :
-                'bg-purple-600 hover:bg-purple-700'
+                currentStep === 2 ? 'bg-purple-600 hover:bg-purple-700' :
+                'bg-orange-600 hover:bg-orange-700'
               }`}
             >
-              {currentStep === 0 ? 'Add Role' : currentStep === 1 ? 'Add Task' : 'Add Format'}
+              {currentStep === 0 ? 'Add Role' : currentStep === 1 ? 'Add Task' : currentStep === 2 ? 'Add Format' : 'Add Context'}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           ) : (
@@ -246,10 +261,10 @@ const PromptFunnelVisualization: React.FC<PromptFunnelVisualizationProps> = ({ o
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Sparkles className="w-5 h-5 text-green-600" />
-                    <p className="text-green-800 font-bold">The RTF Framework in Action!</p>
+                    <p className="text-green-800 font-bold">The RTFC Framework in Action!</p>
                   </div>
                   <p className="text-green-700 text-sm">
-                    By combining Role + Task + Format, you went from infinite random outputs to exactly what you need. That's the power of structured prompting.
+                    By combining Role + Task + Format + Context, you went from infinite random outputs to exactly what you need. That's the power of structured prompting.
                   </p>
                 </div>
                 <Button

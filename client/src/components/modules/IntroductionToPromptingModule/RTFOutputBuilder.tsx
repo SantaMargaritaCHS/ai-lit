@@ -15,6 +15,7 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
   const [role, setRole] = useState('');
   const [task, setTask] = useState('');
   const [format, setFormat] = useState('');
+  const [context, setContext] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<{
     prompt: string;
@@ -32,7 +33,8 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
       example: {
         role: 'biology tutor who specializes in AP-level content',
         task: 'create a study guide for cell division covering mitosis and meiosis',
-        format: 'outline with key vocabulary definitions and 5 practice questions with answers'
+        format: 'outline with key vocabulary definitions and 5 practice questions with answers',
+        context: 'for a 10th grade AP Biology class, focusing on the unit test next week'
       }
     },
     {
@@ -43,7 +45,8 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
       example: {
         role: 'AP English writing coach who helps students build strong arguments',
         task: 'outline a persuasive essay arguing that school should start later in the morning',
-        format: '5-paragraph outline with thesis statement, topic sentences for each body paragraph, and key evidence to include'
+        format: '5-paragraph outline with thesis statement, topic sentences for each body paragraph, and key evidence to include',
+        context: 'for a junior-level English class, the essay is due in 3 days and should be 5 pages'
       }
     },
     {
@@ -54,7 +57,8 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
       example: {
         role: 'social media content creator for a high school audience',
         task: 'write 3 Instagram captions promoting our school science fair happening next Friday',
-        format: 'short captions (under 150 chars each) with relevant hashtags and a call-to-action'
+        format: 'short captions (under 150 chars each) with relevant hashtags and a call-to-action',
+        context: 'the science fair is next Friday in the gym, open to all students and parents'
       }
     },
     {
@@ -65,12 +69,13 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
       example: {
         role: 'patient Python instructor who explains things with real-world analogies',
         task: 'explain how for loops work in Python, including when and why to use them',
-        format: 'step-by-step explanation with 3 code examples that get progressively harder, with comments in each'
+        format: 'step-by-step explanation with 3 code examples that get progressively harder, with comments in each',
+        context: 'for a beginner student with no prior coding experience, learning Python in a high school CS class'
       }
     }
   ];
 
-  const generateFallbackOutput = (r: string, t: string, f: string): string => {
+  const generateFallbackOutput = (r: string, t: string, f: string, c: string): string => {
     const outputs: Record<string, string> = {
       'study-guide': `# Cell Division Study Guide
 
@@ -216,16 +221,16 @@ print(f"\\nFinal total: \${total:.2f}")  # Print the grand total
 
     return `# Generated Output
 
-**Your Prompt:** Act as ${r} and ${t}. Format as ${f}.
+**Your Prompt:** Act as ${r} and ${t}${c ? `. Context: ${c}` : ''}. Format as ${f}.
 
 ---
 
-This is a preview of what your RTF prompt would produce. The combination of a specific Role, clear Task, and defined Format ensures the AI understands exactly what you need.
+This is a preview of what your RTFC prompt would produce. The combination of a specific Role, clear Task, defined Format, and relevant Context ensures the AI understands exactly what you need.
 
 *In a live AI tool, this would generate a complete, tailored response matching your specifications.*`;
   };
 
-  const evaluatePromptQuality = (r: string, t: string, f: string): { score: number; feedback: string[] } => {
+  const evaluatePromptQuality = (r: string, t: string, f: string, c: string): { score: number; feedback: string[] } => {
     let score = 0;
     const feedback: string[] = [];
 
@@ -256,8 +261,18 @@ This is a preview of what your RTF prompt would produce. The combination of a sp
       feedback.push('Format could be more specific — mention structure, length, or style');
     }
 
+    if (c.split(' ').length > 4) {
+      score += 2;
+      feedback.push('Context provides helpful background details');
+    } else if (c.length > 0) {
+      score += 1;
+      feedback.push('Context could include more details — try adding audience, deadlines, or constraints');
+    } else {
+      feedback.push('Adding context would help the AI tailor its response to your situation');
+    }
+
     return {
-      score: Math.min(5, Math.round((score / 6) * 5)),
+      score: Math.min(5, Math.round((score / 8) * 5)),
       feedback
     };
   };
@@ -267,7 +282,8 @@ This is a preview of what your RTF prompt would produce. The combination of a sp
     setIsGenerating(true);
 
     try {
-      const prompt = `Act as ${role} and ${task}. Format as ${format}.`;
+      const contextPart = context ? ` Context: ${context}.` : '';
+      const prompt = `Act as ${role} and ${task}.${contextPart} Format as ${format}.`;
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -279,16 +295,17 @@ This is a preview of what your RTF prompt would produce. The combination of a sp
         setGeneratedOutput({
           prompt,
           output: data.response,
-          quality: evaluatePromptQuality(role, task, format)
+          quality: evaluatePromptQuality(role, task, format, context)
         });
       } else {
         throw new Error('API call failed');
       }
     } catch {
+      const contextPart = context ? ` Context: ${context}.` : '';
       setGeneratedOutput({
-        prompt: `Act as ${role} and ${task}. Format as ${format}.`,
-        output: generateFallbackOutput(role, task, format),
-        quality: evaluatePromptQuality(role, task, format)
+        prompt: `Act as ${role} and ${task}.${contextPart} Format as ${format}.`,
+        output: generateFallbackOutput(role, task, format, context),
+        quality: evaluatePromptQuality(role, task, format, context)
       });
     } finally {
       setIsGenerating(false);
@@ -303,10 +320,10 @@ This is a preview of what your RTF prompt would produce. The combination of a sp
         className="text-center mb-4"
       >
         <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          Build Your RTF Prompt
+          Build Your RTFC Prompt
         </h2>
         <p className="text-gray-600">
-          Put everything together! Create a prompt using Role, Task, and Format — then see it in action.
+          Put everything together! Create a prompt using Role, Task, Format, and Context — then see it in action.
         </p>
       </motion.div>
 
@@ -347,6 +364,7 @@ This is a preview of what your RTF prompt would produce. The combination of a sp
                         <p><span className="text-blue-600 font-semibold">Role:</span> {template.example.role}</p>
                         <p><span className="text-green-600 font-semibold">Task:</span> {template.example.task}</p>
                         <p><span className="text-purple-600 font-semibold">Format:</span> {template.example.format}</p>
+                        <p><span className="text-orange-600 font-semibold">Context:</span> {template.example.context}</p>
                       </div>
                       <p className="text-xs text-gray-400 mt-2 italic">
                         (These are examples — create your own!)
@@ -422,15 +440,34 @@ This is a preview of what your RTF prompt would produce. The combination of a sp
             </p>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <span className="inline-block bg-orange-500 px-2 py-1 rounded text-white text-xs mr-2 font-bold">C</span>
+              Context
+              <span className="text-xs text-gray-500 ml-2">(Any background info the AI needs?)</span>
+            </label>
+            <Textarea
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+              placeholder="What background info does the AI need? (topic details, audience, constraints...)"
+              className="w-full min-h-[80px] text-gray-900"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Add details like audience, deadlines, grade level, or specific topic focus to narrow the response.
+            </p>
+          </div>
+
           {/* Prompt Preview */}
-          {(role || task || format) && (
+          {(role || task || format || context) && (
             <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-xs text-blue-600 mb-1 font-semibold">Your prompt preview:</p>
               <p className="text-gray-900 font-mono text-sm">
                 {role && <span>Act as <span className="text-blue-700 font-semibold">{role}</span></span>}
                 {role && task && ' and '}
                 {task && <span className="text-green-700 font-semibold">{task}</span>}
-                {(role || task) && format && '. '}
+                {(role || task) && context && '. '}
+                {context && <span>Context: <span className="text-orange-600 font-semibold">{context}</span></span>}
+                {(role || task || context) && format && '. '}
                 {format && <span>Format as <span className="text-purple-700 font-semibold">{format}</span>.</span>}
               </p>
             </div>

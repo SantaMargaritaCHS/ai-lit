@@ -31,8 +31,8 @@ const PROMPTS_TO_RATE: PromptItem[] = [
   {
     prompt: "Act as a 10th-grade history tutor. Create a timeline of the 5 most important events leading to the American Revolution, with a one-sentence explanation for each event and a discussion question at the end.",
     correctRating: 'excellent',
-    explanation: "This prompt nails it! It has a clear Role (history tutor), a specific Task (timeline of 5 events), and a defined Format (one-sentence explanations + discussion question). The AI knows exactly what to produce.",
-    whyThisRating: "Has Role + Task + Format = precise, useful output",
+    explanation: "This prompt nails it! It has a clear Role (history tutor), a specific Task (timeline of 5 events), a defined Format (one-sentence explanations + discussion question), and Context (American Revolution, 10th-grade level). The AI knows exactly what to produce.",
+    whyThisRating: "Has Role + Task + Format + Context = precise, useful output",
   },
 ];
 

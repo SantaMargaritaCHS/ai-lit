@@ -82,19 +82,20 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     { id: 4, title: 'Rate the Prompts', type: 'interactive' as const },
     { id: 5, title: 'Prompting Principles', type: 'interactive' as const },
     { id: 6, title: 'Video: The Funnel of Control', type: 'video' as const },
-    { id: 7, title: 'Meet the RTF Framework', type: 'interactive' as const },
+    { id: 7, title: 'Meet the RTFC Framework', type: 'interactive' as const },
     { id: 8, title: 'Role: Your AI Expert', type: 'interactive' as const },
     { id: 9, title: 'Task: What You Want', type: 'interactive' as const },
     { id: 10, title: 'Format: How You Want It', type: 'interactive' as const },
-    { id: 11, title: 'Build Your RTF Prompt', type: 'interactive' as const },
-    { id: 12, title: 'Video: Level Up Your Prompts', type: 'video' as const },
-    { id: 13, title: 'Think Out Loud', type: 'interactive' as const },
-    { id: 14, title: 'Teach By Example', type: 'interactive' as const },
-    { id: 15, title: 'Can AI Admit It?', type: 'interactive' as const },
-    { id: 16, title: 'Prompt Layer Cake', type: 'interactive' as const },
-    { id: 17, title: 'Video: The Golden Rule', type: 'video' as const },
-    { id: 18, title: 'Exit Ticket', type: 'exit-ticket' as const },
-    { id: 19, title: 'Certificate', type: 'certificate' as const },
+    { id: 11, title: 'Context: Background Info', type: 'interactive' as const },
+    { id: 12, title: 'Build Your RTFC Prompt', type: 'interactive' as const },
+    { id: 13, title: 'Video: Level Up Your Prompts', type: 'video' as const },
+    { id: 14, title: 'Think Out Loud', type: 'interactive' as const },
+    { id: 15, title: 'Teach By Example', type: 'interactive' as const },
+    { id: 16, title: 'Can AI Admit It?', type: 'interactive' as const },
+    { id: 17, title: 'Prompt Layer Cake', type: 'interactive' as const },
+    { id: 18, title: 'Video: The Golden Rule', type: 'video' as const },
+    { id: 19, title: 'Exit Ticket', type: 'exit-ticket' as const },
+    { id: 20, title: 'Certificate', type: 'certificate' as const },
   ];
 
   // Register activities for Developer Mode
@@ -168,16 +169,16 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
 
   // ────────────── Exit Ticket Handlers ──────────────
 
-  const EXIT_TICKET_QUESTION = "Think about a specific school assignment or project you have coming up. How could you use the RTF framework to write a prompt that helps you with it? Include the Role, Task, and Format you would use, and explain why you chose each one.";
+  const EXIT_TICKET_QUESTION = "Think about a specific school assignment or project you have coming up. How could you use the RTFC framework to write a prompt that helps you with it? Include the Role, Task, Format, and Context you would use, and explain why you chose each one.";
 
   const DEV_RESPONSES = {
-    good: "For my upcoming AP Biology lab report, I would use the RTF framework to get help organizing my findings. For Role, I'd choose 'experienced AP Biology teacher who grades lab reports' because they'd know exactly what format and depth is expected. For Task, I'd ask it to 'help me outline the discussion section of my lab report on enzyme kinetics, focusing on connecting my data to the hypothesis and identifying sources of error.' I made the task specific to one section rather than the whole report so the AI can give focused help. For Format, I'd request 'a structured outline with bullet points for each paragraph, including suggested transition phrases and key scientific terms to incorporate.' I chose this format because an outline gives me a framework to build on while still writing in my own voice. The RTF framework helps because without it, I might just say 'help me with my lab report' and get something too generic to be useful.",
-    generic: "I would use RTF for my homework. I'd pick a role and a task and a format. It would help me do better on my assignments I think.",
+    good: "For my upcoming AP Biology lab report, I would use the RTFC framework to get help organizing my findings. For Role, I'd choose 'experienced AP Biology teacher who grades lab reports' because they'd know exactly what format and depth is expected. For Task, I'd ask it to 'help me outline the discussion section of my lab report on enzyme kinetics, focusing on connecting my data to the hypothesis and identifying sources of error.' I made the task specific to one section rather than the whole report so the AI can give focused help. For Format, I'd request 'a structured outline with bullet points for each paragraph, including suggested transition phrases and key scientific terms to incorporate.' I chose this format because an outline gives me a framework to build on while still writing in my own voice. For Context, I'd add 'this is for an AP Biology class, the lab was on enzyme kinetics with catalase, and the report is due Friday.' This context helps the AI understand the academic level and specific experiment. The RTFC framework helps because without it, I might just say 'help me with my lab report' and get something too generic to be useful.",
+    generic: "I would use RTFC for my homework. I'd pick a role and a task and a format and some context. It would help me do better on my assignments I think.",
     complaint: "I don't see why I need to learn about prompting. AI should just understand what I want without me having to format things a specific way. This whole module was a waste of time.",
-    gibberish: "asdfkj rtf whatever role task format blah blah just let me finish aaaaaa lol idk"
+    gibberish: "asdfkj rtfc whatever role task format context blah blah just let me finish aaaaaa lol idk"
   } as const;
 
-  const DEV_FEEDBACK = "Excellent reflection! You've demonstrated mastery of the RTF framework by applying it to a real academic scenario. Your Role choice shows understanding of expertise targeting, your Task is admirably specific, and your Format selection is practical and purposeful. Well done!";
+  const DEV_FEEDBACK = "Excellent reflection! You've demonstrated mastery of the RTFC framework by applying it to a real academic scenario. Your Role choice shows understanding of expertise targeting, your Task is admirably specific, your Format selection is practical and purposeful, and your Context provides the background info the AI needs. Well done!";
 
   const handleSubmitExitTicket = async () => {
     setIsGeneratingFeedback(true);
@@ -191,7 +192,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
 
       const finalFeedback = feedback && feedback.trim().length > 0
         ? feedback
-        : "Thank you for sharing your thoughtful reflection on using the RTF framework.";
+        : "Thank you for sharing your thoughtful reflection on using the RTFC framework.";
 
       setExitTicketFeedback(finalFeedback);
 
@@ -208,7 +209,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
 
       setShowExitTicketFeedback(true);
     } catch {
-      setExitTicketFeedback("Thank you for your thoughtful reflection on using the RTF framework.");
+      setExitTicketFeedback("Thank you for your thoughtful reflection on using the RTFC framework.");
       setExitTicketNeedsRetry(false);
       setShowExitTicketFeedback(true);
     } finally {
@@ -379,7 +380,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span>The RTF Framework: Role, Task, Format</span>
+                    <span>The RTFC Framework: Role, Task, Format, Context</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -587,7 +588,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
                   className="flex justify-center pt-4"
                 >
                   <Button onClick={handleNextSegment} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                    Now Let's Learn the RTF Framework <ArrowRight className="ml-2 w-5 h-5" />
+                    Now Let's Learn the RTFC Framework <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </motion.div>
               )}
@@ -606,7 +607,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           'text-green-600'
         );
 
-      // ──── Segment 7: Meet the RTF Framework + Prompt Funnel ────
+      // ──── Segment 7: Meet the RTFC Framework + Prompt Funnel ────
       case 7:
         return (
           <PromptFunnelVisualization onComplete={handleNextSegment} />
@@ -839,8 +840,80 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 11: RTF Builder ────
+      // ──── Segment 11: Context Deep Dive ────
       case 11:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-orange-600 text-white font-bold text-lg">C</span>
+                Context: Background Info
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-orange-50 border border-orange-200 rounded-lg p-5"
+              >
+                <p className="text-orange-900 text-lg mb-3">
+                  <strong>Context</strong> is the background information the AI needs to do the job right. It includes the topic, your audience, constraints, and any specific details that shape the response.
+                </p>
+                <div className="bg-white rounded-lg p-4 border border-orange-100">
+                  <p className="text-gray-800 text-sm">
+                    <strong>Example:</strong> Adding "<span className="text-orange-600 font-semibold">about the causes of World War I, for a 10th-grade student</span>" tells the AI the exact topic AND who it's writing for — so vocabulary, depth, and examples are perfectly targeted.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Context Comparison */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-900 text-lg">See the difference context makes:</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle className="w-4 h-4 text-red-500" />
+                      <span className="text-sm font-semibold text-red-700">Without Context:</span>
+                    </div>
+                    <p className="text-red-900 font-mono text-sm mb-3">"Act as a tutor. Create review questions in a numbered list."</p>
+                    <div className="bg-white rounded-lg p-3 border border-red-100">
+                      <p className="text-gray-600 text-xs font-semibold mb-1">AI might produce:</p>
+                      <p className="text-gray-700 text-sm">Generic questions about... anything? Math? Science? History? The AI has to guess the subject, difficulty level, and what you're studying.</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <span className="text-sm font-semibold text-green-700">With Context:</span>
+                    </div>
+                    <p className="text-green-900 font-mono text-sm mb-3">"Act as a tutor. Create review questions in a numbered list. <span className="text-orange-600 font-bold">About the causes of WWI, for a 10th-grade history class, covering alliances, imperialism, and the assassination of Archduke Franz Ferdinand.</span>"</p>
+                    <div className="bg-white rounded-lg p-3 border border-green-100">
+                      <p className="text-gray-600 text-xs font-semibold mb-1">AI produces:</p>
+                      <p className="text-gray-700 text-sm">Targeted questions at the right level about specific WWI topics. The AI knows the subject, grade level, and exact topics to cover.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <p className="text-orange-900 text-sm">
+                    <strong>Types of context you can provide:</strong> the specific topic, your grade level or audience, time constraints, what you've already learned, what you're struggling with, or any other background that helps the AI give you exactly what you need.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-center pt-2">
+                <Button onClick={handleNextSegment} size="lg" className="bg-orange-600 hover:bg-orange-700 text-white">
+                  Next: Build Your RTFC Prompt <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      // ──── Segment 12: RTFC Builder ────
+      case 12:
         return (
           <RTFOutputBuilder
             onComplete={handleNextSegment}
@@ -848,19 +921,19 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 12: Video Clip 3 — Level Up Your Prompts (04:10–05:39) ────
-      case 12:
+      // ──── Segment 13: Video Clip 3 — Level Up Your Prompts (04:10–05:39) ────
+      case 13:
         return renderVideoClip(
           3,
           'Level Up Your Prompts',
-          'You\'ve mastered RTF — now learn three advanced techniques that take your prompts to the next level.',
+          'You\'ve mastered RTFC — now learn three advanced techniques that take your prompts to the next level.',
           250,
           339,
           'text-purple-600'
         );
 
-      // ──── Segment 13: Think Out Loud ────
-      case 13:
+      // ──── Segment 14: Think Out Loud ────
+      case 14:
         return (
           <ThinkOutLoudActivity
             onComplete={handleNextSegment}
@@ -868,8 +941,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 14: Teach By Example ────
-      case 14:
+      // ──── Segment 15: Teach By Example ────
+      case 15:
         return (
           <TeachByExampleActivity
             onComplete={handleNextSegment}
@@ -877,8 +950,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 15: Can AI Admit It? ────
-      case 15:
+      // ──── Segment 16: Can AI Admit It? ────
+      case 16:
         return (
           <CanAIAdmitItActivity
             onComplete={handleNextSegment}
@@ -886,8 +959,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 16: Prompt Layer Cake ────
-      case 16:
+      // ──── Segment 17: Prompt Layer Cake ────
+      case 17:
         return (
           <PromptLayerCakeActivity
             onComplete={handleNextSegment}
@@ -895,8 +968,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 17: Video Clip 4 — The Golden Rule (05:40–07:19) ────
-      case 17:
+      // ──── Segment 18: Video Clip 4 — The Golden Rule (05:40–07:19) ────
+      case 18:
         return renderVideoClip(
           4,
           'The Golden Rule',
@@ -906,17 +979,17 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           'text-orange-600'
         );
 
-      // ──── Segment 18: Exit Ticket ────
-      case 18:
+      // ──── Segment 19: Exit Ticket ────
+      case 19:
         return (
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <CheckCircle className="w-6 h-6 text-green-600" />
-                Exit Ticket: Applying the RTF Framework
+                Exit Ticket: Applying the RTFC Framework
               </CardTitle>
               <p className="text-gray-700 mt-2">
-                Show us what you've learned by connecting the RTF framework to your real life.
+                Show us what you've learned by connecting the RTFC framework to your real life.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -928,7 +1001,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
                   value={exitTicket}
                   onChange={(e) => setExitTicket(e.target.value)}
                   disabled={showExitTicketFeedback && !exitTicketNeedsRetry}
-                  placeholder="Describe the assignment, then explain your chosen Role, Task, and Format, and why each one helps..."
+                  placeholder="Describe the assignment, then explain your chosen Role, Task, Format, and Context, and why each one helps..."
                   rows={6}
                   className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
                 />
@@ -1113,8 +1186,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 19: Certificate ────
-      case 19:
+      // ──── Segment 20: Certificate ────
+      case 20:
         return null; // Handled by showCertificate early return
 
       default:

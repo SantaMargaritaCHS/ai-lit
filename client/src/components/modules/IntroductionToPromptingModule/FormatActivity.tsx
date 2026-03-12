@@ -468,7 +468,7 @@ AI abolishes academic barriers, assisting isolated areas and accommodating all a
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>
             <Button onClick={onComplete} className="bg-green-600 hover:bg-green-700 text-white">
-              Continue to RTF Builder <CheckCircle className="w-4 h-4 ml-2" />
+              Next: Context <CheckCircle className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </motion.div>
