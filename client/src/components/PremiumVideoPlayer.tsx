@@ -259,9 +259,13 @@ export function PremiumVideoPlayer({
           videoRef.current.src = actualVideoUrl;
           videoRef.current.load();
           
-          // Add event listeners for debugging
+          // Add event listeners for debugging + fade-in safety net
           videoRef.current.addEventListener('loadstart', () => console.log('🎬 Video load started'));
-          videoRef.current.addEventListener('loadedmetadata', () => console.log('🎬 Video metadata loaded'));
+          videoRef.current.addEventListener('loadedmetadata', () => {
+            console.log('🎬 Video metadata loaded');
+            // Safety net: ensure video becomes visible even if segment effect hasn't attached its listener yet
+            setTimeout(() => setVideoFadedIn(true), 100);
+          });
           videoRef.current.addEventListener('canplay', () => console.log('🎬 Video can play'));
           videoRef.current.addEventListener('canplaythrough', () => console.log('🎬 Video can play through'));
           videoRef.current.addEventListener('error', (e) => console.error('🎬 Video error:', e));

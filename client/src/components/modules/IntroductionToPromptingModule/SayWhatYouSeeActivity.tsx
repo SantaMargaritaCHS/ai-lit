@@ -50,7 +50,7 @@ interface RoundResult {
   usedGemini: boolean;
 }
 
-type Step = 'intro' | 'round1' | 'feedback1' | 'round2' | 'feedback2' | 'summary';
+type Step = 'intro' | 'round1' | 'feedback1' | 'round2' | 'feedback2';
 
 // ─── Constants ───────────────────────────────────────────────────────
 
@@ -84,26 +84,22 @@ const SUNSET_PROMPT_SEGMENTS: PromptSegment[] = [
   { text: '. Photorealistic, no text.' },
 ];
 
-const CITYSCAPE_PROMPT_SEGMENTS: PromptSegment[] = [
-  { text: 'Create an image of a nighttime cityscape. ' },
-  { text: 'Several buildings of different heights', elementId: 'tall-buildings' },
-  { text: ' against ' },
-  { text: 'a dark blue night sky', elementId: 'night-sky' },
+const WAVE_PROMPT_SEGMENTS: PromptSegment[] = [
+  { text: 'Create an image in the style of a ' },
+  { text: 'Japanese ukiyo-e woodblock print', elementId: 'art-style' },
   { text: '. ' },
-  { text: 'Crescent moon', elementId: 'moon' },
-  { text: ' and ' },
-  { text: 'twinkling stars', elementId: 'stars' },
-  { text: '. Tallest building has ' },
-  { text: 'an antenna with red light', elementId: 'spire' },
-  { text: '. Buildings have ' },
-  { text: 'glowing windows', elementId: 'windows' },
-  { text: '. ' },
-  { text: 'Grey street', elementId: 'street' },
+  { text: 'A massive curling wave dominates the foreground', elementId: 'great-wave' },
   { text: ' with ' },
-  { text: 'dashed white road markings', elementId: 'road-markings' },
+  { text: 'white foam and spray at the crest', elementId: 'foam' },
   { text: '. ' },
-  { text: 'A street lamp emitting warm glow', elementId: 'street-lamp' },
-  { text: '. Photorealistic, no text.' },
+  { text: 'A small snow-capped mountain in the distant background', elementId: 'mountain' },
+  { text: '. ' },
+  { text: 'Small wooden boats with rowers caught in the waves', elementId: 'boats' },
+  { text: '. ' },
+  { text: 'Deep indigo and Prussian blue ocean water', elementId: 'blue-water' },
+  { text: '. ' },
+  { text: 'Pale sky with subtle clouds', elementId: 'sky' },
+  { text: '. No text.' },
 ];
 
 // ─── Scene Element Metadata ──────────────────────────────────────────
@@ -174,68 +170,68 @@ const SUNSET_ELEMENTS: SceneElement[] = [
   },
 ];
 
-const CITYSCAPE_ELEMENTS: SceneElement[] = [
+const WAVE_ELEMENTS: SceneElement[] = [
   {
-    id: '3d-style', label: '3D / Animated Style',
-    keywords: ['3d', '3-d', 'cartoon', 'animated', 'render', 'video game', 'cgi', 'computer generated', 'digital art', 'illustration', 'not real', 'fake', 'graphic'],
-    description: 'The image is clearly a 3D render or video-game style illustration, not a photograph',
+    id: 'art-style', label: 'Ukiyo-e / Woodblock Print Style',
+    keywords: ['woodblock', 'ukiyo', 'japanese art', 'japanese style', 'print', 'traditional japanese', 'painted', 'illustration', 'artistic style', 'flat color', 'woodcut'],
+    description: 'The image is rendered in the style of a Japanese ukiyo-e woodblock print with flat colors and bold outlines',
     hints: [
-      'Does this look like a real photo? How would you describe the style?',
-      'This image looks computer-made. What style or medium does it remind you of?'
+      'This doesn\'t look like a photograph. What art style or tradition does it remind you of?',
+      'Think about the flat colors and bold outlines — this is a famous Japanese art technique. What is it called?'
     ],
   },
   {
-    id: 'night-sky', label: 'Night Sky',
-    keywords: ['sky', 'night sky', 'dark sky', 'nighttime', 'night'],
-    description: 'A dark blue gradient night sky',
+    id: 'great-wave', label: 'Great Curling Wave',
+    keywords: ['wave', 'waves', 'curling wave', 'big wave', 'ocean wave', 'towering wave', 'crashing wave', 'surge', 'swell'],
+    description: 'A massive curling wave dominates the foreground of the image',
     hints: [
-      'What fills the background behind the buildings?',
-      'The upper portion is a deep dark color. What is it?'
+      'What is the largest, most dramatic shape in the image?',
+      'The foreground is dominated by a huge curved shape made of water — describe its size and motion.'
     ],
   },
   {
-    id: 'moon', label: 'Crescent Moon',
-    keywords: ['moon', 'crescent', 'lunar'],
-    description: 'A white crescent moon in the upper portion of the sky',
+    id: 'foam', label: 'White Foam & Spray',
+    keywords: ['foam', 'spray', 'white cap', 'whitecap', 'crest', 'froth', 'splashing', 'mist', 'fingers of foam', 'claws'],
+    description: 'White foam and spray at the crest of the wave, with finger-like tendrils',
     hints: [
-      'Look at the upper-right of the sky — see a recognizable shape?',
-      'Upper right — a curved white shape you see at nighttime.'
+      'Look at the very top of the wave — what is happening at its tip?',
+      'The crest breaks into white tendrils that look almost like fingers reaching out.'
     ],
   },
   {
-    id: 'stars', label: 'Stars',
-    keywords: ['star', 'stars', 'twinkle', 'sparkle', 'specks of light'],
-    description: 'Several small twinkling stars scattered across the sky',
+    id: 'mountain', label: 'Distant Mountain',
+    keywords: ['mountain', 'fuji', 'mount fuji', 'snow', 'snow-capped', 'peak', 'volcano', 'distant mountain', 'background mountain'],
+    description: 'A small snow-capped mountain visible in the distant background, framed by the waves',
     hints: [
-      'Look carefully at the dark sky — any tiny bright spots?',
-      'Small bright specks are scattered across the dark background.'
+      'Look far into the background, between or below the waves — is there a landform?',
+      'In the gap between the waves, far in the distance, there is a small triangular shape with white on top.'
     ],
   },
   {
-    id: 'buildings', label: 'City Buildings',
-    keywords: ['building', 'buildings', 'skyscraper', 'high-rise', 'skyline', 'tower', 'city', 'cityscape', 'window', 'windows', 'lit windows'],
-    description: 'Multiple tall buildings and skyscrapers with glowing lit windows',
+    id: 'boats', label: 'Wooden Boats',
+    keywords: ['boat', 'boats', 'ship', 'vessel', 'canoe', 'rowing', 'rowers', 'fishermen', 'people', 'figures'],
+    description: 'Small wooden boats with rowers caught in the turbulent waves',
     hints: [
-      'What are the large structures in the center?',
-      'The center has several tall rectangular structures with glowing details on them.'
+      'Look beneath and between the waves — are there any objects or people?',
+      'There are narrow wooden shapes with tiny figures inside them, being tossed by the water.'
     ],
   },
   {
-    id: 'street', label: 'Street/Road',
-    keywords: ['street', 'road', 'pavement', 'sidewalk', 'ground', 'crosswalk', 'markings', 'stripes'],
-    description: 'A street with road markings at the base of the buildings',
+    id: 'blue-water', label: 'Deep Blue Ocean',
+    keywords: ['blue', 'indigo', 'prussian blue', 'dark blue', 'deep blue', 'ocean', 'sea', 'water color', 'navy'],
+    description: 'Deep indigo and Prussian blue coloring of the ocean water',
     hints: [
-      'What is at the very bottom of the image?',
-      'A flat grey surface with painted patterns sits below the buildings.'
+      'What are the dominant colors of the water? Be specific about the shades.',
+      'The water isn\'t just "blue" — describe the specific shade. Is it light? Dark? What would an artist call it?'
     ],
   },
   {
-    id: 'street-lamp', label: 'Street Lamp',
-    keywords: ['lamp', 'lamppost', 'street light', 'streetlight', 'lantern', 'light post', 'yellow light', 'warm light', 'glow on the ground'],
-    description: 'A street lamp on the left casting a warm yellow glow',
+    id: 'sky', label: 'Pale Sky',
+    keywords: ['sky', 'pale sky', 'light sky', 'background sky', 'clouds', 'overcast', 'grey sky', 'gray sky', 'yellowish sky'],
+    description: 'A pale, muted sky visible in the background with subtle clouds',
     hints: [
-      'Look at the lower-left — anything standing alone with a glow?',
-      'Lower-left: a tall thin post with a warm yellowish light at the top.'
+      'What fills the space above and behind the wave?',
+      'Behind all the action, the upper background has a light, muted tone — describe its color.'
     ],
   },
 ];
@@ -243,7 +239,7 @@ const CITYSCAPE_ELEMENTS: SceneElement[] = [
 // ─── Image Paths ─────────────────────────────────────────────────────
 
 const SUNSET_IMAGE = '/images/say-what-you-see/sunset-landscape.png';
-const CITYSCAPE_IMAGE = '/images/say-what-you-see/night-cityscape.png';
+const WAVE_IMAGE = '/images/say-what-you-see/ukiyo-wave.png';
 
 // ─── Keyword Fallback Evaluator ──────────────────────────────────────
 
@@ -707,9 +703,8 @@ const HighlightedPrompt: React.FC<{
       </div>
 
       <p className="text-xs text-indigo-700">
-        This image was generated by AI. Notice how <strong>each highlighted phrase</strong> in the
-        prompt became a specific element in the image. The more detail in a prompt, the more control
-        you have over the output. <strong>That&apos;s the power of specific prompting!</strong>
+        Each <strong>highlighted phrase</strong> in the prompt became a specific element in the image.
+        More detail = more control.
       </p>
     </div>
   );
@@ -728,18 +723,16 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   const [round2Result, setRound2Result] = useState<RoundResult | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
 
-  // Attempt tracking for escape hatch
+  // Attempt tracking for escape hatch (round 1 only — round 2 is single-attempt)
   const [round1Attempts, setRound1Attempts] = useState(0);
-  const [round2Attempts, setRound2Attempts] = useState(0);
   const [showEscapeHatch1, setShowEscapeHatch1] = useState(false);
-  const [showEscapeHatch2, setShowEscapeHatch2] = useState(false);
 
-  // Dev mode: jump straight to summary
+  // Dev mode: jump straight to domain knowledge lesson
   useEffect(() => {
     if (isDevMode) {
       setRound1Result({ score: 4, matched: ['sky', 'sun', 'back-mountains', 'front-mountains', 'lake'], missed: ['clouds', 'reflection'], tip: 'Dev mode auto-complete.', usedGemini: false });
-      setRound2Result({ score: 4, matched: ['night-sky', 'moon', 'stars', 'tall-buildings', 'windows', 'spire', 'street', 'street-lamp'], missed: ['road-markings', 'cylindrical-building'], tip: 'Dev mode auto-complete.', usedGemini: false });
-      setStep('summary');
+      setRound2Result({ score: 4, matched: ['art-style', 'great-wave', 'foam', 'mountain', 'boats', 'blue-water'], missed: ['sky'], tip: 'Dev mode auto-complete.', usedGemini: false });
+      setStep('feedback2');
     }
   }, [isDevMode]);
 
@@ -749,9 +742,9 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
 
   const handleEvaluate = async (round: 1 | 2) => {
     const text = round === 1 ? round1Text : round2Text;
-    const elements = round === 1 ? SUNSET_ELEMENTS : CITYSCAPE_ELEMENTS;
-    const label = round === 1 ? 'sunset landscape' : 'night cityscape';
-    const currentAttempts = round === 1 ? round1Attempts : round2Attempts;
+    const elements = round === 1 ? SUNSET_ELEMENTS : WAVE_ELEMENTS;
+    const label = round === 1 ? 'sunset landscape' : 'Japanese wave';
+    const currentAttempts = round === 1 ? round1Attempts : 0;
 
     setIsEvaluating(true);
 
@@ -778,37 +771,23 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
       }
       setStep('feedback1');
     } else {
+      // Round 2: single attempt — goes straight to domain knowledge lesson
       setRound2Result(result);
-      const newAttempts = round2Attempts + 1;
-      setRound2Attempts(newAttempts);
-      if (!passed && newAttempts >= MAX_ATTEMPTS) {
-        setShowEscapeHatch2(true);
-      }
       setStep('feedback2');
     }
 
     setIsEvaluating(false);
   };
 
-  const handleTryAgain = (round: 1 | 2) => {
-    if (round === 1) {
-      setRound1Text('');
-      setRound1Result(null);
-      setStep('round1');
-      // DON'T reset attempts or escape hatch
-    } else {
-      setRound2Text('');
-      setRound2Result(null);
-      setStep('round2');
-    }
+  const handleTryAgain = () => {
+    setRound1Text('');
+    setRound1Result(null);
+    setStep('round1');
+    // DON'T reset attempts or escape hatch
   };
 
-  const handleSkipRound = (round: 1 | 2) => {
-    if (round === 1) {
-      setStep('round2');
-    } else {
-      setStep('summary');
-    }
+  const handleSkipRound1 = () => {
+    setStep('round2');
   };
 
   // ─── Render Steps ────────────────────────────────────────────────
@@ -823,14 +802,13 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
     >
       <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
         <Eye className="h-10 w-10 text-purple-600 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-purple-900 mb-2">How This Works</h3>
+        <h3 className="text-lg font-semibold text-purple-900 mb-2">Your First Prompt Challenge</h3>
         <p className="text-purple-800">
-          You&apos;ll see two AI-generated scenes. For each one, describe everything you notice in as much
-          detail as possible. You need to identify at least <strong>65% of the elements</strong> to move on.
+          You&apos;ll see two AI-generated images. Describe every detail you see &mdash;
+          like you&apos;re writing the prompt that created it.
         </p>
         <p className="text-sm text-purple-700 mt-2">
-          This is the same skill you use when writing AI prompts &mdash; being specific gets better results!
-          Once you pass, you&apos;ll see the actual AI prompt used to create the image.
+          Match <strong>65% of the elements</strong> to unlock the actual AI prompt.
         </p>
       </div>
       <Button
@@ -847,9 +825,9 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   const renderRound = (round: 1 | 2) => {
     const text = round === 1 ? round1Text : round2Text;
     const setText = round === 1 ? setRound1Text : setRound2Text;
-    const imageSrc = round === 1 ? SUNSET_IMAGE : CITYSCAPE_IMAGE;
-    const sceneLabel = round === 1 ? 'Sunset Landscape' : 'Night Cityscape';
-    const attempts = round === 1 ? round1Attempts : round2Attempts;
+    const imageSrc = round === 1 ? SUNSET_IMAGE : WAVE_IMAGE;
+    const sceneLabel = round === 1 ? 'Sunset Landscape' : 'The Great Wave';
+    const attempts = round === 1 ? round1Attempts : 0;
 
     return (
       <motion.div
@@ -865,8 +843,8 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
           </span>
           <h3 className="text-xl font-bold text-gray-900">{sceneLabel}</h3>
           <p className="text-sm text-gray-600 mt-1">
-            Describe everything you see &mdash; colors, shapes, positions, details.
-            {attempts > 0 && (
+            Describe what you see &mdash; colors, shapes, positions, style. Be specific.
+            {round === 1 && attempts > 0 && (
               <span className="text-orange-600 font-medium"> Use the hints from your last attempt!</span>
             )}
           </p>
@@ -888,7 +866,7 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="I see a scene with..."
+            placeholder="Create an image of..."
             className="min-h-[120px] text-gray-900"
             aria-label={`Describe the ${sceneLabel.toLowerCase()} scene`}
           />
@@ -922,57 +900,44 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
     );
   };
 
-  const renderFeedback = (round: 1 | 2) => {
-    const result = round === 1 ? round1Result : round2Result;
-    const studentText = round === 1 ? round1Text : round2Text;
-    const elements = round === 1 ? SUNSET_ELEMENTS : CITYSCAPE_ELEMENTS;
-    const imageSrc = round === 1 ? SUNSET_IMAGE : CITYSCAPE_IMAGE;
-    const sceneLabel = round === 1 ? 'Sunset Landscape' : 'Night Cityscape';
-    const showEscape = round === 1 ? showEscapeHatch1 : showEscapeHatch2;
-    const attempts = round === 1 ? round1Attempts : round2Attempts;
+  // ─── Round 1 Feedback (multi-attempt with escape hatch) ──────────
+  const renderRound1Feedback = () => {
+    if (!round1Result) return null;
 
-    if (!result) return null;
-
-    const matchPct = getMatchPercentage(result, elements);
+    const matchPct = getMatchPercentage(round1Result, SUNSET_ELEMENTS);
     const passed = matchPct >= MATCH_THRESHOLD;
-    const revealAll = passed || showEscape;
+    const revealAll = passed || showEscapeHatch1;
 
     return (
       <motion.div
-        key={`feedback${round}`}
+        key="feedback1"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         className="space-y-5"
       >
-        <div className="text-center">
-          <h3 className="text-xl font-bold text-gray-900">
-            {sceneLabel} &mdash; Results
-          </h3>
-          {attempts > 1 && (
-            <p className="text-xs text-gray-500 mt-1">Attempt {attempts}</p>
-          )}
-        </div>
+        <h3 className="text-xl font-bold text-gray-900 text-center">
+          Sunset Landscape &mdash; Results
+        </h3>
 
         <div className="relative w-full rounded-xl overflow-hidden border-2 border-gray-200 shadow-inner">
           <img
-            src={imageSrc}
-            alt={`AI-generated ${sceneLabel.toLowerCase()} scene`}
+            src={SUNSET_IMAGE}
+            alt="AI-generated sunset landscape scene"
             className="w-full h-auto"
             style={{ aspectRatio: '4/3', objectFit: 'cover' }}
           />
         </div>
 
-        {/* Scores */}
         <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
-          <ScoreBar score={result.score} label="Specificity Score" />
-          <MatchBar matched={result.matched.length} total={elements.length} />
+          <ScoreBar score={round1Result.score} label="Specificity Score" />
+          <MatchBar matched={round1Result.matched.length} total={SUNSET_ELEMENTS.length} />
 
           {passed && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
               <p className="text-sm text-green-800 font-medium">
-                You passed the 65% threshold! Nice observational skills.
+                Nice observational skills!
               </p>
             </div>
           )}
@@ -980,89 +945,68 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
           {!passed && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
               <p className="text-sm text-orange-800">
-                You matched {result.matched.length} of {elements.length} elements.
-                Use the hints below to find what you missed and try again.
+                {round1Result.matched.length}/{SUNSET_ELEMENTS.length} elements matched. Use the hints below and try again.
               </p>
             </div>
           )}
         </div>
 
-        {/* Student's description + feedback + hints */}
         <FeedbackCard
-          text={studentText}
-          result={result}
-          elements={elements}
+          text={round1Text}
+          result={round1Result}
+          elements={SUNSET_ELEMENTS}
           passed={passed}
           revealAll={revealAll}
         />
 
-        {/* AI prompt — ONLY shown on pass or escape hatch */}
         {revealAll && (
           <HighlightedPrompt
-            segments={round === 1 ? SUNSET_PROMPT_SEGMENTS : CITYSCAPE_PROMPT_SEGMENTS}
-            matched={result.matched}
-            sceneLabel={sceneLabel}
+            segments={SUNSET_PROMPT_SEGMENTS}
+            matched={round1Result.matched}
+            sceneLabel="Sunset Landscape"
           />
         )}
 
-        {/* Teaser when prompt is hidden */}
         {!revealAll && (
           <div className="bg-indigo-50 border border-indigo-200 border-dashed rounded-lg p-4 text-center">
             <Sparkles className="w-5 h-5 text-indigo-400 mx-auto mb-2" />
             <p className="text-sm text-indigo-700 font-medium">
-              Match 65% of the scene elements to reveal the AI prompt that created this image!
+              Match 65% to unlock the actual AI prompt!
             </p>
           </div>
         )}
 
-        {/* Action buttons */}
         {passed ? (
           <Button
-            onClick={() => setStep(round === 1 ? 'round2' : 'summary')}
+            onClick={() => setStep('round2')}
             size="lg"
             className="w-full bg-purple-600 hover:bg-purple-700 text-white"
           >
-            {round === 1 ? (
-              <>
-                Try Scene 2
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </>
-            ) : (
-              <>
-                See Summary
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </>
-            )}
+            Try Scene 2
+            <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         ) : (
           <div className="space-y-3">
             <Button
-              onClick={() => handleTryAgain(round)}
+              onClick={handleTryAgain}
               size="lg"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
               <RotateCcw className="mr-2 h-5 w-5" />
-              Try Again &mdash; Use the Hints Above
+              Try Again
             </Button>
 
-            {/* Escape hatch after MAX_ATTEMPTS */}
-            {showEscape && (
+            {showEscapeHatch1 && (
               <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 space-y-3">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-amber-900">
-                      Having trouble? That&apos;s okay!
-                    </p>
-                    <p className="text-xs text-amber-800 mt-1">
-                      You&apos;ve given it {attempts} tries. Check out the AI prompt above to see
-                      how each detail in the prompt became a specific element in the image, then continue or try again.
-                    </p>
-                  </div>
+                  <p className="text-sm text-amber-800">
+                    No worries! Check out the AI prompt above, then continue.
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => handleTryAgain(round)}
+                    onClick={handleTryAgain}
                     variant="outline"
                     size="sm"
                     className="text-amber-800 border-amber-400 hover:bg-amber-100"
@@ -1070,7 +1014,7 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
                     Try One More Time
                   </Button>
                   <Button
-                    onClick={() => handleSkipRound(round)}
+                    onClick={handleSkipRound1}
                     size="sm"
                     className="bg-amber-600 hover:bg-amber-700 text-white"
                   >
@@ -1086,73 +1030,75 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
     );
   };
 
-  const renderSummary = () => {
-    const r1Pct = round1Result ? Math.round((round1Result.matched.length / SUNSET_ELEMENTS.length) * 100) : 0;
-    const r2Pct = round2Result ? Math.round((round2Result.matched.length / CITYSCAPE_ELEMENTS.length) * 100) : 0;
+  // ─── Round 2 Feedback: Domain Knowledge Lesson (single attempt) ──
+  const renderDomainKnowledgeLesson = () => {
+    if (!round2Result) return null;
+
+    const knewArtStyle = round2Result.matched.includes('art-style');
 
     return (
       <motion.div
-        key="summary"
+        key="feedback2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="space-y-6"
+        className="space-y-5"
       >
-        <div className="text-center">
-          <Sparkles className="h-10 w-10 text-purple-600 mx-auto mb-2" />
-          <h3 className="text-2xl font-bold text-gray-900">Activity Complete!</h3>
+        <h3 className="text-xl font-bold text-gray-900 text-center">
+          The Great Wave &mdash; Results
+        </h3>
+
+        <div className="relative w-full rounded-xl overflow-hidden border-2 border-gray-200 shadow-inner">
+          <img
+            src={WAVE_IMAGE}
+            alt="AI-generated Japanese wave scene"
+            className="w-full h-auto"
+            style={{ aspectRatio: '4/3', objectFit: 'cover' }}
+          />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {round1Result && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-semibold text-orange-900">Round 1: Sunset</p>
-              <ScoreBar score={round1Result.score} />
-              <p className="text-xs text-orange-800">
-                {round1Result.matched.length}/{SUNSET_ELEMENTS.length} elements ({r1Pct}%)
-                {round1Attempts > 1 && ` \u2022 ${round1Attempts} attempts`}
+        {/* Brief score */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <MatchBar matched={round2Result.matched.length} total={WAVE_ELEMENTS.length} />
+        </div>
+
+        {/* Domain knowledge moment */}
+        {knewArtStyle ? (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-start gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-green-800">
+                You recognized the <strong>ukiyo-e woodblock print</strong> style &mdash; that&apos;s domain knowledge
+                giving you an edge. Without that term, you&apos;d get a very different AI output.
               </p>
             </div>
-          )}
-          {round2Result && (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-semibold text-indigo-900">Round 2: Cityscape</p>
-              <ScoreBar score={round2Result.score} />
-              <p className="text-xs text-indigo-800">
-                {round2Result.matched.length}/{CITYSCAPE_ELEMENTS.length} elements ({r2Pct}%)
-                {round2Attempts > 1 && ` \u2022 ${round2Attempts} attempts`}
+          </div>
+        ) : (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-2">
+              <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-800">
+                This is a <strong>Japanese ukiyo-e woodblock print</strong>. Without knowing that
+                term, there&apos;s no way to prompt for this exact style &mdash; &ldquo;Japanese
+                painting&rdquo; gives you something totally different.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Show both highlighted prompts in summary */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-gray-700">The AI prompts that created these images:</h4>
-          {round1Result && (
-            <HighlightedPrompt
-              segments={SUNSET_PROMPT_SEGMENTS}
-              matched={round1Result.matched}
-              sceneLabel="Sunset Landscape"
-            />
-          )}
-          {round2Result && (
-            <HighlightedPrompt
-              segments={CITYSCAPE_PROMPT_SEGMENTS}
-              matched={round2Result.matched}
-              sceneLabel="Night Cityscape"
-            />
-          )}
-        </div>
+        {/* Show the AI prompt — always revealed */}
+        <HighlightedPrompt
+          segments={WAVE_PROMPT_SEGMENTS}
+          matched={round2Result.matched}
+          sceneLabel="The Great Wave"
+        />
 
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-5">
-          <h4 className="font-semibold text-purple-900 mb-2">Key Takeaway</h4>
+        {/* The lesson — short and punchy */}
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <p className="text-sm font-semibold text-purple-900 mb-1">The Takeaway</p>
           <p className="text-sm text-purple-800">
-            The more specific and detailed your description, the more elements the AI could
-            identify. Look at the highlighted prompts above &mdash; every <span className="bg-green-100 text-green-800 px-1 rounded">green phrase</span> is
-            a detail you noticed, and every <span className="bg-red-50 text-red-700 px-1 rounded">red phrase</span> is
-            one you missed. <strong>Specific prompts produce specific AI outputs</strong>. Vague
-            instructions lead to vague results. As you learn to write prompts, remember: details matter.
+            The more you know about a topic, the better you can prompt about it.
+            <strong> Your knowledge is what makes AI useful</strong> &mdash; without it, you get generic results.
           </p>
         </div>
 
@@ -1179,23 +1125,22 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
             Say What You See
           </h2>
           <p className="text-lg text-gray-600">
-            How precisely can you describe a scene? Test your observation skills!
+            Reverse-engineer an AI prompt from its image.
           </p>
         </div>
 
         {/* Step progress */}
         {!isDevMode && (
           <div className="flex items-center justify-center gap-2">
-            {(['intro', 'round1', 'feedback1', 'round2', 'feedback2', 'summary'] as Step[]).map((s, i) => {
+            {(['intro', 'round1', 'feedback1', 'round2', 'feedback2'] as Step[]).map((s, i) => {
               const stepLabels: Record<Step, string> = {
                 intro: 'Start',
                 round1: 'Scene 1',
                 feedback1: 'Results 1',
                 round2: 'Scene 2',
-                feedback2: 'Results 2',
-                summary: 'Done',
+                feedback2: 'Lesson',
               };
-              const stepOrder: Step[] = ['intro', 'round1', 'feedback1', 'round2', 'feedback2', 'summary'];
+              const stepOrder: Step[] = ['intro', 'round1', 'feedback1', 'round2', 'feedback2'];
               const currentIdx = stepOrder.indexOf(step);
               const thisIdx = i;
               const isPast = thisIdx < currentIdx;
@@ -1224,17 +1169,16 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
         <AnimatePresence mode="wait">
           {step === 'intro' && renderIntro()}
           {step === 'round1' && renderRound(1)}
-          {step === 'feedback1' && renderFeedback(1)}
+          {step === 'feedback1' && renderRound1Feedback()}
           {step === 'round2' && renderRound(2)}
-          {step === 'feedback2' && renderFeedback(2)}
-          {step === 'summary' && renderSummary()}
+          {step === 'feedback2' && renderDomainKnowledgeLesson()}
         </AnimatePresence>
 
         {isDevMode && (
           <div className="mt-4 p-3 bg-yellow-100 border border-yellow-500 rounded-lg">
             <p className="text-sm text-yellow-800 font-medium flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
-              Dev Mode: Auto-completed to summary
+              Dev Mode: Auto-completed
             </p>
           </div>
         )}

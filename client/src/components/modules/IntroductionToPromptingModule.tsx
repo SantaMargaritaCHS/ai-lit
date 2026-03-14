@@ -17,7 +17,7 @@ import { PremiumVideoPlayer } from '@/components/PremiumVideoPlayer';
 import ResumeProgressDialog from '@/components/WhatIsAIModule/ResumeProgressDialog';
 
 import SayWhatYouSeeActivity from './IntroductionToPromptingModule/SayWhatYouSeeActivity';
-import PromptFunnelVisualization from './IntroductionToPromptingModule/PromptFunnelVisualization';
+import DynamicFunnelVisualization from './IntroductionToPromptingModule/DynamicFunnelVisualization';
 import FormatActivity from './IntroductionToPromptingModule/FormatActivity';
 import RTFOutputBuilder from './IntroductionToPromptingModule/RTFOutputBuilder';
 import PromptRaterActivity from './IntroductionToPromptingModule/PromptRaterActivity';
@@ -25,12 +25,14 @@ import ThinkOutLoudActivity from './IntroductionToPromptingModule/ThinkOutLoudAc
 import TeachByExampleActivity from './IntroductionToPromptingModule/TeachByExampleActivity';
 import CanAIAdmitItActivity from './IntroductionToPromptingModule/CanAIAdmitItActivity';
 import PromptLayerCakeActivity from './IntroductionToPromptingModule/PromptLayerCakeActivity';
+import SteerTheConversationActivity from './IntroductionToPromptingModule/SteerTheConversationActivity';
+import SayItRightActivity from './IntroductionToPromptingModule/SayItRightActivity';
 
 const MODULE_ID = 'introduction-to-prompting';
 
-// Video: How Prompting Actually Works (~7:19)
+// Video: The Explainer — How to Actually Use AI (~7:44)
 // Using relative Firebase Storage path for PremiumVideoPlayer compatibility
-const VIDEO_URL = 'Videos/Student Videos/Introduction to Prompting/How_Prompting_Actually_Works.mp4';
+const VIDEO_URL = 'Videos/Student Videos/Introduction to Prompting/The_Explainer__How_to_Actually_Use_AI.mp4';
 
 interface IntroductionToPromptingModuleProps {
   userName?: string;
@@ -76,26 +78,32 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
 
   const segments = [
     { id: 0, title: 'Welcome', type: 'intro' as const },
-    { id: 1, title: 'Say What You See', type: 'interactive' as const },
-    { id: 2, title: 'Video: The Prediction Machine', type: 'video' as const },
-    { id: 3, title: 'What Is a Prompt?', type: 'transition' as const },
-    { id: 4, title: 'Rate the Prompts', type: 'interactive' as const },
-    { id: 5, title: 'Prompting Principles', type: 'interactive' as const },
-    { id: 6, title: 'Video: The Funnel of Control', type: 'video' as const },
-    { id: 7, title: 'Meet the RTFC Framework', type: 'interactive' as const },
-    { id: 8, title: 'Role: Your AI Expert', type: 'interactive' as const },
-    { id: 9, title: 'Task: What You Want', type: 'interactive' as const },
-    { id: 10, title: 'Format: How You Want It', type: 'interactive' as const },
-    { id: 11, title: 'Context: Background Info', type: 'interactive' as const },
-    { id: 12, title: 'Build Your RTFC Prompt', type: 'interactive' as const },
-    { id: 13, title: 'Video: Level Up Your Prompts', type: 'video' as const },
-    { id: 14, title: 'Think Out Loud', type: 'interactive' as const },
-    { id: 15, title: 'Teach By Example', type: 'interactive' as const },
-    { id: 16, title: 'Can AI Admit It?', type: 'interactive' as const },
-    { id: 17, title: 'Prompt Layer Cake', type: 'interactive' as const },
-    { id: 18, title: 'Video: The Golden Rule', type: 'video' as const },
-    { id: 19, title: 'Exit Ticket', type: 'exit-ticket' as const },
-    { id: 20, title: 'Certificate', type: 'certificate' as const },
+    { id: 1, title: 'Video: Why Are Results So Inconsistent?', type: 'video' as const },
+    { id: 2, title: 'Say What You See', type: 'interactive' as const },
+    { id: 3, title: 'Video: The Prediction Machine', type: 'video' as const },
+    { id: 4, title: 'What Is a Prompt?', type: 'transition' as const },
+    { id: 5, title: 'Rate the Prompts', type: 'interactive' as const },
+    { id: 6, title: 'Prompting Principles', type: 'interactive' as const },
+    { id: 7, title: 'Video: The Funnel', type: 'video' as const },
+    { id: 8, title: 'The Funnel in Action', type: 'interactive' as const },
+    { id: 9, title: 'Video: Role — The First Layer', type: 'video' as const },
+    { id: 10, title: 'Role: Your AI Expert', type: 'interactive' as const },
+    { id: 11, title: 'Video: Task & Format', type: 'video' as const },
+    { id: 12, title: 'Task: What You Want', type: 'interactive' as const },
+    { id: 13, title: 'Format: How You Want It', type: 'interactive' as const },
+    { id: 14, title: 'Video: Context — The Final Layer', type: 'video' as const },
+    { id: 15, title: 'Context: Background Info', type: 'interactive' as const },
+    { id: 16, title: 'Build Your RTFC Prompt', type: 'interactive' as const },
+    { id: 17, title: 'Video: Advanced Tricks', type: 'video' as const },
+    { id: 18, title: 'Steer the Conversation', type: 'interactive' as const },
+    { id: 19, title: 'Think Out Loud', type: 'interactive' as const },
+    { id: 20, title: 'Teach By Example', type: 'interactive' as const },
+    { id: 21, title: 'Can AI Admit It?', type: 'interactive' as const },
+    { id: 22, title: 'Say It Right', type: 'interactive' as const },
+    { id: 23, title: 'Prompt Layer Cake', type: 'interactive' as const },
+    { id: 24, title: 'Video: The Golden Rules', type: 'video' as const },
+    { id: 25, title: 'Exit Ticket', type: 'exit-ticket' as const },
+    { id: 26, title: 'Certificate', type: 'certificate' as const },
   ];
 
   // Register activities for Developer Mode
@@ -169,10 +177,10 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
 
   // ────────────── Exit Ticket Handlers ──────────────
 
-  const EXIT_TICKET_QUESTION = "Think about a specific school assignment or project you have coming up. How could you use the RTFC framework to write a prompt that helps you with it? Include the Role, Task, Format, and Context you would use, and explain why you chose each one.";
+  const EXIT_TICKET_QUESTION = "Think about a specific school assignment or project you have coming up. How could you use the RTFC framework to write a prompt that helps you with it? Include the Role, Task, Format, and Context you would use. Then explain: how would you make sure the AI's output reflects YOUR unique perspective and voice, not just generic AI writing? (Remember: you are the thinker, AI is the tool.)";
 
   const DEV_RESPONSES = {
-    good: "For my upcoming AP Biology lab report, I would use the RTFC framework to get help organizing my findings. For Role, I'd choose 'experienced AP Biology teacher who grades lab reports' because they'd know exactly what format and depth is expected. For Task, I'd ask it to 'help me outline the discussion section of my lab report on enzyme kinetics, focusing on connecting my data to the hypothesis and identifying sources of error.' I made the task specific to one section rather than the whole report so the AI can give focused help. For Format, I'd request 'a structured outline with bullet points for each paragraph, including suggested transition phrases and key scientific terms to incorporate.' I chose this format because an outline gives me a framework to build on while still writing in my own voice. For Context, I'd add 'this is for an AP Biology class, the lab was on enzyme kinetics with catalase, and the report is due Friday.' This context helps the AI understand the academic level and specific experiment. The RTFC framework helps because without it, I might just say 'help me with my lab report' and get something too generic to be useful.",
+    good: "For my upcoming AP Biology lab report, I would use the RTFC framework to get help organizing my findings. For Role, I'd choose 'experienced AP Biology teacher who grades lab reports' because they'd know exactly what format and depth is expected. For Task, I'd ask it to 'help me outline the discussion section of my lab report on enzyme kinetics, focusing on connecting my data to the hypothesis and identifying sources of error.' I made the task specific to one section rather than the whole report so the AI can give focused help. For Format, I'd request 'a structured outline with bullet points for each paragraph, including suggested transition phrases and key scientific terms to incorporate.' I chose this format because an outline gives me a framework to build on while still writing in my own voice. For Context, I'd add 'this is for an AP Biology class, the lab was on enzyme kinetics with catalase, and the report is due Friday.' To make sure the output reflects MY voice and not generic AI writing, I would use the AI's outline as a starting skeleton, then rewrite each section using my own observations from the actual lab. I'd add my personal interpretations of why certain results happened and include specific details from our experiment that only I would know. I'd also iterate on the prompt — if the first response was too formal, I'd tell the AI to 'use a conversational but scientific tone' since that matches how I actually write. The AI is the tool giving me structure, but I'm the thinker adding the real analysis.",
     generic: "I would use RTFC for my homework. I'd pick a role and a task and a format and some context. It would help me do better on my assignments I think.",
     complaint: "I don't see why I need to learn about prompting. AI should just understand what I want without me having to format things a specific way. This whole module was a waste of time.",
     gibberish: "asdfkj rtfc whatever role task format context blah blah just let me finish aaaaaa lol idk"
@@ -376,15 +384,19 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span>Key principles for writing effective prompts</span>
+                    <span>The four building blocks: Role, Task, Format, Context</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span>The RTFC Framework: Role, Task, Format, Context</span>
+                    <span>How to build and refine prompts through conversation</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span>How to build prompts that get you exactly what you need</span>
+                    <span>Advanced techniques: few-shot prompting and chain-of-thought</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <span>How to talk about AI precisely and verify its output</span>
                   </li>
                 </ul>
               </motion.div>
@@ -408,8 +420,19 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 1: Say What You See ────
+      // ──── Segment 1: Video — Why Are Results So Inconsistent? (9.75–29.5) ────
       case 1:
+        return renderVideoClip(
+          1,
+          'Why Are Results So Inconsistent?',
+          'Sometimes AI gives you something brilliant, sometimes garbage. Why?',
+          9.75,
+          29.5,
+          'text-blue-600'
+        );
+
+      // ──── Segment 2: Say What You See ────
+      case 2:
         return (
           <SayWhatYouSeeActivity
             onComplete={handleNextSegment}
@@ -417,19 +440,19 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 2: Video Clip 1 — The Prediction Machine (00:00–02:33) ────
-      case 2:
+      // ──── Segment 3: Video Clip 1 cont. — The Prediction Machine (29.5–104) ────
+      case 3:
         return renderVideoClip(
-          1,
+          2,
           'The Prediction Machine',
-          'Before we dive into prompts, watch this short clip about how AI actually processes your words — it\'s not magic, it\'s prediction.',
-          0,
-          153,
+          'Why being specific matters when you\'re talking to a prediction machine.',
+          29.5,
+          104,
           'text-blue-600'
         );
 
-      // ──── Segment 3: What Is a Prompt? (Animated) ────
-      case 3:
+      // ──── Segment 4: What Is a Prompt? (Animated) ────
+      case 4:
         return (
           <Card>
             <CardHeader>
@@ -460,9 +483,9 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
                   <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-1" />
                   <div>
                     <h4 className="font-semibold text-red-800 mb-1">Vague Prompt:</h4>
-                    <p className="text-red-900 font-mono bg-red-100 rounded px-3 py-2">"Help me with my homework"</p>
+                    <p className="text-red-900 font-mono bg-red-100 rounded px-3 py-2">"Help me study"</p>
                     <p className="text-red-700 text-sm mt-2">
-                      The AI doesn't know what subject, what assignment, what grade level, or what kind of help you need. You'll get a generic, unhelpful response.
+                      As the video explained, there are literally thousands of ways AI could complete that thought. It has no direction — you'll get a generic, unhelpful response.
                     </p>
                   </div>
                 </div>
@@ -480,10 +503,10 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
                   <div>
                     <h4 className="font-semibold text-green-800 mb-1">Specific Prompt:</h4>
                     <p className="text-green-900 font-mono bg-green-100 rounded px-3 py-2">
-                      "I'm a 10th grader studying for my biology test on cell division. Create 10 flashcards with key terms and simple definitions."
+                      "You are an experienced AP History teacher. Create 10 review questions with answers on the causes of WWI, focusing on the alliance system."
                     </p>
                     <p className="text-green-700 text-sm mt-2">
-                      Now the AI knows who you are, what you're studying, and exactly what you need. The response will be targeted and useful.
+                      Now the AI has a Role, a Task, a Format, and Context. The response will be targeted and useful — exactly what you need.
                     </p>
                   </div>
                 </div>
@@ -509,14 +532,14 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 4: Rate the Prompts ────
-      case 4:
+      // ──── Segment 5: Rate the Prompts ────
+      case 5:
         return (
           <PromptRaterActivity onComplete={handleNextSegment} />
         );
 
-      // ──── Segment 5: Prompting Principles (Animated Cards) ────
-      case 5:
+      // ──── Segment 6: Prompting Principles (Animated Cards) ────
+      case 6:
         return (
           <Card>
             <CardHeader>
@@ -596,25 +619,36 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 6: Video Clip 2 — The Funnel of Control (02:34–04:09) ────
-      case 6:
+      // ──── Segment 7: Video Clip 2 — The Funnel (104.82–170.54) ────
+      case 7:
         return renderVideoClip(
-          2,
-          'The Funnel of Control',
-          'Now that you know the basics, see how specific prompts funnel AI toward exactly the output you want.',
-          154,
-          249,
+          3,
+          'The Funnel',
+          'See how prompting works like a funnel — every detail you add narrows the AI\'s output from infinite possibilities to exactly what you need.',
+          105,
+          171,
           'text-green-600'
         );
 
-      // ──── Segment 7: Meet the RTFC Framework + Prompt Funnel ────
-      case 7:
+      // ──── Segment 8: The Funnel in Action (DynamicFunnelVisualization) ────
+      case 8:
         return (
-          <PromptFunnelVisualization onComplete={handleNextSegment} />
+          <DynamicFunnelVisualization onComplete={handleNextSegment} />
         );
 
-      // ──── Segment 8: Role Deep Dive + Matching Game ────
-      case 8:
+      // ──── Segment 9: Video Clip 3 — Role: The First Layer (171.10–204.84) ────
+      case 9:
+        return renderVideoClip(
+          4,
+          'Role — The First Layer',
+          'Watch how adding just a Role transforms a useless prompt into something that sounds like it came from an expert.',
+          171,
+          205,
+          'text-blue-600'
+        );
+
+      // ──── Segment 10: Role Deep Dive + Matching Game ────
+      case 10:
         return (
           <Card>
             <CardHeader>
@@ -717,8 +751,19 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 9: Task Deep Dive + Fix-the-Vague-Task ────
-      case 9:
+      // ──── Segment 11: Video Clip 4 — Task & Format (205.42–224.70) ────
+      case 11:
+        return renderVideoClip(
+          5,
+          'Task & Format — Getting Tighter',
+          'Now see how adding a specific Task and Format eliminates all the wrong options — the AI has no choice but to give you exactly what you asked for.',
+          205,
+          225,
+          'text-green-600'
+        );
+
+      // ──── Segment 12: Task Deep Dive + Fix-the-Vague-Task ────
+      case 12:
         return (
           <Card>
             <CardHeader>
@@ -821,8 +866,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 10: Format Deep Dive ────
-      case 10:
+      // ──── Segment 13: Format Deep Dive ────
+      case 13:
         return (
           <Card>
             <CardHeader>
@@ -840,8 +885,19 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 11: Context Deep Dive ────
-      case 11:
+      // ──── Segment 14: Video Clip 5 — Context: The Final Layer (225.42–244.32) ────
+      case 14:
+        return renderVideoClip(
+          6,
+          'Context — The Final Layer',
+          'The last piece of the puzzle. Watch how Context makes the output hyper-targeted to exactly what you need.',
+          225,
+          244,
+          'text-orange-600'
+        );
+
+      // ──── Segment 15: Context Deep Dive ────
+      case 15:
         return (
           <Card>
             <CardHeader>
@@ -912,8 +968,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 12: RTFC Builder ────
-      case 12:
+      // ──── Segment 16: RTFC Builder ────
+      case 16:
         return (
           <RTFOutputBuilder
             onComplete={handleNextSegment}
@@ -921,19 +977,28 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 13: Video Clip 3 — Level Up Your Prompts (04:10–05:39) ────
-      case 13:
+      // ──── Segment 17: Video Clip 6 — Advanced Tricks (244.96–330.00) ────
+      case 17:
         return renderVideoClip(
-          3,
-          'Level Up Your Prompts',
-          'You\'ve mastered RTFC — now learn three advanced techniques that take your prompts to the next level.',
-          250,
-          339,
+          7,
+          'Advanced Tricks',
+          'You\'ve mastered the four building blocks — now learn advanced techniques that give you even more precise control over AI output.',
+          245,
+          330,
           'text-purple-600'
         );
 
-      // ──── Segment 14: Think Out Loud ────
-      case 14:
+      // ──── Segment 18: Steer the Conversation ────
+      case 18:
+        return (
+          <SteerTheConversationActivity
+            onComplete={handleNextSegment}
+            isDevMode={isDevModeActive}
+          />
+        );
+
+      // ──── Segment 19: Think Out Loud ────
+      case 19:
         return (
           <ThinkOutLoudActivity
             onComplete={handleNextSegment}
@@ -941,8 +1006,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 15: Teach By Example ────
-      case 15:
+      // ──── Segment 20: Teach By Example ────
+      case 20:
         return (
           <TeachByExampleActivity
             onComplete={handleNextSegment}
@@ -950,8 +1015,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 16: Can AI Admit It? ────
-      case 16:
+      // ──── Segment 21: Can AI Admit It? ────
+      case 21:
         return (
           <CanAIAdmitItActivity
             onComplete={handleNextSegment}
@@ -959,8 +1024,17 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 17: Prompt Layer Cake ────
-      case 17:
+      // ──── Segment 22: Say It Right ────
+      case 22:
+        return (
+          <SayItRightActivity
+            onComplete={handleNextSegment}
+            isDevMode={isDevModeActive}
+          />
+        );
+
+      // ──── Segment 23: Prompt Layer Cake ────
+      case 23:
         return (
           <PromptLayerCakeActivity
             onComplete={handleNextSegment}
@@ -968,19 +1042,19 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 18: Video Clip 4 — The Golden Rule (05:40–07:19) ────
-      case 18:
+      // ──── Segment 24: Video Clip 7 — The Golden Rules (330.68–461.32) ────
+      case 24:
         return renderVideoClip(
-          4,
-          'The Golden Rule',
-          'Before your exit ticket, watch this final clip about AI hallucinations and the five key takeaways from everything you\'ve learned.',
-          340,
-          439,
+          8,
+          'The Golden Rules',
+          'The most important lesson: why you must always verify AI output, why precise language matters, and the golden rule — you are the thinker, AI is the tool.',
+          331,
+          462,
           'text-orange-600'
         );
 
-      // ──── Segment 19: Exit Ticket ────
-      case 19:
+      // ──── Segment 25: Exit Ticket ────
+      case 25:
         return (
           <Card>
             <CardHeader>
@@ -1186,8 +1260,8 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           </Card>
         );
 
-      // ──── Segment 20: Certificate ────
-      case 20:
+      // ──── Segment 26: Certificate ────
+      case 26:
         return null; // Handled by showCertificate early return
 
       default:
