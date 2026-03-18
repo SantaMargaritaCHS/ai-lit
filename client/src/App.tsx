@@ -1,5 +1,6 @@
 import React from 'react';
 import { Route, Switch, Router } from 'wouter';
+import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import ModulePage from './pages/ModulePage';
 import { UserProvider } from './context/UserContext';
@@ -47,7 +48,8 @@ function App() {
           <UniversalDevModeProvider>
             <Router>
               <Switch>
-                <Route path="/" component={HomePage} />
+                <Route path="/" component={LandingPage} />
+                <Route path="/modules" component={HomePage} />
                 {/* Resource Pages */}
                 <Route path="/resources/openai-privacy-explained" component={OpenAIPrivacyExplained} />
                 {/* Admin Pages (Dev Mode Protected) */}

@@ -6,7 +6,10 @@ import { ModuleOutline } from '../components/ModuleOutline';
 import { ModuleInventory } from '../components/ModuleInventory';
 import { saveModuleOrder, loadModuleOrder, clearModuleOrder, hasCustomModuleOrder } from '../lib/moduleOrderPersistence';
 
-const modules = [
+// Hidden modules (not shown on demo site)
+const HIDDEN_MODULES = ['what-is-ai', 'responsible-ethical-ai', 'llm-limitations'];
+
+const allModules = [
   {
     id: 'what-is-ai',
     title: 'What is AI?',
@@ -89,6 +92,8 @@ const modules = [
     color: 'bg-indigo-600',
   },
 ];
+
+const modules = allModules.filter(m => !HIDDEN_MODULES.includes(m.id));
 
 export default function HomePage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -206,27 +211,17 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
+          <Link href="/">
+            <a className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors">
+              &larr; Back to Home
+            </a>
+          </Link>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            AI Literacy Learning Platform
+            AI Literacy Learning Modules
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Interactive modules to help you understand AI and its impact on our world
+            Select a module below to begin your learning experience
           </p>
-          {userName && (
-            <div className="mt-4 flex items-center justify-center gap-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm">
-                <User className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-700">Welcome, <strong>{userName}</strong></span>
-              </div>
-              <button
-                onClick={clearUserName}
-                className="px-3 py-2 text-xs bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
-                title="Clear stored name (for testing)"
-              >
-                Clear Name
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Simple Sort Controls */}
@@ -266,15 +261,7 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* Activity Inventory Link */}
-          <button
-            onClick={() => setShowInventory(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-blue-50 rounded-lg shadow-sm transition-colors border border-gray-200 hover:border-blue-300"
-            title="Browse reusable activity components"
-          >
-            <BookOpen className="w-4 h-4 text-blue-600" />
-            <span className="text-sm text-gray-700 hover:text-blue-700">Activity Inventory</span>
-          </button>
+          {/* Activity Inventory - hidden on demo site */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -392,102 +379,7 @@ export default function HomePage() {
           })}
         </div>
 
-        <div className="mt-12 text-center">
-          {/* Advanced Settings for Testing */}
-          <div className="mt-4">
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="text-xs text-gray-500 hover:text-gray-700 underline"
-            >
-              {showAdvanced ? 'Hide' : 'Show'} Advanced Settings (Testing)
-            </button>
-
-            {/* Developer Tools Links */}
-            <div className="mt-2 flex gap-4 justify-center">
-              <Link href="/builder">
-                <a className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 underline">
-                  <Wrench className="w-3 h-3" />
-                  Module Builder (Beta)
-                </a>
-              </Link>
-              <Link href="/export-html">
-                <a className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 underline">
-                  <Code className="w-3 h-3" />
-                  Export HTML (LMS)
-                </a>
-              </Link>
-            </div>
-
-            {showAdvanced && (
-              <div className="mt-4 p-4 bg-gray-100 rounded-lg space-y-4">
-                {/* Reorder Mode Toggle */}
-                <div className="border-b border-gray-300 pb-4">
-                  <p className="text-xs text-gray-600 mb-3">
-                    Module reordering (developer only):
-                  </p>
-                  <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={() => setReorderMode(!reorderMode)}
-                      className={`px-3 py-2 text-xs rounded transition-colors ${
-                        reorderMode
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                          : 'bg-white hover:bg-gray-50 border border-gray-300 text-gray-700'
-                      }`}
-                    >
-                      {reorderMode ? '✓ Reorder Mode Active' : 'Enable Reorder Mode'}
-                    </button>
-                    {hasCustomModuleOrder() && (
-                      <button
-                        onClick={resetModuleOrder}
-                        className="px-3 py-2 text-xs bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
-                        title="Reset to default order"
-                      >
-                        Reset Order
-                      </button>
-                    )}
-                  </div>
-                  {reorderMode && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Use ↑↓ arrows on cards to reorder. Changes save automatically.
-                    </p>
-                  )}
-                </div>
-
-                {/* Name Clearing Section */}
-                <div>
-                  <p className="text-xs text-gray-600 mb-3">
-                    Clear module-specific names for testing:
-                  </p>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                  {modules.map((module) => (
-                    <button
-                      key={module.id}
-                      onClick={() => {
-                        clearModuleName(module.id);
-                        alert(`Cleared name for ${module.title}`);
-                      }}
-                      className="px-2 py-1 text-xs bg-white hover:bg-red-50 border border-gray-300 rounded"
-                      title={`Clear name for ${module.title}`}
-                    >
-                      Clear {module.id}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => {
-                      modules.forEach(m => clearModuleName(m.id));
-                      clearUserName();
-                      alert('Cleared all stored names');
-                    }}
-                    className="px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded ml-2"
-                  >
-                    Clear All Names
-                  </button>
-                </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Admin tools hidden on demo site */}
 
         {/* Module Outline Modal */}
         {outlineModuleId && (
