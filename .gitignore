@@ -24,6 +24,8 @@ screenshots/
 *.png
 *.jpg
 *.jpeg
+# Allow images in public assets
+!client/public/images/**
 
 # IDE
 .vscode

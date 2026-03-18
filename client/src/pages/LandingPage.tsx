@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { GraduationCap, Mail, ExternalLink, ChevronRight, Shield, BookOpen, Users, Lightbulb, Lock } from 'lucide-react';
+import { GraduationCap, Mail, ExternalLink, ChevronRight, Shield, BookOpen, Users, Lightbulb, Lock, Monitor } from 'lucide-react';
 
 const ACCESS_CODE = 'innovation';
 
@@ -83,7 +83,7 @@ export default function LandingPage() {
         <nav className="relative z-10 container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
-              src="/images/smchs-logo.png"
+              src="/images/smchs-logo.svg"
               alt="Santa Margarita Catholic High School"
               className="h-12 w-auto"
             />
@@ -93,7 +93,7 @@ export default function LandingPage() {
               href="https://www.smhs.org/academics/ed-tech/ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/80 hover:text-white text-sm flex items-center gap-1 transition-colors"
+              className="text-white/90 hover:text-white text-base font-medium flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all"
             >
               Our AI Initiative <ExternalLink className="w-3.5 h-3.5" />
             </a>
@@ -247,6 +247,16 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Desktop Recommendation */}
+      <div className="container mx-auto px-6 py-6">
+        <div className="max-w-2xl mx-auto flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-5 py-4">
+          <Monitor className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <p className="text-sm text-blue-800">
+            <strong>Best on desktop.</strong> While this page is mobile-friendly, the learning modules themselves are best experienced on a laptop or desktop computer.
+          </p>
+        </div>
+      </div>
+
       {/* Approach Section */}
       <section className="container mx-auto px-6 py-16">
         <div className="max-w-4xl mx-auto">
@@ -352,7 +362,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <img
-                src="/images/smchs-logo.png"
+                src="/images/smchs-logo.svg"
                 alt="SMCHS"
                 className="h-10 w-auto brightness-0 invert"
               />
