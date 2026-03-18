@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  ArrowRight, CheckCircle, Sparkles, Eye, Loader, AlertTriangle, RotateCcw, Lightbulb, MessageSquare
+  ArrowRight, CheckCircle, Sparkles, Eye, Loader, AlertTriangle, AlertCircle, RotateCcw, Lightbulb, MessageSquare, Brain
 } from 'lucide-react';
 import { generateWithGemini, isGeminiConfigured } from '@/services/geminiClient';
 
@@ -50,7 +50,7 @@ interface RoundResult {
   usedGemini: boolean;
 }
 
-type Step = 'intro' | 'round1' | 'feedback1' | 'round2' | 'feedback2';
+type Step = 'intro' | 'round1' | 'feedback1' | 'round2' | 'reveal' | 'takeaway';
 
 // ─── Constants ───────────────────────────────────────────────────────
 
@@ -720,21 +720,21 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   const [round1Text, setRound1Text] = useState('');
   const [round2Text, setRound2Text] = useState('');
   const [round1Result, setRound1Result] = useState<RoundResult | null>(null);
-  const [round2Result, setRound2Result] = useState<RoundResult | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
 
   // Attempt tracking for escape hatch (round 1 only — round 2 is single-attempt)
   const [round1Attempts, setRound1Attempts] = useState(0);
   const [showEscapeHatch1, setShowEscapeHatch1] = useState(false);
 
-  // Dev mode: jump straight to domain knowledge lesson
-  useEffect(() => {
-    if (isDevMode) {
-      setRound1Result({ score: 4, matched: ['sky', 'sun', 'back-mountains', 'front-mountains', 'lake'], missed: ['clouds', 'reflection'], tip: 'Dev mode auto-complete.', usedGemini: false });
-      setRound2Result({ score: 4, matched: ['art-style', 'great-wave', 'foam', 'mountain', 'boats', 'blue-water'], missed: ['sky'], tip: 'Dev mode auto-complete.', usedGemini: false });
-      setStep('feedback2');
-    }
-  }, [isDevMode]);
+  // Round 2: simplified — just tracks if they mentioned the style
+  const [round2MentionedStyle, setRound2MentionedStyle] = useState(false);
+
+  // Dev mode: manual skip to takeaway
+  const handleDevAutoComplete = () => {
+    setRound1Result({ score: 4, matched: ['sky', 'sun', 'back-mountains', 'front-mountains', 'lake'], missed: ['clouds', 'reflection'], tip: 'Dev mode auto-complete.', usedGemini: false });
+    setRound2MentionedStyle(false);
+    setStep('takeaway');
+  };
 
   const getMatchPercentage = (result: RoundResult, elements: SceneElement[]) => {
     return result.matched.length / elements.length;
@@ -745,6 +745,16 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
     const elements = round === 1 ? SUNSET_ELEMENTS : WAVE_ELEMENTS;
     const label = round === 1 ? 'sunset landscape' : 'Japanese wave';
     const currentAttempts = round === 1 ? round1Attempts : 0;
+
+    if (round === 2) {
+      // Round 2: No heavy evaluation — just check if they mentioned the art style
+      const mentionedStyle = WAVE_ELEMENTS[0].keywords.some(kw =>
+        text.toLowerCase().includes(kw.toLowerCase())
+      );
+      setRound2MentionedStyle(mentionedStyle);
+      setStep('reveal');
+      return;
+    }
 
     setIsEvaluating(true);
 
@@ -762,19 +772,13 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
     const matchPct = result.matched.length / elements.length;
     const passed = matchPct >= MATCH_THRESHOLD;
 
-    if (round === 1) {
-      setRound1Result(result);
-      const newAttempts = round1Attempts + 1;
-      setRound1Attempts(newAttempts);
-      if (!passed && newAttempts >= MAX_ATTEMPTS) {
-        setShowEscapeHatch1(true);
-      }
-      setStep('feedback1');
-    } else {
-      // Round 2: single attempt — goes straight to domain knowledge lesson
-      setRound2Result(result);
-      setStep('feedback2');
+    setRound1Result(result);
+    const newAttempts = round1Attempts + 1;
+    setRound1Attempts(newAttempts);
+    if (!passed && newAttempts >= MAX_ATTEMPTS) {
+      setShowEscapeHatch1(true);
     }
+    setStep('feedback1');
 
     setIsEvaluating(false);
   };
@@ -1030,25 +1034,65 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
     );
   };
 
-  // ─── Round 2 Feedback: Domain Knowledge Lesson (single attempt) ──
-  const renderDomainKnowledgeLesson = () => {
-    if (!round2Result) return null;
+  // ─── Round 2 Reveal: Step-by-step pop-up sequence ──────────────
+  const [revealStep, setRevealStep] = useState(0);
 
-    const knewArtStyle = round2Result.matched.includes('art-style');
+  const renderReveal = () => {
+    const bubbles = [
+      {
+        icon: <Eye className="w-8 h-8 text-white" />,
+        bg: 'from-blue-500 to-blue-700',
+        border: 'border-blue-400',
+        title: 'Did you include this in your prompt attempt?',
+        content: (
+          <p className="text-lg text-gray-900">
+            <span className="font-mono bg-blue-50 border border-blue-200 rounded px-2 py-1 text-blue-800">...in the style of a <strong>Japanese ukiyo-e woodblock print</strong>...</span>
+          </p>
+        ),
+      },
+      {
+        icon: <AlertCircle className="w-8 h-8 text-white" />,
+        bg: 'from-orange-500 to-red-500',
+        border: 'border-orange-400',
+        title: round2MentionedStyle ? 'Nice — you knew the term!' : 'Most people don\u2019t know this term.',
+        content: (
+          <p className="text-lg text-gray-900">
+            You could get <em>close</em> without it — but it would take more words, more back-and-forth, and the result still wouldn&apos;t be as accurate.
+            Knowing the right term gets you there in <strong>one shot</strong>.
+          </p>
+        ),
+      },
+      {
+        icon: <Brain className="w-8 h-8 text-white" />,
+        bg: 'from-purple-500 to-purple-700',
+        border: 'border-purple-400',
+        title: 'Techniques + Knowledge',
+        content: (
+          <div className="space-y-3">
+            <p className="text-lg text-gray-900">
+              We&apos;re about to teach you prompting techniques — but <strong>what you know</strong> should always be front and center.
+            </p>
+            <p className="text-gray-700">
+              Techniques structure your prompt. <strong>Your knowledge fills it with the right words.</strong>
+            </p>
+          </div>
+        ),
+      },
+    ];
+
+    const current = bubbles[revealStep];
+    const isLast = revealStep === bubbles.length - 1;
 
     return (
       <motion.div
-        key="feedback2"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
+        key="reveal"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         className="space-y-5"
       >
-        <h3 className="text-xl font-bold text-gray-900 text-center">
-          The Great Wave &mdash; Results
-        </h3>
-
-        <div className="relative w-full rounded-xl overflow-hidden border-2 border-gray-200 shadow-inner">
+        {/* Wave image stays visible in background, smaller */}
+        <div className="relative w-full rounded-xl overflow-hidden border-2 border-gray-200 shadow-inner opacity-80">
           <img
             src={WAVE_IMAGE}
             alt="AI-generated Japanese wave scene"
@@ -1057,62 +1101,142 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
           />
         </div>
 
-        {/* Brief score */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <MatchBar matched={round2Result.matched.length} total={WAVE_ELEMENTS.length} />
-        </div>
-
-        {/* Domain knowledge moment */}
-        {knewArtStyle ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-start gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-green-800">
-                You recognized the <strong>ukiyo-e woodblock print</strong> style &mdash; that&apos;s domain knowledge
-                giving you an edge. Without that term, you&apos;d get a very different AI output.
-              </p>
+        {/* Pop-up bubble */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={revealStep}
+            initial={{ opacity: 0, scale: 0.8, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -30 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            className={`border-2 ${current.border} rounded-2xl p-6 shadow-lg bg-white`}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br ${current.bg} shadow-md`}>
+                {current.icon}
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">{current.title}</h3>
+              {current.content}
             </div>
-          </div>
-        ) : (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start gap-2">
-              <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-blue-800">
-                This is a <strong>Japanese ukiyo-e woodblock print</strong>. Without knowing that
-                term, there&apos;s no way to prompt for this exact style &mdash; &ldquo;Japanese
-                painting&rdquo; gives you something totally different.
-              </p>
-            </div>
-          </div>
-        )}
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Show the AI prompt — always revealed */}
-        <HighlightedPrompt
-          segments={WAVE_PROMPT_SEGMENTS}
-          matched={round2Result.matched}
-          sceneLabel="The Great Wave"
-        />
-
-        {/* The lesson — short and punchy */}
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <p className="text-sm font-semibold text-purple-900 mb-1">The Takeaway</p>
-          <p className="text-sm text-purple-800">
-            The more you know about a topic, the better you can prompt about it.
-            <strong> Your knowledge is what makes AI useful</strong> &mdash; without it, you get generic results.
-          </p>
+        {/* Progress dots */}
+        <div className="flex items-center justify-center gap-2">
+          {bubbles.map((_, i) => (
+            <div
+              key={i}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                i === revealStep ? 'bg-purple-600 scale-125' : i < revealStep ? 'bg-purple-300' : 'bg-gray-300'
+              }`}
+            />
+          ))}
         </div>
 
         <Button
-          onClick={onComplete}
+          onClick={() => {
+            if (isLast) {
+              setStep('takeaway');
+            } else {
+              setRevealStep(revealStep + 1);
+            }
+          }}
           size="lg"
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+          className={`w-full ${isLast
+            ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white'
+            : 'bg-purple-600 hover:bg-purple-700 text-white'
+          }`}
         >
-          Continue to Next Activity
-          <ArrowRight className="ml-2 h-5 w-5" />
+          {isLast ? (
+            <>The Takeaway <ArrowRight className="ml-2 h-5 w-5" /></>
+          ) : (
+            'Next'
+          )}
         </Button>
       </motion.div>
     );
   };
+
+  // ─── Takeaway: Image + prompt, then popup on continue ───────────
+  const [showTakeawayPopup, setShowTakeawayPopup] = useState(false);
+
+  const renderTakeaway = () => (
+    <motion.div
+      key="takeaway"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
+    >
+      {/* Image and prompt side by side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-xl overflow-hidden border-2 border-gray-200 shadow-inner">
+          <img
+            src={WAVE_IMAGE}
+            alt="AI-generated Japanese wave scene"
+            className="w-full h-auto"
+            style={{ aspectRatio: '4/3', objectFit: 'cover' }}
+          />
+        </div>
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col justify-center">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">The actual prompt:</p>
+          <p className="text-sm text-gray-800 font-mono leading-relaxed">
+            &ldquo;Create an image in the style of a <strong className="text-blue-700 bg-blue-50 px-1 rounded">Japanese ukiyo-e woodblock print</strong>.
+            A massive curling wave dominates the foreground with white foam and spray at the crest.
+            A small snow-capped mountain in the distant background.
+            Small wooden boats with rowers caught in the waves.
+            Deep indigo and Prussian blue ocean water. Pale sky with subtle clouds. No text.&rdquo;
+          </p>
+        </div>
+      </div>
+
+      <Button
+        onClick={() => setShowTakeawayPopup(true)}
+        size="lg"
+        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+      >
+        Continue to Next Activity
+        <ArrowRight className="ml-2 h-5 w-5" />
+      </Button>
+
+      {/* Takeaway popup */}
+      <AnimatePresence>
+        {showTakeawayPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center space-y-4"
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 mx-auto">
+                <Lightbulb className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">
+                AI doesn&apos;t think for you — it responds to how well <em className="text-purple-700">you</em> think.
+              </h3>
+              <p className="text-base text-gray-700 leading-relaxed">
+                Every class, every project, every random thing you learned that you thought you&apos;d never use — that&apos;s your edge. Education builds the vocabulary AI needs to hear. The sharper your thinking, the sharper the output.
+              </p>
+              <Button
+                onClick={onComplete}
+                size="lg"
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              >
+                Got It
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
 
   // ─── Main Render ─────────────────────────────────────────────────
 
@@ -1132,15 +1256,16 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
         {/* Step progress */}
         {!isDevMode && (
           <div className="flex items-center justify-center gap-2">
-            {(['intro', 'round1', 'feedback1', 'round2', 'feedback2'] as Step[]).map((s, i) => {
+            {(['intro', 'round1', 'feedback1', 'round2', 'reveal', 'takeaway'] as Step[]).map((s, i) => {
               const stepLabels: Record<Step, string> = {
                 intro: 'Start',
                 round1: 'Scene 1',
                 feedback1: 'Results 1',
                 round2: 'Scene 2',
-                feedback2: 'Lesson',
+                reveal: 'Reveal',
+                takeaway: 'Takeaway',
               };
-              const stepOrder: Step[] = ['intro', 'round1', 'feedback1', 'round2', 'feedback2'];
+              const stepOrder: Step[] = ['intro', 'round1', 'feedback1', 'round2', 'reveal', 'takeaway'];
               const currentIdx = stepOrder.indexOf(step);
               const thisIdx = i;
               const isPast = thisIdx < currentIdx;
@@ -1171,15 +1296,32 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
           {step === 'round1' && renderRound(1)}
           {step === 'feedback1' && renderRound1Feedback()}
           {step === 'round2' && renderRound(2)}
-          {step === 'feedback2' && renderDomainKnowledgeLesson()}
+          {step === 'reveal' && renderReveal()}
+          {step === 'takeaway' && renderTakeaway()}
         </AnimatePresence>
 
         {isDevMode && (
-          <div className="mt-4 p-3 bg-yellow-100 border border-yellow-500 rounded-lg">
-            <p className="text-sm text-yellow-800 font-medium flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              Dev Mode: Auto-completed
-            </p>
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Say What You See Shortcuts</h3>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={handleDevAutoComplete}
+                className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
+                size="sm"
+              >
+                <Sparkles className="w-3 h-3 mr-1" />
+                Auto-Fill & Complete
+              </Button>
+              <Button
+                onClick={onComplete}
+                className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 h-auto"
+                size="sm"
+              >
+                <ArrowRight className="w-3 h-3 mr-1" />
+                Skip Activity
+              </Button>
+            </div>
+            <p className="text-xs text-red-600 mt-1">Auto-Fill shows results; Skip moves to next segment</p>
           </div>
         )}
       </div>

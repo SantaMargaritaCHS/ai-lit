@@ -1,283 +1,332 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, ChevronDown, Sparkles, Target } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface PromptFunnelVisualizationProps {
   onComplete: () => void;
 }
 
+function seededRandom(seed: number) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+interface Dot {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  colorClass: string;
+  survivesUntil: number;
+}
+
+const DOT_COLORS = [
+  'bg-blue-400', 'bg-purple-400', 'bg-pink-400', 'bg-green-400',
+  'bg-yellow-400', 'bg-red-400', 'bg-indigo-400', 'bg-teal-400',
+  'bg-orange-400', 'bg-cyan-400', 'bg-rose-400', 'bg-emerald-400',
+];
+
+// Each layer adds one segment to the growing prompt
+const LAYERS = [
+  {
+    title: 'Starting Prompt',
+    // The vague prompt shown before narrowing begins
+    vaguePrompt: '"Help me with school"',
+    segment: null,
+    count: '10,000+',
+    textColor: 'text-gray-500',
+    highlightClass: 'text-gray-500 bg-gray-100',
+    border: 'border-gray-300',
+    badgeBg: 'bg-gray-100',
+    badgeText: 'text-gray-600',
+    principle: null,
+  },
+  {
+    title: 'Be Specific',
+    vaguePrompt: null,
+    segment: 'Create 10 flashcards on Chapter 5 photosynthesis vocabulary',
+    count: '~500',
+    textColor: 'text-blue-700',
+    highlightClass: 'text-blue-800 bg-blue-100 rounded px-0.5',
+    border: 'border-blue-300',
+    badgeBg: 'bg-blue-100',
+    badgeText: 'text-blue-700',
+    principle: 'Vague prompts get vague answers. A specific topic + task cuts 10,000 possibilities to ~500.',
+  },
+  {
+    title: 'Give Context',
+    vaguePrompt: null,
+    segment: ' for a 10th-grade biology student preparing for a quiz Friday',
+    count: '~50',
+    textColor: 'text-green-700',
+    highlightClass: 'text-green-800 bg-green-100 rounded px-0.5',
+    border: 'border-green-300',
+    badgeBg: 'bg-green-100',
+    badgeText: 'text-green-700',
+    principle: 'Now the AI knows the grade level, depth, and urgency — no more guessing.',
+  },
+  {
+    title: 'Set the Tone',
+    vaguePrompt: null,
+    segment: ' in a friendly, encouraging voice with memory tricks',
+    count: '~10',
+    textColor: 'text-purple-700',
+    highlightClass: 'text-purple-800 bg-purple-100 rounded px-0.5',
+    border: 'border-purple-300',
+    badgeBg: 'bg-purple-100',
+    badgeText: 'text-purple-700',
+    principle: 'Tone shapes everything — casual vs. formal, fun vs. dry.',
+  },
+  {
+    title: 'Define the Format',
+    vaguePrompt: null,
+    segment: ' as a numbered list: term, definition, and a mnemonic hint',
+    count: '2–3',
+    textColor: 'text-orange-700',
+    highlightClass: 'text-orange-800 bg-orange-100 rounded px-0.5',
+    border: 'border-orange-300',
+    badgeBg: 'bg-orange-100',
+    badgeText: 'text-orange-700',
+    principle: 'The AI now knows exactly what the output should look like. Almost zero room for error.',
+  },
+];
+
+const TOTAL_DOTS = 150;
+
 const PromptFunnelVisualization: React.FC<PromptFunnelVisualizationProps> = ({ onComplete }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentLayer, setCurrentLayer] = useState(0);
+  const [introSeen, setIntroSeen] = useState(false);
 
-  const steps = [
-    {
-      label: 'No Prompt Context',
-      rtfElement: null,
-      promptText: '"Write something"',
-      description: 'Without any guidance, the AI has infinite possibilities. The output could be anything — a poem, a recipe, a history essay, random facts...',
-      exampleOutputs: [
-        'Here\'s a poem about the moon...',
-        'The capital of France is Paris...',
-        'Once upon a time in a land far away...',
-        'To make scrambled eggs, first...',
-        'The periodic table was created...',
-        'In 2024, the world population...',
-      ],
-      funnelWidth: 100,
-      color: 'from-gray-300 to-gray-400',
-      bgColor: 'bg-gray-50',
-      borderColor: 'border-gray-200',
-    },
-    {
-      label: 'Add ROLE',
-      rtfElement: 'R',
-      promptText: '"Act as a biology tutor..."',
-      description: 'Adding a Role filters out everything except educational biology content. The AI now responds with expertise and appropriate vocabulary.',
-      exampleOutputs: [
-        'Cell division occurs in two main types...',
-        'The mitochondria is often called...',
-        'Let me explain photosynthesis step by step...',
-        'DNA replication follows these key steps...',
-      ],
-      funnelWidth: 70,
-      color: 'from-blue-400 to-blue-600',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-    },
-    {
-      label: 'Add TASK',
-      rtfElement: 'T',
-      promptText: '"...create a study guide on cell division"',
-      description: 'Now the AI knows exactly what to create. It\'s no longer guessing — it\'s focused on one specific topic and deliverable.',
-      exampleOutputs: [
-        'Study Guide: Cell Division\n• Mitosis vs Meiosis\n• Key phases explained...',
-        'Cell Division Review:\n1. Interphase: The cell prepares...',
-      ],
-      funnelWidth: 45,
-      color: 'from-green-400 to-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
-    },
-    {
-      label: 'Add FORMAT',
-      rtfElement: 'F',
-      promptText: '"...as an outline with key terms and 5 practice questions"',
-      description: 'The Format locks in exactly how the output should look. Now you get precisely what you need — no more, no less.',
-      exampleOutputs: [
-        'Cell Division Study Guide\n\nI. Key Terms:\n• Mitosis — cell division producing 2 identical cells\n• Meiosis — cell division producing 4 unique cells\n• Chromosome — DNA structure carrying genetic info\n\nII. Outline:\nA. Mitosis Phases\n  1. Prophase\n  2. Metaphase\n  3. Anaphase\n  4. Telophase\n\nIII. Practice Questions:\n1. What is the difference between mitosis and meiosis?\n2. During which phase do chromosomes align?\n...',
-      ],
-      funnelWidth: 25,
-      color: 'from-purple-400 to-purple-600',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200',
-    },
-    {
-      label: 'Add CONTEXT',
-      rtfElement: 'C',
-      promptText: '"...about the causes of World War I, for a 10th grade student"',
-      description: 'Context gives the AI the background information it needs. Now it knows the exact topic AND who it\'s writing for — so the vocabulary, depth, and examples are perfectly targeted.',
-      exampleOutputs: [
-        'Study Guide: Causes of World War I\nPrepared for: 10th Grade History Students\n\nI. Key Terms:\n• Alliance System — agreements between nations to defend each other\n• Imperialism — when powerful countries compete to control weaker regions\n• Nationalism — extreme pride in one\'s country, often leading to rivalry\n• Militarism — the buildup of a country\'s military power\n• Assassination of Archduke Franz Ferdinand — the spark that set off the war\n\nII. The Four M.A.I.N. Causes:\nA. Militarism\n  1. European arms race in early 1900s\n  2. Countries built massive armies and navies\n\nB. Alliances\n  1. Triple Alliance: Germany, Austria-Hungary, Italy\n  2. Triple Entente: France, Russia, Britain\n\nC. Imperialism\n  1. Competition for colonies in Africa and Asia\n  2. Created tension between European powers\n\nD. Nationalism\n  1. Ethnic groups wanted independence\n  2. Balkans became a \"powder keg\" of conflict\n\nIII. Practice Questions:\n1. What does M.A.I.N. stand for in the context of WWI causes?\n2. Why were the Balkans called the \"powder keg of Europe\"?\n3. How did the alliance system turn a single assassination into a world war?\n4. Compare imperialism and nationalism as causes of WWI.\n5. Could WWI have been prevented? Explain your reasoning.',
-      ],
-      funnelWidth: 15,
-      color: 'from-orange-400 to-orange-600',
-      bgColor: 'bg-orange-50',
-      borderColor: 'border-orange-200',
-    },
-  ];
+  const dots: Dot[] = useMemo(() => {
+    return Array.from({ length: TOTAL_DOTS }, (_, i) => {
+      const r1 = seededRandom(i + 1);
+      const r2 = seededRandom(i + 100);
+      const r3 = seededRandom(i + 200);
+      const r4 = seededRandom(i + 300);
 
-  const activeStep = steps[currentStep];
+      let survivesUntil = 0;
+      if (r4 < 0.35) survivesUntil = 1;
+      if (r4 < 0.12) survivesUntil = 2;
+      if (r4 < 0.06) survivesUntil = 3;
+      if (r4 < 0.03) survivesUntil = 4;
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
+      return {
+        id: i,
+        x: 5 + r1 * 90,
+        y: 5 + r2 * 90,
+        size: 5 + r3 * 7,
+        colorClass: DOT_COLORS[Math.floor(r1 * DOT_COLORS.length)],
+        survivesUntil,
+      };
+    });
+  }, []);
+
+  const getPosition = (dot: Dot, layer: number) => {
+    if (layer === 0) return { x: dot.x, y: dot.y };
+    const cx = 50, cy = 50;
+    const spread = [100, 55, 30, 18, 8][layer];
+    return {
+      x: cx + (dot.x - cx) * (spread / 100),
+      y: cy + (dot.y - cy) * (spread / 100),
+    };
+  };
+
+  const visibleDots = dots.filter(d => d.survivesUntil >= currentLayer);
+  const layer = LAYERS[currentLayer];
+  const isLast = currentLayer === LAYERS.length - 1;
+
+  const handleAdvance = () => {
+    if (!introSeen) setIntroSeen(true);
+    setCurrentLayer(prev => prev + 1);
   };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Target className="w-6 h-6 text-purple-600" />
-          Meet the RTFC Framework
-        </CardTitle>
-        <p className="text-gray-600 mt-1">
-          Watch how each RTFC element narrows the AI's output from chaos to exactly what you need
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* RTF Letters Display */}
-        <div className="flex items-center justify-center gap-4 mb-2">
-          {['R', 'T', 'F', 'C'].map((letter, idx) => {
-            const colors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-orange-600'];
-            const labels = ['Role', 'Task', 'Format', 'Context'];
-            const isActive = currentStep >= idx + 1;
-            return (
-              <motion.div
-                key={letter}
-                animate={{
-                  scale: isActive ? 1.1 : 1,
-                  opacity: isActive ? 1 : 0.4,
-                }}
-                transition={{ type: 'spring', stiffness: 300 }}
-                className="text-center"
-              >
-                <div className={`w-14 h-14 rounded-lg flex items-center justify-center text-2xl font-bold text-white transition-colors ${
-                  isActive ? colors[idx] : 'bg-gray-300'
-                }`}>
-                  {letter}
-                </div>
-                <p className={`text-xs mt-1 font-medium ${isActive ? 'text-gray-800' : 'text-gray-400'}`}>
-                  {labels[idx]}
-                </p>
-              </motion.div>
-            );
-          })}
+      <CardContent className="p-4 md:p-6">
+        {/* Header */}
+        <div className="text-center mb-4">
+          <h2 className="text-xl font-bold text-gray-900">The Funnel in Action</h2>
+          <p className="text-gray-500 text-sm mt-0.5">
+            Each dot = one possible AI response. Watch the prompt build — and the possibilities shrink.
+          </p>
         </div>
 
-        {/* The Funnel Visualization */}
-        <div className="relative flex flex-col items-center py-4">
-          {/* Step indicators on the left */}
-          <div className="w-full flex flex-col items-center gap-1 mb-4">
-            {steps.map((step, idx) => (
-              <motion.div
-                key={idx}
-                animate={{
-                  opacity: idx <= currentStep ? 1 : 0.3,
-                }}
-                className="flex items-center gap-3 w-full max-w-md"
-              >
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                  idx < currentStep
-                    ? 'bg-green-100 text-green-700 border-2 border-green-300'
-                    : idx === currentStep
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-400'
-                }`}>
-                  {idx < currentStep ? '✓' : idx + 1}
-                </div>
-                <span className={`text-sm font-medium ${
-                  idx === currentStep ? 'text-gray-900' : idx < currentStep ? 'text-green-700' : 'text-gray-400'
-                }`}>
-                  {step.label}
-                </span>
-                {step.rtfElement && (
-                  <span className={`text-xs px-2 py-0.5 rounded font-bold text-white ${
-                    step.rtfElement === 'R' ? 'bg-blue-600' : step.rtfElement === 'T' ? 'bg-green-600' : step.rtfElement === 'F' ? 'bg-purple-600' : 'bg-orange-600'
-                  } ${idx <= currentStep ? 'opacity-100' : 'opacity-30'}`}>
-                    +{step.rtfElement}
-                  </span>
-                )}
-              </motion.div>
-            ))}
-          </div>
+        {/* Main layout: side-by-side on md+, stacked on mobile */}
+        <div className="flex flex-col md:flex-row gap-4 items-stretch">
 
-          {/* Animated Funnel Bar */}
-          <div className="w-full max-w-lg mx-auto relative h-16 flex items-center justify-center mb-4">
-            <motion.div
-              animate={{ width: `${activeStep.funnelWidth}%` }}
-              transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-              className={`h-12 rounded-lg bg-gradient-to-r ${activeStep.color} shadow-lg flex items-center justify-center`}
-            >
-              <motion.span
-                key={currentStep}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-white font-bold text-sm px-2 text-center whitespace-nowrap overflow-hidden"
-              >
-                {currentStep === 0 ? 'Infinite possibilities' :
-                 currentStep === 1 ? 'Biology content' :
-                 currentStep === 2 ? 'Study guide' :
-                 currentStep === 3 ? 'Exact structure' :
-                 'Perfect output'}
-              </motion.span>
-            </motion.div>
-          </div>
+          {/* Dot cloud */}
+          <div className="relative w-full md:w-[44%] shrink-0 h-52 md:h-auto md:aspect-square bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
 
-          {/* Arrow between funnel and content */}
-          <ChevronDown className="w-6 h-6 text-gray-400 mb-2" />
-        </div>
-
-        {/* Current Step Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className={`${activeStep.bgColor} border-2 ${activeStep.borderColor} rounded-lg p-6 space-y-4`}
-          >
-            {/* The prompt so far */}
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
-              <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wide">Your prompt:</p>
-              <p className="text-gray-900 font-mono text-sm">{activeStep.promptText}</p>
-            </div>
-
-            {/* Description */}
-            <p className="text-gray-800">{activeStep.description}</p>
-
-            {/* Example outputs */}
-            <div>
-              <p className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Possible AI outputs:</p>
-              <div className={`space-y-2 ${currentStep < 4 ? 'grid grid-cols-1 md:grid-cols-2 gap-2' : ''}`}>
-                {activeStep.exampleOutputs.map((output, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700 whitespace-pre-line"
-                  >
-                    {output}
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Navigation */}
-        <div className="flex justify-center">
-          {currentStep < steps.length - 1 ? (
-            <Button
-              onClick={handleNext}
-              size="lg"
-              className={`text-white ${
-                currentStep === 0 ? 'bg-blue-600 hover:bg-blue-700' :
-                currentStep === 1 ? 'bg-green-600 hover:bg-green-700' :
-                currentStep === 2 ? 'bg-purple-600 hover:bg-purple-700' :
-                'bg-orange-600 hover:bg-orange-700'
-              }`}
-            >
-              {currentStep === 0 ? 'Add Role' : currentStep === 1 ? 'Add Task' : currentStep === 2 ? 'Add Format' : 'Add Context'}
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          ) : (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-              <div className="text-center space-y-4">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Sparkles className="w-5 h-5 text-green-600" />
-                    <p className="text-green-800 font-bold">The RTFC Framework in Action!</p>
-                  </div>
-                  <p className="text-green-700 text-sm">
-                    By combining Role + Task + Format + Context, you went from infinite random outputs to exactly what you need. That's the power of structured prompting.
+            {/* Intro overlay */}
+            {!introSeen && (
+              <div className="absolute inset-0 bg-gray-900/80 flex items-center justify-center z-20 rounded-2xl p-4">
+                <div className="text-center text-white">
+                  <div className="text-3xl mb-2">🔵</div>
+                  <p className="font-bold text-sm mb-2">Each dot = 1 possible AI response</p>
+                  <p className="text-xs text-gray-200 leading-relaxed mb-1">
+                    <span className="text-yellow-300 font-semibold">"Help me with school"</span> could
+                    generate <span className="font-bold text-white">10,000+ different answers</span>.
+                  </p>
+                  <p className="text-xs text-gray-300 leading-relaxed">
+                    Watch the prompt build piece by piece — every detail eliminates bad matches.
+                    Click <span className="text-purple-300 font-semibold">Start Narrowing</span> to begin.
                   </p>
                 </div>
-                <Button
-                  onClick={onComplete}
-                  size="lg"
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  Continue — Let's Deep Dive into Each Element
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
               </div>
-            </motion.div>
-          )}
+            )}
+
+            {/* Count badge */}
+            <div className="absolute top-2 right-2 z-10">
+              <motion.div
+                key={currentLayer}
+                initial={{ scale: 1.3, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-0.5 border border-gray-200 shadow-sm"
+              >
+                <span className="text-xs font-bold text-gray-800">{layer.count} possibilities</span>
+              </motion.div>
+            </div>
+
+            {/* Dots */}
+            <AnimatePresence>
+              {visibleDots.map((dot) => {
+                const pos = getPosition(dot, currentLayer);
+                return (
+                  <motion.div
+                    key={dot.id}
+                    initial={false}
+                    animate={{ left: `${pos.x}%`, top: `${pos.y}%`, opacity: 1, scale: 1 }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0,
+                      transition: { duration: 0.5, delay: seededRandom(dot.id + 500) * 0.4 },
+                    }}
+                    transition={{
+                      type: 'spring',
+                      damping: 18,
+                      stiffness: 70,
+                      delay: seededRandom(dot.id + 600) * 0.25,
+                    }}
+                    className={`absolute rounded-full ${dot.colorClass} opacity-80`}
+                    style={{
+                      width: dot.size,
+                      height: dot.size,
+                      marginLeft: -dot.size / 2,
+                      marginTop: -dot.size / 2,
+                    }}
+                  />
+                );
+              })}
+            </AnimatePresence>
+
+            {currentLayer >= 4 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 0.25, scale: 1 }}
+                transition={{ duration: 0.8 }}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              >
+                <div className="w-20 h-20 rounded-full bg-orange-400 blur-2xl" />
+              </motion.div>
+            )}
+          </div>
+
+          {/* Info panel */}
+          <div className="flex-1 flex flex-col gap-3 min-w-0">
+
+            {/* Growing prompt display */}
+            <div className="rounded-lg border border-gray-200 bg-white p-3 flex-1">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Your prompt so far:</p>
+
+              {currentLayer === 0 ? (
+                /* Vague starting prompt */
+                <p className="font-mono text-sm text-gray-400 italic leading-relaxed">
+                  {layer.vaguePrompt}
+                </p>
+              ) : (
+                /* Growing color-coded prompt */
+                <p className="font-mono text-sm leading-relaxed">
+                  {LAYERS.slice(1, currentLayer + 1).map((l, i) => (
+                    <motion.span
+                      key={i}
+                      initial={i === currentLayer - 1 ? { opacity: 0 } : false}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className={l.highlightClass}
+                    >
+                      {l.segment}
+                    </motion.span>
+                  ))}
+                </p>
+              )}
+
+              {/* Color key */}
+              {currentLayer >= 1 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {LAYERS.slice(1, currentLayer + 1).map((l, i) => (
+                    <span
+                      key={i}
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${l.badgeBg} ${l.badgeText} border ${l.border}`}
+                    >
+                      {l.title}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Current principle */}
+            <AnimatePresence mode="wait">
+              {layer.principle && (
+                <motion.div
+                  key={currentLayer}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3 }}
+                  className={`rounded-lg p-3 border ${layer.border} text-sm text-gray-700 leading-snug`}
+                  style={{ backgroundColor: 'white' }}
+                >
+                  <span className={`font-semibold ${layer.textColor}`}>{layer.title}: </span>
+                  {layer.principle}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Progress bar */}
+            <div className="flex items-center gap-1">
+              {LAYERS.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                    i <= currentLayer ? 'bg-purple-500' : 'bg-gray-200'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Button */}
+            {isLast ? (
+              <Button
+                onClick={onComplete}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Continue
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleAdvance}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {currentLayer === 0 ? 'Start Narrowing' : 'Add Next Layer'}
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
