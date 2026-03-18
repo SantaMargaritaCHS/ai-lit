@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+screenshots
+test-reports
+*.pdf
+*.md
+!README.md
+Images for Claude
+MCHO
+temp-reviews
+attached_assets
