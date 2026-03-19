@@ -360,16 +360,12 @@ export default function LandingPage() {
       <footer className="bg-[#002855] text-white py-10">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 bg-white/90 rounded-lg px-3 py-2">
               <img
                 src="/images/smchs-logo.svg"
-                alt="SMCHS"
-                className="h-10 w-auto brightness-0 invert"
+                alt="Santa Margarita Catholic High School"
+                className="h-8 w-auto"
               />
-              <div>
-                <p className="font-semibold text-sm">Santa Margarita Catholic High School</p>
-                <p className="text-white/60 text-xs">Rancho Santa Margarita, California</p>
-              </div>
             </div>
             <div className="flex items-center gap-6 text-sm">
               <a
