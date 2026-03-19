@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowRight, CheckCircle, AlertCircle, Zap, Target, Sparkles,
+  ArrowRight, CheckCircle, Zap, Target,
   BookOpen, Lightbulb, MessageSquare, PenTool, Brain,
-  Loader, PlayCircle
+  PlayCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import { Certificate } from '@/components/Certificate';
 import { useDevMode } from '@/context/DevModeContext';
 import { useActivityRegistry } from '@/context/ActivityRegistryContext';
 import { saveProgress, loadProgress, clearProgress } from '@/lib/progressPersistence';
-import { generateEducationFeedback, isNonsensical, checkFeedbackRejection } from '@/utils/aiEducationFeedback';
 import { PremiumVideoPlayer } from '@/components/PremiumVideoPlayer';
 import ResumeProgressDialog from '@/components/WhatIsAIModule/ResumeProgressDialog';
 
@@ -21,12 +19,9 @@ import PromptFunnelVisualization from './IntroductionToPromptingModule/PromptFun
 import FormatActivity from './IntroductionToPromptingModule/FormatActivity';
 import RTFOutputBuilder from './IntroductionToPromptingModule/RTFOutputBuilder';
 import PromptRaterActivity from './IntroductionToPromptingModule/PromptRaterActivity';
-import ThinkOutLoudActivity from './IntroductionToPromptingModule/ThinkOutLoudActivity';
-import TeachByExampleActivity from './IntroductionToPromptingModule/TeachByExampleActivity';
-import CanAIAdmitItActivity from './IntroductionToPromptingModule/CanAIAdmitItActivity';
-import PromptLayerCakeActivity from './IntroductionToPromptingModule/PromptLayerCakeActivity';
-import SteerTheConversationActivity from './IntroductionToPromptingModule/SteerTheConversationActivity';
-import SayItRightActivity from './IntroductionToPromptingModule/SayItRightActivity';
+import ZeroVsFewShotActivity from './IntroductionToPromptingModule/ZeroVsFewShotActivity';
+import ChainOfThoughtActivity from './IntroductionToPromptingModule/ChainOfThoughtActivity';
+import PromptEnhancerExitTicket from './IntroductionToPromptingModule/PromptEnhancerExitTicket';
 
 const MODULE_ID = 'introduction-to-prompting';
 
@@ -57,14 +52,7 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     lastUpdated: string;
   } | null>(null);
 
-  // Exit ticket state
-  const [exitTicket, setExitTicket] = useState('');
-  const [exitTicketFeedback, setExitTicketFeedback] = useState('');
-  const [exitTicketNeedsRetry, setExitTicketNeedsRetry] = useState(false);
-  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
-  const [showExitTicketFeedback, setShowExitTicketFeedback] = useState(false);
-  const [exitTicketAttemptCount, setExitTicketAttemptCount] = useState(0);
-  const [showEscapeHatch, setShowEscapeHatch] = useState(false);
+
 
   // Animated segment interaction states
   const [principlesRevealed, setPrinciplesRevealed] = useState<number[]>([]);
@@ -75,8 +63,6 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
   const [selectedPowerVerb, setSelectedPowerVerb] = useState<string | null>(null);
   const [exploredVerbs, setExploredVerbs] = useState<string[]>([]);
 
-  const MAX_ATTEMPTS = 2;
-  const MIN_EXIT_TICKET_LENGTH = 100;
 
   const segments = [
     { id: 0, title: 'Welcome', type: 'intro' as const },
@@ -100,15 +86,11 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     { id: 18, title: 'Context: Background Info', type: 'interactive' as const },
     { id: 19, title: 'Build Your RTFC Prompt', type: 'interactive' as const },
     { id: 20, title: 'Video: Advanced Tricks', type: 'video' as const },
-    { id: 21, title: 'Steer the Conversation', type: 'interactive' as const },
-    { id: 22, title: 'Think Out Loud', type: 'interactive' as const },
-    { id: 23, title: 'Teach By Example', type: 'interactive' as const },
-    { id: 24, title: 'Can AI Admit It?', type: 'interactive' as const },
-    { id: 25, title: 'Say It Right', type: 'interactive' as const },
-    { id: 26, title: 'Prompt Layer Cake', type: 'interactive' as const },
-    { id: 27, title: 'Video: The Golden Rules', type: 'video' as const },
-    { id: 28, title: 'Exit Ticket', type: 'exit-ticket' as const },
-    { id: 29, title: 'Certificate', type: 'certificate' as const },
+    { id: 21, title: 'Zero-Shot vs. Few-Shot', type: 'interactive' as const },
+    { id: 22, title: 'Chain-of-Thought Prompting', type: 'interactive' as const },
+    { id: 23, title: 'Video: The Golden Rules', type: 'video' as const },
+    { id: 24, title: 'Exit Ticket', type: 'exit-ticket' as const },
+    { id: 25, title: 'Certificate', type: 'certificate' as const },
   ];
 
   // Register activities for Developer Mode
@@ -178,76 +160,6 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
     } else {
       setShowCertificate(true);
     }
-  };
-
-  // ────────────── Exit Ticket Handlers ──────────────
-
-  const EXIT_TICKET_QUESTION = "Think about a specific school assignment or project you have coming up. How could you use the RTFC framework to write a prompt that helps you with it? Include the Role, Task, Format, and Context you would use. Then explain: how would you make sure the AI's output reflects YOUR unique perspective and voice, not just generic AI writing? (Remember: you are the thinker, AI is the tool.)";
-
-  const DEV_RESPONSES = {
-    good: "For my upcoming AP Biology lab report, I would use the RTFC framework to get help organizing my findings. For Role, I'd choose 'experienced AP Biology teacher who grades lab reports' because they'd know exactly what format and depth is expected. For Task, I'd ask it to 'help me outline the discussion section of my lab report on enzyme kinetics, focusing on connecting my data to the hypothesis and identifying sources of error.' I made the task specific to one section rather than the whole report so the AI can give focused help. For Format, I'd request 'a structured outline with bullet points for each paragraph, including suggested transition phrases and key scientific terms to incorporate.' I chose this format because an outline gives me a framework to build on while still writing in my own voice. For Context, I'd add 'this is for an AP Biology class, the lab was on enzyme kinetics with catalase, and the report is due Friday.' To make sure the output reflects MY voice and not generic AI writing, I would use the AI's outline as a starting skeleton, then rewrite each section using my own observations from the actual lab. I'd add my personal interpretations of why certain results happened and include specific details from our experiment that only I would know. I'd also iterate on the prompt — if the first response was too formal, I'd tell the AI to 'use a conversational but scientific tone' since that matches how I actually write. The AI is the tool giving me structure, but I'm the thinker adding the real analysis.",
-    generic: "I would use RTFC for my homework. I'd pick a role and a task and a format and some context. It would help me do better on my assignments I think.",
-    complaint: "I don't see why I need to learn about prompting. AI should just understand what I want without me having to format things a specific way. This whole module was a waste of time.",
-    gibberish: "asdfkj rtfc whatever role task format context blah blah just let me finish aaaaaa lol idk"
-  } as const;
-
-  const DEV_FEEDBACK = "Excellent reflection! You've demonstrated mastery of the RTFC framework by applying it to a real academic scenario. Your Role choice shows understanding of expertise targeting, your Task is admirably specific, your Format selection is practical and purposeful, and your Context provides the background info the AI needs. Well done!";
-
-  const handleSubmitExitTicket = async () => {
-    setIsGeneratingFeedback(true);
-    setExitTicketNeedsRetry(false);
-
-    try {
-      const feedback = await generateEducationFeedback(
-        exitTicket.trim(),
-        EXIT_TICKET_QUESTION
-      );
-
-      const finalFeedback = feedback && feedback.trim().length > 0
-        ? feedback
-        : "Thank you for sharing your thoughtful reflection on using the RTFC framework.";
-
-      setExitTicketFeedback(finalFeedback);
-
-      const needsRetry = checkFeedbackRejection(feedback);
-      setExitTicketNeedsRetry(needsRetry);
-
-      if (needsRetry) {
-        const newAttemptCount = exitTicketAttemptCount + 1;
-        setExitTicketAttemptCount(newAttemptCount);
-        if (newAttemptCount >= MAX_ATTEMPTS) {
-          setShowEscapeHatch(true);
-        }
-      }
-
-      setShowExitTicketFeedback(true);
-    } catch {
-      setExitTicketFeedback("Thank you for your thoughtful reflection on using the RTFC framework.");
-      setExitTicketNeedsRetry(false);
-      setShowExitTicketFeedback(true);
-    } finally {
-      setIsGeneratingFeedback(false);
-    }
-  };
-
-  const handleExitTicketTryAgain = () => {
-    setExitTicket('');
-    setExitTicketFeedback('');
-    setShowExitTicketFeedback(false);
-    setExitTicketNeedsRetry(false);
-  };
-
-  const handleExitTicketContinueAnyway = () => {
-    handleNextSegment();
-  };
-
-  const handleDevAutoFillExitTicket = () => {
-    if (!isDevModeActive) return;
-    setExitTicket(DEV_RESPONSES.good);
-    setExitTicketFeedback(DEV_FEEDBACK);
-    setShowExitTicketFeedback(true);
-    setExitTicketNeedsRetry(false);
-    setTimeout(() => handleNextSegment(), 1000);
   };
 
   // ────────────── Segment Content Data ──────────────
@@ -854,20 +766,20 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
                   <PenTool className="w-8 h-8 text-blue-600" />
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900">
-                  Let's Build a Prompt
+                  Watch a Prompt Get Built
                 </h2>
                 <p className="text-lg text-gray-600 max-w-lg mx-auto">
-                  We're going to start with this useless prompt and transform it — one RTFC layer at a time.
+                  You'll watch how this useless prompt gets transformed — one RTFC layer at a time — through short video clips and hands-on activities.
                 </p>
 
                 <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 max-w-md mx-auto">
-                  <p className="text-xs font-bold text-red-500 uppercase tracking-wide mb-2">Our Starting Prompt</p>
+                  <p className="text-xs font-bold text-red-500 uppercase tracking-wide mb-2">The Starting Prompt</p>
                   <p className="text-red-900 font-mono text-xl">"Help me study for my history test."</p>
                   <p className="text-red-500 text-sm mt-2">No role. No task. No format. No context. Useless.</p>
                 </div>
 
                 <Button onClick={handleNextSegment} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Let's Fix It <ArrowRight className="ml-2 w-5 h-5" />
+                  See How It's Fixed <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </motion.div>
             </CardContent>
@@ -1133,9 +1045,27 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           3
         );
 
-      // ──── Segment 18: Context Activity (2 steps) ────
+      // ──── Segment 18: Context Activity — Context Swap ────
       case 18: {
-        const contextStep = vagueTaskIndex >= 10 ? 1 : 0; // reuse state, 10+ means step 2
+        const CONTEXT_SWAPS = [
+          {
+            label: '10th grade test prep',
+            context: 'on the causes of WWI, focusing on the alliance system. For a 10th-grade student studying for a test on Friday.',
+            output: 'Q1: Name the two main alliance blocs before WWI. (Keep it simple — just the countries.)\nQ2: How did the assassination of Archduke Franz Ferdinand trigger a chain reaction?\nQ3: Why couldn\'t countries stay neutral once the alliances activated?',
+          },
+          {
+            label: 'AP-level essay prep',
+            context: 'on the causes of WWI for an AP History student writing an analytical essay. Focus on imperialism, nationalism, and militarism.',
+            output: 'Q1: Analyze how imperial competition between European powers contributed to WWI tensions.\nQ2: Evaluate the role of nationalism in escalating a regional crisis into a world war.\nQ3: To what extent was the arms race a direct cause of WWI?',
+          },
+          {
+            label: '9th grade intro',
+            context: 'about WWI basics for a 9th grader who is just learning about it for the first time. Use simple language.',
+            output: 'Q1: What does "world war" mean? Why was WWI called that?\nQ2: Which countries were on each side? (Hint: think Allies vs. Central Powers)\nQ3: What event is usually called the "spark" that started WWI?',
+          },
+        ];
+        const selectedCtx = exploredVerbs.length > 0 ? CONTEXT_SWAPS.find(c => c.label === exploredVerbs[exploredVerbs.length - 1]) : null;
+
         return (
           <Card>
             <CardHeader className="pb-2">
@@ -1147,150 +1077,81 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
             <CardContent className="space-y-5">
               {renderPromptBanner(4)}
 
-              {contextStep === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-5"
-                >
-                  <p className="text-gray-700 text-center text-lg">
-                    Context = <strong>the details about YOUR situation.</strong>
-                  </p>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                <p className="text-orange-800 text-sm">
+                  <strong>Context</strong> = the details about <strong>your</strong> situation — the topic, your grade level, what you need it for.
+                </p>
+              </div>
 
-                  {/* Visual: 3 big context types */}
-                  <div className="space-y-3">
-                    {[
-                      { icon: '📚', label: 'The topic', example: 'causes of WWI, the alliance system' },
-                      { icon: '🎓', label: 'Your level', example: '10th grade, AP class, beginner' },
-                      { icon: '🎯', label: 'What you need', example: 'for a test Friday, for a 5-paragraph essay' },
-                    ].map((item, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.2 }}
-                        className="flex items-center gap-4 bg-orange-50 border border-orange-200 rounded-xl px-5 py-4"
-                      >
-                        <span className="text-3xl">{item.icon}</span>
-                        <div>
-                          <p className="font-bold text-orange-900">{item.label}</p>
-                          <p className="text-sm text-orange-700">{item.example}</p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+              {/* Base prompt */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Same Role + Task + Format</p>
+                <p className="text-gray-800 font-mono text-sm">"You are an AP History teacher. Create 10 review questions with answers..."</p>
+              </div>
 
-                  <Button
-                    onClick={() => setVagueTaskIndex(10)}
-                    size="lg"
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                  >
-                    See It in Action <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-5"
-                >
-                  {(() => {
-                    const CONTEXT_SWAPS = [
-                      {
-                        label: 'Causes & alliances',
-                        context: 'on the causes of WWI, focusing on the alliance system',
-                        output: 'Q1: How did the alliance system turn a regional conflict into a world war?\nQ2: What role did the assassination of Archduke Franz Ferdinand play?\nQ3: Which alliances existed before 1914?',
-                      },
-                      {
-                        label: 'Effects on Europe',
-                        context: 'on the effects of WWI on Europe',
-                        output: 'Q1: How did the Treaty of Versailles reshape European borders?\nQ2: What economic problems did European nations face after WWI?\nQ3: How did WWI lead to the collapse of empires?',
-                      },
-                      {
-                        label: 'Life in the trenches',
-                        context: 'about daily life for soldiers in WWI trenches',
-                        output: 'Q1: Describe the physical conditions soldiers faced in the trenches.\nQ2: What diseases were common in trench warfare and why?\nQ3: How did soldiers communicate with their families back home?',
-                      },
-                    ];
-                    const selectedCtx = exploredVerbs.length > 0 ? CONTEXT_SWAPS.find(c => c.label === exploredVerbs[exploredVerbs.length - 1]) : null;
-
+              {/* Context swap buttons */}
+              <div>
+                <p className="text-sm font-bold text-gray-900 mb-2 text-center">Tap to swap the context:</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {CONTEXT_SWAPS.map((item) => {
+                    const isSelected = selectedCtx?.label === item.label;
+                    const wasExplored = exploredVerbs.includes(item.label);
                     return (
-                      <>
-                        {/* Base prompt */}
-                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Same Role + Task + Format</p>
-                          <p className="text-gray-800 font-mono text-sm">"You are an AP History teacher. Create 10 review questions with answers..."</p>
-                        </div>
-
-                        {/* Context swap buttons */}
-                        <div>
-                          <p className="text-sm font-bold text-gray-900 mb-2 text-center">Tap to swap the context:</p>
-                          <div className="grid grid-cols-3 gap-2">
-                            {CONTEXT_SWAPS.map((item) => {
-                              const isSelected = selectedCtx?.label === item.label;
-                              const wasExplored = exploredVerbs.includes(item.label);
-                              return (
-                                <button
-                                  key={item.label}
-                                  onClick={() => {
-                                    if (!exploredVerbs.includes(item.label)) {
-                                      setExploredVerbs(prev => [...prev, item.label]);
-                                    } else {
-                                      // Re-select it by adding to end
-                                      setExploredVerbs(prev => [...prev.filter(v => v !== item.label), item.label]);
-                                    }
-                                  }}
-                                  className={`px-3 py-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                                    isSelected
-                                      ? 'bg-orange-100 border-orange-500 text-orange-800'
-                                      : wasExplored
-                                      ? 'bg-orange-50 border-orange-200 text-orange-700'
-                                      : 'bg-white border-gray-200 text-gray-700 hover:border-orange-300'
-                                  }`}
-                                >
-                                  {item.label}
-                                  {wasExplored && !isSelected && <CheckCircle className="w-3 h-3 inline ml-1 text-orange-500" />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Result */}
-                        {selectedCtx && (
-                          <motion.div
-                            key={selectedCtx.label}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="space-y-3"
-                          >
-                            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3">
-                              <p className="text-xs font-bold text-orange-600 uppercase tracking-wide mb-1">Context added</p>
-                              <p className="text-orange-900 font-mono text-sm">...{selectedCtx.context}</p>
-                            </div>
-                            <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-                              <p className="text-xs font-bold text-green-600 uppercase tracking-wide mb-1">AI output changes to</p>
-                              <pre className="text-sm text-green-900 whitespace-pre-wrap font-mono leading-relaxed">{selectedCtx.output}</pre>
-                            </div>
-                          </motion.div>
-                        )}
-
-                        {/* Takeaway + next */}
-                        {exploredVerbs.filter(v => CONTEXT_SWAPS.some(c => c.label === v)).length >= 2 && (
-                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                              <p className="text-orange-800 text-sm font-medium">
-                                Same role, same task, same format — <strong>completely different output.</strong> Context is what makes it yours.
-                              </p>
-                            </div>
-                            <Button onClick={handleNextSegment} size="lg" className="w-full bg-orange-600 hover:bg-orange-700 text-white">
-                              Next: Build Your Own RTFC Prompt <ArrowRight className="ml-2 w-5 h-5" />
-                            </Button>
-                          </motion.div>
-                        )}
-                      </>
+                      <button
+                        key={item.label}
+                        onClick={() => {
+                          if (!exploredVerbs.includes(item.label)) {
+                            setExploredVerbs(prev => [...prev, item.label]);
+                          } else {
+                            setExploredVerbs(prev => [...prev.filter(v => v !== item.label), item.label]);
+                          }
+                        }}
+                        className={`px-3 py-3 rounded-xl border-2 text-xs font-bold transition-all ${
+                          isSelected
+                            ? 'bg-orange-100 border-orange-500 text-orange-800'
+                            : wasExplored
+                            ? 'bg-orange-50 border-orange-200 text-orange-700'
+                            : 'bg-white border-gray-200 text-gray-700 hover:border-orange-300'
+                        }`}
+                      >
+                        {item.label}
+                        {wasExplored && !isSelected && <CheckCircle className="w-3 h-3 inline ml-1 text-orange-500" />}
+                      </button>
                     );
-                  })()}
+                  })}
+                </div>
+              </div>
+
+              {/* Result */}
+              {selectedCtx && (
+                <motion.div
+                  key={selectedCtx.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-3"
+                >
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3">
+                    <p className="text-xs font-bold text-orange-600 uppercase tracking-wide mb-1">Context added</p>
+                    <p className="text-orange-900 font-mono text-sm">...{selectedCtx.context}</p>
+                  </div>
+                  <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                    <p className="text-xs font-bold text-green-600 uppercase tracking-wide mb-1">AI output changes to</p>
+                    <pre className="text-sm text-green-900 whitespace-pre-wrap font-mono leading-relaxed">{selectedCtx.output}</pre>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Takeaway + next */}
+              {exploredVerbs.filter(v => CONTEXT_SWAPS.some(c => c.label === v)).length >= 2 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                    <p className="text-orange-800 text-sm font-medium">
+                      Same role, same task, same format — <strong>completely different output.</strong> Context is what makes it yours.
+                    </p>
+                  </div>
+                  <Button onClick={handleNextSegment} size="lg" className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+                    Next: RTFC Quiz <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
                 </motion.div>
               )}
             </CardContent>
@@ -1307,73 +1168,37 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           />
         );
 
-      // ──── Segment 20: Video Clip — Advanced Tricks (244.96–330.00) ────
+      // ──── Segment 20: Video Clip — Advanced Tricks (277–330.00) ────
       case 20:
         return renderVideoClip(
           8,
           'Advanced Tricks',
           'You\'ve mastered the four building blocks — now learn advanced techniques that give you even more precise control over AI output.',
-          245,
+          277,
           330,
           'text-purple-600'
         );
 
-      // ──── Segment 21: Steer the Conversation ────
+      // ──── Segment 21: Zero-Shot vs. Few-Shot ────
       case 21:
         return (
-          <SteerTheConversationActivity
+          <ZeroVsFewShotActivity
             onComplete={handleNextSegment}
             isDevMode={isDevModeActive}
           />
         );
 
-      // ──── Segment 22: Think Out Loud ────
+      // ──── Segment 22: Chain-of-Thought Prompting ────
       case 22:
         return (
-          <ThinkOutLoudActivity
+          <ChainOfThoughtActivity
             onComplete={handleNextSegment}
             isDevMode={isDevModeActive}
           />
         );
 
-      // ──── Segment 23: Teach By Example ────
+      // ──── Segment 23: Video Clip — The Golden Rules (330.68–461.32) ────
       case 23:
-        return (
-          <TeachByExampleActivity
-            onComplete={handleNextSegment}
-            isDevMode={isDevModeActive}
-          />
-        );
-
-      // ──── Segment 24: Can AI Admit It? ────
-      case 24:
-        return (
-          <CanAIAdmitItActivity
-            onComplete={handleNextSegment}
-            isDevMode={isDevModeActive}
-          />
-        );
-
-      // ──── Segment 25: Say It Right ────
-      case 25:
-        return (
-          <SayItRightActivity
-            onComplete={handleNextSegment}
-            isDevMode={isDevModeActive}
-          />
-        );
-
-      // ──── Segment 26: Prompt Layer Cake ────
-      case 26:
-        return (
-          <PromptLayerCakeActivity
-            onComplete={handleNextSegment}
-            isDevMode={isDevModeActive}
-          />
-        );
-
-      // ──── Segment 27: Video Clip — The Golden Rules (330.68–461.32) ────
-      case 27:
         return renderVideoClip(
           9,
           'The Golden Rules',
@@ -1383,215 +1208,14 @@ const IntroductionToPromptingModule: React.FC<IntroductionToPromptingModuleProps
           'text-orange-600'
         );
 
-      // ──── Segment 28: Exit Ticket ────
-      case 28:
+      // ──── Segment 24: Exit Ticket ────
+      case 24:
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-                Exit Ticket: Applying the RTFC Framework
-              </CardTitle>
-              <p className="text-gray-700 mt-2">
-                Show us what you've learned by connecting the RTFC framework to your real life.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900 text-lg">
-                  {EXIT_TICKET_QUESTION}
-                </h3>
-                <Textarea
-                  value={exitTicket}
-                  onChange={(e) => setExitTicket(e.target.value)}
-                  disabled={showExitTicketFeedback && !exitTicketNeedsRetry}
-                  placeholder="Describe the assignment, then explain your chosen Role, Task, Format, and Context, and why each one helps..."
-                  rows={6}
-                  className="w-full text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
-                />
-                <p className="text-xs text-gray-600">
-                  {exitTicket.length} / {MIN_EXIT_TICKET_LENGTH} characters minimum
-                </p>
-
-                {/* Dev Mode Shortcuts */}
-                {isDevModeActive && !showExitTicketFeedback && (
-                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <h3 className="text-sm font-semibold text-red-800 mb-2">Developer Mode: Exit Ticket Shortcuts</h3>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={handleDevAutoFillExitTicket}
-                        className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto"
-                        size="sm"
-                      >
-                        <Zap className="w-3 h-3 mr-1" />
-                        Auto-Fill & Complete
-                      </Button>
-                      <Button
-                        onClick={() => setExitTicket(DEV_RESPONSES.good)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
-                        size="sm"
-                      >
-                        Fill Good Response
-                      </Button>
-                      <Button
-                        onClick={() => setExitTicket(DEV_RESPONSES.generic)}
-                        className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-auto"
-                        size="sm"
-                      >
-                        Fill Generic Response
-                      </Button>
-                      <Button
-                        onClick={() => setExitTicket(DEV_RESPONSES.complaint)}
-                        className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs px-3 py-1 h-auto"
-                        size="sm"
-                      >
-                        Fill Complaint
-                      </Button>
-                      <Button
-                        onClick={() => setExitTicket(DEV_RESPONSES.gibberish)}
-                        className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 h-auto"
-                        size="sm"
-                      >
-                        Fill Gibberish
-                      </Button>
-                    </div>
-                    <p className="text-xs text-red-600 mt-1">Test validation: good, generic, complaint, or gibberish responses</p>
-                  </div>
-                )}
-
-                {/* AI Feedback */}
-                {showExitTicketFeedback && exitTicketFeedback && (
-                  <AnimatePresence>
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`border-2 rounded-lg p-4 ${
-                        exitTicketNeedsRetry
-                          ? 'bg-yellow-50 border-yellow-400'
-                          : 'bg-green-50 border-green-400'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        {exitTicketNeedsRetry ? (
-                          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                        ) : (
-                          <Sparkles className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        )}
-                        <div className="w-full">
-                          <h5 className="text-sm font-semibold text-gray-900 mb-1">
-                            {exitTicketNeedsRetry ? 'AI Feedback - Please Revise:' : 'AI Feedback:'}
-                          </h5>
-                          <p className="text-sm text-gray-900">{exitTicketFeedback}</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                )}
-              </div>
-
-              {/* Loading state */}
-              {isGeneratingFeedback && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-center gap-3 text-blue-700 bg-blue-50 rounded-lg p-4 border border-blue-200"
-                >
-                  <Loader className="w-5 h-5 animate-spin" />
-                  <span>Analyzing your response with AI...</span>
-                </motion.div>
-              )}
-
-              {/* Escape Hatch */}
-              {showEscapeHatch && exitTicketNeedsRetry && (
-                <AnimatePresence>
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-50 border-2 border-red-400 rounded-lg p-6"
-                  >
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
-                      <div className="w-full">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">
-                          Multiple Attempts Detected
-                        </h3>
-                        <p className="text-gray-900 mb-3">
-                          You've tried {exitTicketAttemptCount} times and the AI feedback suggests your response needs improvement.
-                        </p>
-                        <p className="text-gray-900 mb-3">
-                          <strong className="text-yellow-700">You have two options:</strong>
-                        </p>
-                        <ol className="text-gray-900 mb-4 space-y-1 ml-4">
-                          <li>1. Try again with a different response that addresses the question</li>
-                          <li>2. Continue anyway and get your certificate</li>
-                        </ol>
-                        <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-4">
-                          <p className="text-gray-900 text-sm">
-                            <strong className="text-yellow-700">Important:</strong> If you continue, your response will be flagged for instructor review.
-                          </p>
-                        </div>
-                        <div className="flex gap-3">
-                          <Button
-                            onClick={handleExitTicketTryAgain}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            Try One More Time
-                          </Button>
-                          <Button
-                            onClick={handleExitTicketContinueAnyway}
-                            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
-                          >
-                            Continue Anyway
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              )}
-
-              {/* Submit / Continue Button */}
-              {!(showEscapeHatch && exitTicketNeedsRetry) && (
-                <Button
-                  onClick={() => {
-                    if (showExitTicketFeedback && !exitTicketNeedsRetry) {
-                      handleNextSegment();
-                    } else if (showExitTicketFeedback && exitTicketNeedsRetry) {
-                      handleExitTicketTryAgain();
-                    } else {
-                      handleSubmitExitTicket();
-                    }
-                  }}
-                  disabled={!showExitTicketFeedback && (exitTicket.length < MIN_EXIT_TICKET_LENGTH || isGeneratingFeedback)}
-                  size="lg"
-                  className={`w-full ${
-                    showExitTicketFeedback && !exitTicketNeedsRetry
-                      ? 'bg-green-600 hover:bg-green-700 text-white'
-                      : showExitTicketFeedback && exitTicketNeedsRetry
-                      ? 'bg-orange-600 hover:bg-orange-700 text-white'
-                      : exitTicket.length >= MIN_EXIT_TICKET_LENGTH && !isGeneratingFeedback
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  {showExitTicketFeedback && !exitTicketNeedsRetry ? (
-                    <>
-                      Get Your Certificate
-                      <ArrowRight className="ml-2 w-5 h-5" />
-                    </>
-                  ) : showExitTicketFeedback && exitTicketNeedsRetry ? (
-                    'Try Again'
-                  ) : (
-                    'Submit Response'
-                  )}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <PromptEnhancerExitTicket onComplete={handleNextSegment} />
         );
 
-      // ──── Segment 26: Certificate ────
-      case 29:
+      // ──── Segment 25: Certificate ────
+      case 25:
         return null; // Handled by showCertificate early return
 
       default:

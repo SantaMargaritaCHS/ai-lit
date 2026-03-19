@@ -16,24 +16,12 @@ interface QuizQuestion {
   explanation: string;
 }
 
-const QUIZ_QUESTIONS: QuizQuestion[] = [
+const QUIZ_QUESTIONS_POOL: QuizQuestion[] = [
   {
-    prompt: 'Act as a patient biology tutor for high school students.',
-    highlighted: 'a patient biology tutor for high school students',
-    correctAnswer: 'R',
-    explanation: 'This tells the AI WHO to be — a biology tutor. That\'s the Role.',
-  },
-  {
-    prompt: 'Create 10 flashcards on photosynthesis vocabulary.',
-    highlighted: 'Create 10 flashcards',
+    prompt: 'Compare the advantages and disadvantages of renewable vs. fossil fuel energy.',
+    highlighted: 'Compare the advantages and disadvantages',
     correctAnswer: 'T',
-    explanation: '"Create 10 flashcards" is the action — what you want done. That\'s the Task.',
-  },
-  {
-    prompt: 'Present the answer as a numbered list with explanations.',
-    highlighted: 'a numbered list with explanations',
-    correctAnswer: 'F',
-    explanation: 'This describes HOW the response should look — a numbered list. That\'s the Format.',
+    explanation: '"Compare" is the action verb — it tells the AI exactly what to DO. That\'s the Task.',
   },
   {
     prompt: 'I\'m a 10th grader studying for a test on Friday about cell division.',
@@ -42,28 +30,40 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
     explanation: 'Grade level, topic, and deadline — that\'s background info about YOUR situation. That\'s Context.',
   },
   {
+    prompt: 'Present the answer as a numbered list with explanations.',
+    highlighted: 'a numbered list with explanations',
+    correctAnswer: 'F',
+    explanation: 'This describes HOW the response should look — a numbered list. That\'s the Format.',
+  },
+  {
     prompt: 'You are an experienced debate coach who teaches competitive speech.',
     highlighted: 'an experienced debate coach',
     correctAnswer: 'R',
     explanation: 'It\'s telling the AI to act as a debate coach — that\'s assigning a Role.',
   },
   {
-    prompt: 'Compare the advantages and disadvantages of renewable vs. fossil fuel energy.',
-    highlighted: 'Compare the advantages and disadvantages',
+    prompt: 'This is for my 11th grade Environmental Science class and we\'re focusing on sustainability.',
+    highlighted: 'my 11th grade Environmental Science class ... focusing on sustainability',
+    correctAnswer: 'C',
+    explanation: 'Class, grade level, and topic focus — all background info. That\'s Context.',
+  },
+  {
+    prompt: 'Explain the causes of the American Revolution in simple terms.',
+    highlighted: 'Explain the causes of the American Revolution',
     correctAnswer: 'T',
-    explanation: '"Compare" is the action verb — it tells the AI exactly what to DO. That\'s the Task.',
+    explanation: '"Explain" is the action verb — it tells the AI what to DO. That\'s the Task.',
+  },
+  {
+    prompt: 'Act as a patient biology tutor for high school students.',
+    highlighted: 'a patient biology tutor for high school students',
+    correctAnswer: 'R',
+    explanation: 'This tells the AI WHO to be — a biology tutor. That\'s the Role.',
   },
   {
     prompt: 'Write it as a two-column table with pros on one side and cons on the other.',
     highlighted: 'a two-column table',
     correctAnswer: 'F',
     explanation: 'A two-column table describes the STRUCTURE of the output. That\'s the Format.',
-  },
-  {
-    prompt: 'This is for my 11th grade Environmental Science class and we\'re focusing on sustainability.',
-    highlighted: 'my 11th grade Environmental Science class ... focusing on sustainability',
-    correctAnswer: 'C',
-    explanation: 'Class, grade level, and topic focus — all background info. That\'s Context.',
   },
   {
     prompt: 'Summarize the 3 main themes of To Kill a Mockingbird.',
@@ -79,6 +79,16 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
   },
 ];
 
+// Shuffle questions on each quiz attempt using Fisher-Yates algorithm
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 const RTFC_OPTIONS = [
   { letter: 'R', label: 'Role', color: '#2563eb', description: 'Who the AI should be' },
   { letter: 'T', label: 'Task', color: '#16a34a', description: 'What you want done' },
@@ -89,6 +99,8 @@ const RTFC_OPTIONS = [
 const PASSING_SCORE = 70;
 
 const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMode }) => {
+  const [showIntro, setShowIntro] = useState(true);
+  const [questions, setQuestions] = useState(() => shuffleArray(QUIZ_QUESTIONS_POOL));
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -96,8 +108,8 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
   const [answered, setAnswered] = useState(0);
   const [showResults, setShowResults] = useState(false);
 
-  const question = QUIZ_QUESTIONS[currentQuestion];
-  const totalQuestions = QUIZ_QUESTIONS.length;
+  const question = questions[currentQuestion];
+  const totalQuestions = questions.length;
   const percentage = Math.round((score / totalQuestions) * 100);
   const passed = percentage >= PASSING_SCORE;
 
@@ -122,6 +134,7 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
   };
 
   const handleRetry = () => {
+    setQuestions(shuffleArray(QUIZ_QUESTIONS_POOL));
     setCurrentQuestion(0);
     setSelectedAnswer(null);
     setShowFeedback(false);
@@ -130,18 +143,57 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
     setShowResults(false);
   };
 
-  if (isDevMode) {
+  const devModeBar = isDevMode ? (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+      <p className="text-sm font-semibold text-red-800">Dev Mode</p>
+      <Button onClick={onComplete} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto" size="sm">
+        Skip Quiz
+      </Button>
+    </div>
+  ) : null;
+
+  // Intro screen
+  if (showIntro) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-            <p className="text-sm font-semibold text-red-800">Developer Mode: RTFC Quiz</p>
-            <div className="flex gap-2 mt-2">
-              <Button onClick={onComplete} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-auto" size="sm">
-                Auto-Complete
-              </Button>
+        {devModeBar && <div className="px-6 pt-4">{devModeBar}</div>}
+        <CardContent className="p-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-5"
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100">
+              <Target className="w-8 h-8 text-blue-600" />
             </div>
-          </div>
+
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900">RTFC Quiz: Name That Part</h3>
+              <p className="text-gray-600 mt-2">Time to test what you've learned about the RTFC framework!</p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 text-left space-y-3">
+              <h4 className="font-semibold text-blue-900">How it works:</h4>
+              <ul className="text-blue-800 text-sm space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-blue-600 mt-0.5">1.</span>
+                  <span>You'll see a prompt with part of it <span className="font-bold bg-yellow-200 text-gray-900 rounded px-1">highlighted in yellow</span>.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-blue-600 mt-0.5">2.</span>
+                  <span>Pick which RTFC part the highlighted section represents: <strong>Role</strong>, <strong>Task</strong>, <strong>Format</strong>, or <strong>Context</strong>.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold text-blue-600 mt-0.5">3.</span>
+                  <span>There are <strong>{totalQuestions} questions</strong> total. You need at least <strong>{PASSING_SCORE}%</strong> (that's {Math.ceil(totalQuestions * PASSING_SCORE / 100)} out of {totalQuestions}) to pass.</span>
+                </li>
+              </ul>
+            </div>
+
+            <Button onClick={() => setShowIntro(false)} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+              Start Quiz <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </motion.div>
         </CardContent>
       </Card>
     );
@@ -152,6 +204,7 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
     return (
       <Card>
         <CardContent className="p-8">
+          {devModeBar}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -197,6 +250,7 @@ const RTFOutputBuilder: React.FC<RTFOutputBuilderProps> = ({ onComplete, isDevMo
   // Quiz screen
   return (
     <Card>
+      {devModeBar && <div className="px-6 pt-4">{devModeBar}</div>}
       <CardHeader className="pb-2">
         <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
           <Target className="w-6 h-6 text-blue-600" />

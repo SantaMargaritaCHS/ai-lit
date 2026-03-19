@@ -1038,50 +1038,8 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
   const [revealStep, setRevealStep] = useState(0);
 
   const renderReveal = () => {
-    const bubbles = [
-      {
-        icon: <Eye className="w-8 h-8 text-white" />,
-        bg: 'from-blue-500 to-blue-700',
-        border: 'border-blue-400',
-        title: 'Did you include this in your prompt attempt?',
-        content: (
-          <p className="text-lg text-gray-900">
-            <span className="font-mono bg-blue-50 border border-blue-200 rounded px-2 py-1 text-blue-800">...in the style of a <strong>Japanese ukiyo-e woodblock print</strong>...</span>
-          </p>
-        ),
-      },
-      {
-        icon: <AlertCircle className="w-8 h-8 text-white" />,
-        bg: 'from-orange-500 to-red-500',
-        border: 'border-orange-400',
-        title: round2MentionedStyle ? 'Nice — you knew the term!' : 'Most people don\u2019t know this term.',
-        content: (
-          <p className="text-lg text-gray-900">
-            You could get <em>close</em> without it — but it would take more words, more back-and-forth, and the result still wouldn&apos;t be as accurate.
-            Knowing the right term gets you there in <strong>one shot</strong>.
-          </p>
-        ),
-      },
-      {
-        icon: <Brain className="w-8 h-8 text-white" />,
-        bg: 'from-purple-500 to-purple-700',
-        border: 'border-purple-400',
-        title: 'Techniques + Knowledge',
-        content: (
-          <div className="space-y-3">
-            <p className="text-lg text-gray-900">
-              We&apos;re about to teach you prompting techniques — but <strong>what you know</strong> should always be front and center.
-            </p>
-            <p className="text-gray-700">
-              Techniques structure your prompt. <strong>Your knowledge fills it with the right words.</strong>
-            </p>
-          </div>
-        ),
-      },
-    ];
-
-    const current = bubbles[revealStep];
-    const isLast = revealStep === bubbles.length - 1;
+    // Reveal steps: 0 = image+prompt with "Wait!" callout, 1 = knowledge insight, 2 = techniques+knowledge, 3 = final takeaway
+    const totalSteps = 4;
 
     return (
       <motion.div
@@ -1091,39 +1049,142 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
         exit={{ opacity: 0 }}
         className="space-y-5"
       >
-        {/* Wave image stays visible in background, smaller */}
-        <div className="relative w-full rounded-xl overflow-hidden border-2 border-gray-200 shadow-inner opacity-80">
-          <img
-            src={WAVE_IMAGE}
-            alt="AI-generated Japanese wave scene"
-            className="w-full h-auto"
-            style={{ aspectRatio: '4/3', objectFit: 'cover' }}
-          />
+        {/* Image + actual prompt side by side — visible throughout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-xl overflow-hidden border-2 border-gray-200 shadow-inner">
+            <img
+              src={WAVE_IMAGE}
+              alt="AI-generated Japanese wave scene"
+              className="w-full h-auto"
+              style={{ aspectRatio: '4/3', objectFit: 'cover' }}
+            />
+          </div>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col justify-center">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">The actual prompt:</p>
+            <p className="text-sm text-gray-800 font-mono leading-relaxed">
+              &ldquo;Create an image in the style of a{' '}
+              <span className={`transition-all duration-500 ${revealStep >= 0 ? 'text-blue-700 bg-yellow-100 border border-yellow-400 px-1 rounded font-bold' : ''}`}>
+                Japanese ukiyo-e woodblock print
+              </span>.
+              A massive curling wave dominates the foreground with white foam and spray at the crest.
+              A small snow-capped mountain in the distant background.
+              Small wooden boats with rowers caught in the waves.
+              Deep indigo and Prussian blue ocean water. Pale sky with subtle clouds. No text.&rdquo;
+            </p>
+          </div>
         </div>
 
-        {/* Pop-up bubble */}
+        {/* Flowing message cards */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={revealStep}
-            initial={{ opacity: 0, scale: 0.8, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -30 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className={`border-2 ${current.border} rounded-2xl p-6 shadow-lg bg-white`}
-          >
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br ${current.bg} shadow-md`}>
-                {current.icon}
+          {revealStep === 0 && (
+            <motion.div
+              key="wait-moment"
+              initial={{ opacity: 0, scale: 0.8, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: -30 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              className="border-2 border-blue-400 rounded-2xl p-6 shadow-lg bg-white"
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 shadow-md">
+                  <Eye className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  Wait — did you catch <em>this</em>?!
+                </h3>
+                <p className="text-lg text-gray-900">
+                  Look at the highlighted phrase in the prompt:
+                </p>
+                <p className="text-lg font-mono bg-yellow-50 border-2 border-yellow-400 rounded-lg px-4 py-2 text-blue-800 font-bold">
+                  &ldquo;...in the style of a Japanese ukiyo-e woodblock print...&rdquo;
+                </p>
+                <p className="text-base text-gray-600">
+                  {round2MentionedStyle
+                    ? 'You actually included this — nice!'
+                    : 'Did you include that in your prompt attempt?'
+                  }
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">{current.title}</h3>
-              {current.content}
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
+
+          {revealStep === 1 && (
+            <motion.div
+              key="knowledge-insight"
+              initial={{ opacity: 0, scale: 0.8, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: -30 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              className="border-2 border-orange-400 rounded-2xl p-6 shadow-lg bg-white"
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-500 shadow-md">
+                  <AlertCircle className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {round2MentionedStyle ? 'You had the edge!' : 'That one phrase changes everything.'}
+                </h3>
+                <p className="text-lg text-gray-900">
+                  You could get <em>close</em> without it — but it would take more words, more back-and-forth, and the result still wouldn&apos;t be as accurate.
+                </p>
+                <p className="text-lg text-gray-900">
+                  Knowing the right term gets you there in <strong>one shot</strong>.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {revealStep === 2 && (
+            <motion.div
+              key="techniques-knowledge"
+              initial={{ opacity: 0, scale: 0.8, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: -30 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              className="border-2 border-purple-400 rounded-2xl p-6 shadow-lg bg-white"
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-md">
+                  <Brain className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Techniques + Knowledge</h3>
+                <p className="text-lg text-gray-900">
+                  We&apos;re about to teach you prompting techniques — but <strong>what you know</strong> should always be front and center.
+                </p>
+                <p className="text-gray-700">
+                  Techniques structure your prompt. <strong>Your knowledge fills it with the right words.</strong>
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {revealStep === 3 && (
+            <motion.div
+              key="final-takeaway"
+              initial={{ opacity: 0, scale: 0.8, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: -30 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              className="border-2 border-purple-400 rounded-2xl p-6 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50"
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 shadow-md">
+                  <Lightbulb className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  AI doesn&apos;t think for you — it responds to how well <em className="text-purple-700">you</em> think.
+                </h3>
+                <p className="text-base text-gray-700 leading-relaxed">
+                  Every class, every project, every random thing you learned that you thought you&apos;d never use — that&apos;s your edge. Education builds the vocabulary AI needs to hear. The sharper your thinking, the sharper the output.
+                </p>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2">
-          {bubbles.map((_, i) => (
+          {Array.from({ length: totalSteps }).map((_, i) => (
             <div
               key={i}
               className={`w-2.5 h-2.5 rounded-full transition-all ${
@@ -1135,20 +1196,20 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
 
         <Button
           onClick={() => {
-            if (isLast) {
-              setStep('takeaway');
-            } else {
+            if (revealStep < totalSteps - 1) {
               setRevealStep(revealStep + 1);
+            } else {
+              onComplete();
             }
           }}
           size="lg"
-          className={`w-full ${isLast
+          className={`w-full ${revealStep === totalSteps - 1
             ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white'
             : 'bg-purple-600 hover:bg-purple-700 text-white'
           }`}
         >
-          {isLast ? (
-            <>The Takeaway <ArrowRight className="ml-2 h-5 w-5" /></>
+          {revealStep === totalSteps - 1 ? (
+            <>Got It <ArrowRight className="ml-2 h-5 w-5" /></>
           ) : (
             'Next'
           )}
@@ -1157,86 +1218,8 @@ const SayWhatYouSeeActivity: React.FC<SayWhatYouSeeActivityProps> = ({
     );
   };
 
-  // ─── Takeaway: Image + prompt, then popup on continue ───────────
-  const [showTakeawayPopup, setShowTakeawayPopup] = useState(false);
-
-  const renderTakeaway = () => (
-    <motion.div
-      key="takeaway"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="space-y-6"
-    >
-      {/* Image and prompt side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-xl overflow-hidden border-2 border-gray-200 shadow-inner">
-          <img
-            src={WAVE_IMAGE}
-            alt="AI-generated Japanese wave scene"
-            className="w-full h-auto"
-            style={{ aspectRatio: '4/3', objectFit: 'cover' }}
-          />
-        </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col justify-center">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">The actual prompt:</p>
-          <p className="text-sm text-gray-800 font-mono leading-relaxed">
-            &ldquo;Create an image in the style of a <strong className="text-blue-700 bg-blue-50 px-1 rounded">Japanese ukiyo-e woodblock print</strong>.
-            A massive curling wave dominates the foreground with white foam and spray at the crest.
-            A small snow-capped mountain in the distant background.
-            Small wooden boats with rowers caught in the waves.
-            Deep indigo and Prussian blue ocean water. Pale sky with subtle clouds. No text.&rdquo;
-          </p>
-        </div>
-      </div>
-
-      <Button
-        onClick={() => setShowTakeawayPopup(true)}
-        size="lg"
-        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-      >
-        Continue to Next Activity
-        <ArrowRight className="ml-2 h-5 w-5" />
-      </Button>
-
-      {/* Takeaway popup */}
-      <AnimatePresence>
-        {showTakeawayPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center space-y-4"
-            >
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 mx-auto">
-                <Lightbulb className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900">
-                AI doesn&apos;t think for you — it responds to how well <em className="text-purple-700">you</em> think.
-              </h3>
-              <p className="text-base text-gray-700 leading-relaxed">
-                Every class, every project, every random thing you learned that you thought you&apos;d never use — that&apos;s your edge. Education builds the vocabulary AI needs to hear. The sharper your thinking, the sharper the output.
-              </p>
-              <Button
-                onClick={onComplete}
-                size="lg"
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-              >
-                Got It
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
+  // Takeaway step no longer needed — merged into reveal flow
+  const renderTakeaway = () => null;
 
   // ─── Main Render ─────────────────────────────────────────────────
 
